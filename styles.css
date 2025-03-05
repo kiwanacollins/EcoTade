@@ -1,10 +1,23 @@
+/* Root font declarations for consistent typography */
+:root {
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --font-heading: 'Montserrat', var(--font-primary);
+}
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
+}
+
 body {
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 18px; /* Base font size increased */
+    font-family: var(--font-primary);
+    font-size: 18px;
     line-height: 1.6;
     color: #333;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .navbar {
@@ -32,7 +45,7 @@ body {
 }
 
 .navbar-logo span {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-weight: 700;
     font-size: 26px; /* Increased from 22px */
     color: #fff;
@@ -52,7 +65,7 @@ body {
     color: #fff;
     font-size: 26px; /* Increased from 23px */
     font-weight: 600;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     padding: 10px 0; /* Increased padding for larger click area */
     transition: color 0.3s ease, transform 0.2s ease;
 }
@@ -83,7 +96,7 @@ body {
 }
 
 .btn-registration, .btn-login {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     padding: 12px 30px;
     background: #08c;
     border: 1px solid #08c;
@@ -144,7 +157,7 @@ body {
 }
 
 .hero-content h1 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 60px; /* Increased from 52px */
     font-weight: 800; /* Increased font weight */
     margin: 0 0 20px 0; /* Added bottom margin */
@@ -153,7 +166,7 @@ body {
 }
 
 .hero-content p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 24px; /* Increased from 20px */
     font-weight: 400;
     color: #555; /* Darkened text color for better readability */
@@ -162,7 +175,7 @@ body {
 }
 
 .hero-content .btn-start {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     padding: 14px 35px; /* Increased padding */
     background: #08c;
     border: none;
@@ -206,14 +219,14 @@ body {
 }
 
 .feature h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 26px; /* Increased from 22px */
     font-weight: 700; /* Increased font weight */
     margin-bottom: 10px; /* Increased margin-bottom */
 }
 
 .feature p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 22px; /* Increased from 18px */
     font-weight: 400;
     color: #555; /* Darkened text color */
@@ -226,7 +239,7 @@ body {
 }
 
 .new-section h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 2.7em;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -235,7 +248,7 @@ body {
 }
 
 .new-section p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 24px; /* Increased from 20px */
     color: #555;
     margin-bottom: 40px;
@@ -260,14 +273,14 @@ body {
 }
 
 .new-section .feature h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 26px; /* Increased from 22px */
     font-weight: 700;
     margin-bottom: 10px;
 }
 
 .new-section .feature p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 22px; /* Increased from 18px */
     color: #555;
 }
@@ -305,14 +318,14 @@ body {
 }
 
 .stat-number {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 48px;
     font-weight: 800;
     color: #333;
 }
 
 .stat p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 24px;
     color: #555;
 }
@@ -324,7 +337,7 @@ body {
 }
 
 .steps-section h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 42px;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -345,6 +358,7 @@ body {
 }
 
 .step-number {
+    font-family: var(--font-heading);
     font-size: 18px;
     font-weight: 600;
     color: #08c;
@@ -358,19 +372,20 @@ body {
 }
 
 .step h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 26px;
     font-weight: 700;
     margin-bottom: 10px;
 }
 
 .step p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 22px;
     color: #555;
 }
 
 .steps-section .btn-registration {
+    font-family: var(--font-heading);
     padding: 14px 35px;
     background: #08c;
     border: none;
@@ -396,7 +411,7 @@ body {
 }
 
 .markets-section h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 2.7em;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -437,7 +452,7 @@ body {
 }
 
 .market h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 28px;
     font-weight: 700;
     margin: 0 0 20px 0;
@@ -521,7 +536,7 @@ body {
 }
 
 .blog-section h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 2.7em;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -563,7 +578,7 @@ body {
 }
 
 .blog-post h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 24px;
     font-weight: 700;
     margin: 0 0 10px 0;
@@ -571,7 +586,7 @@ body {
 }
 
 .blog-post p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 19px;
     color: #555;
 }
@@ -618,7 +633,7 @@ body {
 }
 
 .cta-headline {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 60px;
     font-weight: 800;
     color: #fff;
@@ -631,7 +646,7 @@ body {
 }
 
 .cta-subheadline {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     font-size: 28px;
     font-weight: 400;
     color: #f0cd6d;
@@ -646,7 +661,7 @@ body {
 }
 
 .cta-button {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     padding: 16px 50px;
     font-size: 26px;
     font-weight: 700;
@@ -779,7 +794,7 @@ body {
 }
 
 .mobile-nav-links a {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 22px;
     font-weight: 600;
     color: #333;
@@ -802,9 +817,10 @@ body {
 }
 
 .mobile-nav-buttons .btn {
+    font-family: var(--font-heading);
     width: 100%;
     margin: 0;
-    color: black;
+    color: #002654 !important;
 }
 
 /* Overlay for mobile nav */
@@ -847,6 +863,15 @@ body {
 }
 
 @media (max-width: 992px) {
+    /* Override any font changes that might occur */
+    body, p, li, a, span:not(.navbar-logo span), button:not(.btn) {
+        font-family: var(--font-primary) !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, .navbar-logo span, .btn {
+        font-family: var(--font-heading) !important;
+    }
+
     .navbar-links {
         gap: 30px;
     }
@@ -979,6 +1004,25 @@ body {
 }
 
 @media (max-width: 576px) {
+    /* Ensure fonts remain consistent on smallest screens */
+    * {
+        -webkit-text-size-adjust: 100%;
+    }
+    
+    /* Specific mobile button fixes */
+    .btn, button.btn {
+        font-family: var(--font-heading) !important;
+    }
+    
+    /* Footer fonts */
+    .footer-section h3 {
+        font-family: var(--font-heading) !important;
+    }
+    
+    .footer-section p, .footer-section a, .footer-section span, .footer-section li {
+        font-family: var(--font-primary) !important;
+    }
+
     .navbar-logo img {
         height: 60px;
     }
@@ -1098,7 +1142,7 @@ body {
 }
 
 .footer-logo span {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 30px; /* Increased from 24px */
     font-weight: 700;
     color: #fff;
@@ -1135,7 +1179,7 @@ body {
 }
 
 .footer-section h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 24px; /* Increased from 20px */
     font-weight: 600;
     margin-bottom: 20px;
@@ -1152,6 +1196,7 @@ body {
 }
 
 .footer-section ul li a {
+    font-family: var(--font-primary);
     color: #ccc;
     text-decoration: none;
     transition: color 0.3s ease;
@@ -1192,6 +1237,7 @@ body {
 }
 
 .footer-bottom p {
+    font-family: var(--font-primary);
     color: #ccc;
     margin: 0;
     font-size: 16px; /* Added font size */
@@ -1203,6 +1249,7 @@ body {
 }
 
 .footer-links a {
+    font-family: var(--font-primary);
     color: #ccc;
     text-decoration: none;
     transition: color 0.3s ease;
@@ -1261,7 +1308,7 @@ body {
 }
 
 .testimonials-section h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading);
     font-size: 2.7em;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -1337,7 +1384,7 @@ body {
 }
 
 .testimonial-content p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary) !important;
     font-size: 18px;
     line-height: 1.7;
     color: #555;
@@ -1368,7 +1415,7 @@ body {
 }
 
 .author-info h4 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-heading) !important;
     font-size: 20px;
     font-weight: 700;
     color: #08c;
@@ -1376,7 +1423,7 @@ body {
 }
 
 .author-info span {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary) !important;
     font-size: 14px;
     color: #777;
 }
@@ -1485,6 +1532,360 @@ body {
     .testimonial-dot {
         width: 10px;
         height: 10px;
+    }
+}
+
+/* Registration Form Styles */
+.registration-section {
+    padding: 140px 20px 60px;
+    background-color: #f5f9fd;
+    min-height: calc(100vh - 300px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.registration-container {
+    max-width: 600px;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    margin: 0 auto;
+}
+
+.registration-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.registration-header h1 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.registration-header p {
+    font-family: var(--font-primary);
+    font-size: 16px;
+    color: #555;
+}
+
+.registration-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+    width: 100%;
+    clear: both; /* Prevent floating issues */
+}
+
+.form-group label {
+    font-family: var(--font-primary);
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.input-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.input-container i:not(.password-toggle) {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #08c;
+    font-size: 18px;
+    pointer-events: none; /* Prevents icon from intercepting clicks */
+    z-index: 2;
+}
+
+.input-container .password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #777;
+    z-index: 2;
+}
+
+.input-container input {
+    width: 100%;
+    height: 50px;
+    padding: 14px 45px 14px 45px;
+    border: 1px solid #ddd;
+    border-radius: 50px;
+    font-family: var(--font-primary);
+    font-size: 16px;
+    color: #333;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+    background-color: #fff;
+    display: block;
+}
+
+.input-container input:focus {
+    outline: none;
+    border-color: #08c;
+    box-shadow: 0 0 0 3px rgba(0, 136, 204, 0.2);
+    z-index: 1; /* Ensure input stays above other elements when focused */
+}
+
+.input-container input.error {
+    border-color: #ff3b30;
+}
+
+.error-message {
+    font-family: var(--font-primary);
+    font-size: 14px;
+    color: #ff3b30;
+    margin-top: 6px;
+    padding-left: 15px;
+    min-height: 20px;
+    display: block;
+    clear: both;
+}
+
+.password-strength {
+    margin: 10px 0 5px;
+    width: 100%;
+    clear: both; /* Ensure it doesn't overlap with other elements */
+}
+
+.strength-bar {
+    height: 5px;
+    background-color: #eee;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.strength-indicator {
+    height: 100%;
+    width: 0;
+    border-radius: 3px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-text {
+    font-family: var(--font-primary);
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #08c;
+}
+
+.checkbox-container label {
+    display: inline;
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+.checkbox-container label a {
+    color: #08c;
+    text-decoration: none;
+}
+
+.checkbox-container label a:hover {
+    text-decoration: underline;
+}
+
+.btn-full {
+    width: 100%;
+    padding: 14px !important;
+    margin-top: 15px !important;
+    font-size: 18px !important;
+}
+
+.social-signup {
+    margin: 30px 0;
+    text-align: center;
+    position: relative;
+    width: 100%;
+}
+
+.social-signup span {
+    font-family: var(--font-primary);
+    font-size: 14px;
+    color: #777;
+    background-color: #fff; /* Background to hide the line */
+    padding: 0 15px;
+    position: relative;
+    z-index: 1;
+}
+
+
+
+.social-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.btn-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border: 1px solid #ddd;
+    border-radius: 50px;
+    background: #fff;
+    font-family: var(--font-primary);
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    max-width: 180px;
+}
+
+.btn-google {
+    background-color: #fff;
+    color: #333;
+    border-color: #ddd;
+}
+
+.btn-google span {
+    color: #333 !important; /* Force correct text color */
+    background: transparent; /* Remove any background */
+    padding: 0; /* Remove any padding */
+}
+
+.btn-google:hover {
+    background-color: #f2f2f2;
+    border-color: #ccc;
+}
+
+.btn-facebook {
+    background-color: #4267B2;
+    border-color: #4267B2;
+    color: #fff;
+}
+
+.btn-facebook span {
+    color: #fff !important;
+    background: transparent;
+    padding: 0;
+}
+
+.btn-facebook:hover {
+    background-color: #385898;
+    border-color: #385898;
+}
+
+.login-link {
+    text-align: center;
+    font-family: var(--font-primary);
+    font-size: 15px;
+    margin-top: 20px;
+}
+
+.login-link a {
+    color: #08c;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* Validation States */
+.input-container.valid i {
+    color: #4CD964;
+}
+
+.input-container.valid input {
+    border-color: #4CD964;
+}
+
+.input-container.invalid i {
+    color: #ff3b30;
+}
+
+.input-container.invalid input {
+    border-color: #ff3b30;
+}
+
+/* Password strength colors */
+.strength-weak {
+    background-color: #ff3b30;
+    width: 30%;
+}
+
+.strength-medium {
+    background-color: #ff9500;
+    width: 60%;
+}
+
+.strength-strong {
+    background-color: #4CD964;
+    width: 100%;
+}
+
+/* Responsive adjustments for registration form */
+@media (max-width: 768px) {
+    .registration-section {
+        padding: 120px 15px 40px;
+    }
+    
+    .registration-container {
+        padding: 30px 20px;
+        max-width: 100%;
+    }
+    
+    .social-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-social {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .registration-header h1 {
+        font-size: 26px;
+    }
+    
+    .registration-container {
+        padding: 25px 15px;
+    }
+    
+    .input-container input {
+        padding: 12px 12px 12px 40px;
+        font-size: 15px;
     }
 }
 
