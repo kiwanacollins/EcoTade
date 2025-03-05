@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - EcoTrade</title>
+    <title>Login - EcoTrade</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,8 +13,10 @@
 </head>
 <body>
   
+   
 
     <section class="registration-section">
+        
         <div class="registration-container">
             <div class="registration-header">
 
@@ -23,20 +25,11 @@
                     <span>EcoTrade</span>
                 </div>
 
-                <h1>Create Your Account</h1>
-                <p>Join thousands of successful traders worldwide</p>
+                <h1>Welcome Back</h1>
+                <p>Access your account to continue trading</p>
             </div>
 
-            <form id="registration-form" class="registration-form">
-                <div class="form-group">
-                    <label for="fullname">Full Name</label>
-                    <div class="input-container">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
-                    </div>
-                    <div class="error-message" id="fullname-error"></div>
-                </div>
-
+            <form id="login-form" class="registration-form">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <div class="input-container">
@@ -50,40 +43,26 @@
                     <label for="password">Password</label>
                     <div class="input-container">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required>
                         <i class="fas fa-eye password-toggle" id="password-toggle"></i>
-                    </div>
-                    <div class="password-strength">
-                        <div class="strength-bar">
-                            <div class="strength-indicator" id="strength-indicator"></div>
-                        </div>
-                        <span class="strength-text" id="strength-text">Password strength</span>
                     </div>
                     <div class="error-message" id="password-error"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="confirm-password">Confirm Password</label>
-                    <div class="input-container">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
-                        <!-- Password toggle for confirm password field will be added via JavaScript -->
+                    <div class="forgot-password-container">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember me</label>
+                        </div>
+                        <a href="#" class="forgot-password">Forgot Password?</a>
                     </div>
-                    <div class="error-message" id="confirm-password-error"></div>
                 </div>
 
-                <div class="form-group">
-                    <div class="checkbox-container">
-                        <input type="checkbox" id="terms" name="terms" required>
-                        <label for="terms">I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></label>
-                    </div>
-                    <div class="error-message" id="terms-error"></div>
-                </div>
-
-                <button type="submit" class="btn btn-registration btn-full">Create Account</button>
+                <button type="submit" class="btn btn-login btn-full">Log In</button>
 
                 <div class="social-signup">
-                    <span>Or sign up with</span>
+                    <span>Or log in with</span>
                     <div class="social-buttons">
                         <button type="button" class="btn-social btn-google">
                             <i class="fab fa-google"></i>
@@ -97,7 +76,7 @@
                 </div>
 
                 <div class="login-link">
-                    Already have an account? <a href="#">Log in</a>
+                    Don't have an account? <a href="sign-up.html">Sign up</a>
                 </div>
             </form>
         </div>

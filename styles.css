@@ -53,6 +53,21 @@ body {
     letter-spacing: 0.5px;
 }
 
+#navbarLogo {
+    justify-content: center;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+#navbarLogo img {
+    margin-right: -30px; /* Add some space between logo and text */
+}
+
+#navbarLogo span {
+    margin-left: 0; /* Reset the negative margin that exists in regular navbar-logo */
+}
+
 .navbar-links {
     display: flex;
     gap: 40px; /* Increased from 30px for more spacing between links */
@@ -1887,5 +1902,45 @@ body {
         padding: 12px 12px 12px 40px;
         font-size: 15px;
     }
+}
+
+/* Login Form Specific Styles */
+.forgot-password-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.forgot-password {
+    font-family: var(--font-primary);
+    font-size: 14px;
+    color: #08c;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+    color: #0074a9;
+}
+
+.btn-login.btn-full {
+    background: #08c;
+    border: 1px solid #08c;
+    margin-top: 20px;
+}
+
+.btn-login.btn-full:hover {
+    background: #0074a9;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
+#navbarLogo > span{
+    color: rgb(29, 29, 29);
 }
 
