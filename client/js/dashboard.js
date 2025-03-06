@@ -89,8 +89,11 @@ function setupEventListeners() {
     const sidebar = document.querySelector('.dashboard-sidebar');
     
     if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
+        menuToggle.addEventListener('click', function(e) {
+            // Stop event propagation to prevent document click handler from firing
+            e.stopPropagation();
             sidebar.classList.toggle('active');
+            console.log('Menu toggle clicked, sidebar active:', sidebar.classList.contains('active'));
         });
     }
     
