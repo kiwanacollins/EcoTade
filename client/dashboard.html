@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./styles/styles.css">
     <link rel="stylesheet" href="./styles/dashboard.css">
+    <!-- Add Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="./js/api-client.js"></script>
     <script src="./js/auth.js"></script>
     <script src="./js/dashboard.js" defer></script>
@@ -90,6 +92,10 @@
                     <div class="welcome-banner">
                         <h3>Welcome back, <span class="user-fullname">User</span>!</h3>
                         <p>Here's an overview of your investments</p>
+                        <!-- Add prominent deposit button in welcome banner -->
+                        <button id="quick-deposit-btn" class="btn btn-highlight">
+                            <i class="fas fa-plus-circle"></i> Deposit Funds
+                        </button>
                     </div>
                     
                     <div class="stats-cards">
@@ -134,6 +140,27 @@
                         </div>
                     </div>
                     
+                    <!-- Add Trading Performance Chart -->
+                    <div class="dashboard-row">
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Trading Performance</h3>
+                                <div class="chart-container">
+                                    <canvas id="tradingPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Asset Allocation</h3>
+                                <div class="chart-container">
+                                    <canvas id="assetAllocationChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="dashboard-row">
                         <div class="dashboard-col">
                             <div class="dashboard-card">
@@ -153,6 +180,20 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Add Trading Activity Feed -->
+                    <div class="dashboard-row">
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Trading Activity Feed</h3>
+                                <div class="activity-feed">
+                                    <ul id="activity-timeline">
+                                        <li class="no-activity">No recent activity to display</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Other panels would go here -->
@@ -165,13 +206,85 @@
                 <div class="panel" id="investments-panel">
                     <h3>Investments</h3>
                     <p>View and manage your investment portfolio</p>
-                    <!-- Investments content would go here -->
+                    
+                    <div class="dashboard-card">
+                        <h3>Deposit Funds</h3>
+                        <p>Add funds to your account to start investing</p>
+                        <div class="deposit-form">
+                            <div class="form-group">
+                                <label for="deposit-amount">Amount</label>
+                                <input type="number" id="deposit-amount" min="10" step="1" placeholder="Enter amount">
+                            </div>
+                            <button id="deposit-btn" class="btn">Deposit Funds</button>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-row">
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Active Investments</h3>
+                                <div class="investments-list">
+                                    <p class="no-data-message">No active investments yet</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Investment Performance</h3>
+                                <div class="chart-container">
+                                    <canvas id="investmentPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="panel" id="transactions-panel">
                     <h3>Transactions</h3>
                     <p>View your transaction history</p>
-                    <!-- Transactions content would go here -->
+                    
+                    <div class="dashboard-card">
+                        <div class="transaction-filters">
+                            <div class="form-group">
+                                <label for="transaction-type">Type</label>
+                                <select id="transaction-type">
+                                    <option value="all">All</option>
+                                    <option value="deposit">Deposits</option>
+                                    <option value="withdrawal">Withdrawals</option>
+                                    <option value="investment">Investments</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="transaction-date">Date Range</label>
+                                <select id="transaction-date">
+                                    <option value="all">All Time</option>
+                                    <option value="month">Last Month</option>
+                                    <option value="quarter">Last Quarter</option>
+                                    <option value="year">Last Year</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="transactions-table">
+                            <table id="transactions-history">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" class="no-data-message">No transactions to display</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="panel" id="wallet-panel">
@@ -220,6 +333,64 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Add Deposit Modal -->
+    <div id="deposit-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Deposit Funds</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modal-deposit-amount">Amount to Deposit</label>
+                    <input type="number" id="modal-deposit-amount" min="10" step="1" placeholder="Enter amount (min $10)">
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Payment Method</label>
+                    <select id="payment-method">
+                        <option value="credit-card">Credit Card</option>
+                        <option value="bank-transfer">Bank Transfer</option>
+                        <option value="paypal">PayPal</option>
+                    </select>
+                </div>
+                <div class="payment-info">
+                    <div id="credit-card-info" class="payment-method-details">
+                        <div class="form-group">
+                            <label for="card-number">Card Number</label>
+                            <input type="text" id="card-number" placeholder="1234 5678 9012 3456">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiry-date">Expiry Date</label>
+                                <input type="text" id="expiry-date" placeholder="MM/YY">
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" placeholder="123">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="bank-transfer-info" class="payment-method-details hidden">
+                        <p>Use the following details for bank transfers:</p>
+                        <div class="bank-details">
+                            <p><strong>Bank Name:</strong> EcoTrade Financial</p>
+                            <p><strong>Account Number:</strong> 1234567890</p>
+                            <p><strong>Routing Number:</strong> 987654321</p>
+                            <p><strong>Reference:</strong> Include your EcoTrade ID</p>
+                        </div>
+                    </div>
+                    <div id="paypal-info" class="payment-method-details hidden">
+                        <p>You will be redirected to PayPal to complete your payment.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancel-deposit">Cancel</button>
+                <button class="btn" id="confirm-deposit">Confirm Deposit</button>
+            </div>
+        </div>
     </div>
 </body>
 </html>
