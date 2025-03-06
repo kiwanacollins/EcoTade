@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EcoTrade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./styles/styles.css">
+    <link rel="stylesheet" href="./styles/dashboard.css">
+    <script src="./js/api-client.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/dashboard.js" defer></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-logo">
+                <img src="./images/logo.png" alt="EcoTrade Logo">
+                <span>EcoTrade</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-panel="overview">
+                    <i class="fas fa-home"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="traders">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Traders</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="investments">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Investments</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="transactions">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transactions</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="wallet">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </a>
+                <a href="#" class="nav-item" data-panel="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2>Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <div class="notification-icon">
+                        <i class="far fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                    <div class="user-profile">
+                        <img src="https://randomuser.me/api/portraits/men/43.jpg" alt="User Avatar" class="avatar">
+                        <div class="user-info">
+                            <span class="user-name">Loading...</span>
+                            <span class="user-role">Member</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Panels -->
+            <div class="content-panels">
+                <!-- Overview Panel (Default) -->
+                <div class="panel active" id="overview-panel">
+                    <div class="welcome-banner">
+                        <h3>Welcome back, <span class="user-fullname">User</span>!</h3>
+                        <p>Here's an overview of your investments</p>
+                    </div>
+                    
+                    <div class="stats-cards">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Balance</h4>
+                                <p class="balance-amount">$0.00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Total Profit</h4>
+                                <p class="profit-amount">$0.00</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Active Trades</h4>
+                                <p class="active-trades">0</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Active Traders</h4>
+                                <p>0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-row">
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Recent Transactions</h3>
+                                <div class="transactions-list">
+                                    <p class="no-data-message">No transactions yet</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dashboard-col">
+                            <div class="dashboard-card">
+                                <h3>Top Traders</h3>
+                                <div class="top-traders">
+                                    <p class="no-data-message">No traders selected yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Other panels would go here -->
+                <div class="panel" id="traders-panel">
+                    <h3>Traders</h3>
+                    <p>Select traders to manage your investments</p>
+                    <!-- Traders content would go here -->
+                </div>
+                
+                <div class="panel" id="investments-panel">
+                    <h3>Investments</h3>
+                    <p>View and manage your investment portfolio</p>
+                    <!-- Investments content would go here -->
+                </div>
+                
+                <div class="panel" id="transactions-panel">
+                    <h3>Transactions</h3>
+                    <p>View your transaction history</p>
+                    <!-- Transactions content would go here -->
+                </div>
+                
+                <div class="panel" id="wallet-panel">
+                    <h3>Wallet</h3>
+                    <p>Manage your funds and payment methods</p>
+                    <!-- Wallet content would go here -->
+                </div>
+                
+                <div class="panel" id="settings-panel">
+                    <h3>Settings</h3>
+                    <p>Update your account settings</p>
+                    
+                    <div class="settings-card">
+                        <h4>Account Information</h4>
+                        <form id="account-form">
+                            <div class="form-group">
+                                <label for="settings-fullname">Full Name</label>
+                                <input type="text" id="settings-fullname" name="fullname">
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-email">Email</label>
+                                <input type="email" id="settings-email" name="email" disabled>
+                            </div>
+                            <button type="submit" class="btn">Save Changes</button>
+                        </form>
+                    </div>
+                    
+                    <div class="settings-card">
+                        <h4>Change Password</h4>
+                        <form id="password-form">
+                            <div class="form-group">
+                                <label for="current-password">Current Password</label>
+                                <input type="password" id="current-password" name="currentPassword">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-password">New Password</label>
+                                <input type="password" id="new-password" name="newPassword">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-new-password">Confirm New Password</label>
+                                <input type="password" id="confirm-new-password" name="confirmNewPassword">
+                            </div>
+                            <button type="submit" class="btn">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
