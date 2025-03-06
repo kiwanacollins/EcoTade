@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - EcoTrade</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="stylesheet" href="../styles/dashboard.css">
+    <script src="../js/supabase-client.js" defer></script>
+    <script src="../js/auth.js" defer></script>
+    <script src="../js/dashboard.js" defer></script>
+</head>
+
+<body>
+    <header class="dashboard-header">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <img src="../images/logo.png" alt="EcoTrade Logo">
+                <span>EcoTrade</span>
+            </div>
+            <nav class="dashboard-nav">
+                <ul>
+                    <li><a href="#" class="active">Dashboard</a></li>
+                    <li><a href="#">Portfolio</a></li>
+                    <li><a href="#">Markets</a></li>
+                    <li><a href="#">Transactions</a></li>
+                    <li><a href="#">Settings</a></li>
+                </ul>
+            </nav>
+            <div class="user-menu">
+                <button id="sign-out-btn" class="btn btn-outline">Sign Out</button>
+                <div class="user-avatar">
+                    <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="User Avatar">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <h1>Welcome to the dashboard</h1>
+            <p>Your personalized space for managing your trades and account settings.</p>
+
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Portfolio Value</h3>
+                        <p class="stat-value">$10,254.32</p>
+                        <span class="stat-change positive">+2.5% <i class="fas fa-arrow-up"></i></span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total Trades</h3>
+                        <p class="stat-value">24</p>
+                        <span class="stat-period">This month</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Performance</h3>
+                        <p class="stat-value">83%</p>
+                        <span class="stat-change positive">+5% <i class="fas fa-arrow-up"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-widgets">
+                <div class="widget recent-activity">
+                    <h2>Recent Activity</h2>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-icon buy">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Bought AAPL</h4>
+                                <p>10 shares at $178.42</p>
+                                <span class="activity-time">Today, 10:45 AM</span>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon sell">
+                                <i class="fas fa-arrow-left"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Sold MSFT</h4>
+                                <p>5 shares at $334.21</p>
+                                <span class="activity-time">Yesterday, 2:30 PM</span>
+                            </div>
+                        </li>
+                        <li class="activity-item">
+                            <div class="activity-icon deposit">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h4>Deposit</h4>
+                                <p>$1,000 added to account</p>
+                                <span class="activity-time">May 10, 2023</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="#" class="view-all">View all activities</a>
+                </div>
+
+                <div class="widget market-overview">
+                    <h2>Market Overview</h2>
+                    <div class="market-items">
+                        <div class="market-item">
+                            <div class="market-info">
+                                <h4>S&P 500</h4>
+                                <p>4,185.34</p>
+                            </div>
+                            <div class="market-change positive">
+                                +1.2%
+                            </div>
+                        </div>
+                        <div class="market-item">
+                            <div class="market-info">
+                                <h4>NASDAQ</h4>
+                                <p>13,752.21</p>
+                            </div>
+                            <div class="market-change positive">
+                                +0.9%
+                            </div>
+                        </div>
+                        <div class="market-item">
+                            <div class="market-info">
+                                <h4>DOW JONES</h4>
+                                <p>34,567.12</p>
+                            </div>
+                            <div class="market-change negative">
+                                -0.3%
+                            </div>
+                        </div>
+                        <div class="market-item">
+                            <div class="market-info">
+                                <h4>BITCOIN</h4>
+                                <p>$58,234.67</p>
+                            </div>
+                            <div class="market-change positive">
+                                +3.5%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="dashboard-footer">
+        <div class="footer-container">
+            <p>&copy; 2023 EcoTrade. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Contact Support</a>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

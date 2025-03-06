@@ -8,8 +8,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
-    <script src="form-validation.js" defer></script>
+    <link rel="stylesheet" href="./styles/styles.css">
+    <script src="./js/supabase-client.js" defer></script>
+    <script src="./js/auth.js" defer></script>
+    <script src="./js/form-validation.js" defer></script>
 </head>
 <body>
   
@@ -81,15 +83,16 @@
                 </div>
 
                 <button type="submit" class="btn btn-registration btn-full">Create Account</button>
+                <div class="auth-error" id="signup-error"></div>
 
                 <div class="social-signup">
                     <span>Or sign up with</span>
                     <div class="social-buttons">
-                        <button type="button" class="btn-social btn-google">
+                        <button type="button" class="btn-social btn-google" id="signup-google">
                             <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google Icon" style="width: 20px; height: 20px;">
                             <span>Google</span>
                         </button>
-                        <button type="button" class="btn-social btn-facebook">
+                        <button type="button" class="btn-social btn-facebook" id="signup-facebook">
                             <i class="fab fa-facebook-f"></i>
                             <span>Facebook</span>
                         </button>
@@ -103,5 +106,210 @@
         </div>
     </section>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Password toggle functionality
+            const passwordToggle = document.getElementById('password-toggle');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            
+            if (passwordToggle && passwordInput) {
+                passwordToggle.addEventListener('click', () => {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    passwordToggle.classList.toggle('fa-eye');
+                    passwordToggle.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Add password toggle for confirm password
+            if (confirmPasswordInput) {
+                const confirmToggle = document.createElement('i');
+                confirmToggle.className = 'fas fa-eye password-toggle';
+                confirmToggle.id = 'confirm-password-toggle';
+                confirmPasswordInput.parentNode.appendChild(confirmToggle);
+                
+                confirmToggle.addEventListener('click', () => {
+                    const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmPasswordInput.setAttribute('type', type);
+                    confirmToggle.classList.toggle('fa-eye');
+                    confirmToggle.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Form validation and submission for registration
+            const registrationForm = document.getElementById('registration-form');
+            const signupError = document.getElementById('signup-error');
+            
+            if (registrationForm) {
+                registrationForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    // Basic validation
+                    const fullName = document.getElementById('fullname').value;
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+                    const termsCheck = document.getElementById('terms').checked;
+                    
+                    let hasError = false;
+                    
+                    // Validate full name
+                    if (!fullName || fullName.length < 2) {
+                        document.getElementById('fullname-error').textContent = 'Please enter a valid name.';
+                        hasError = true;
+                    } else {
+                        document.getElementById('fullname-error').textContent = '';
+                    }
+                    
+                    // Validate email
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!email || !emailRegex.test(email)) {
+                        document.getElementById('email-error').textContent = 'Please enter a valid email address.';
+                        hasError = true;
+                    } else {
+                        document.getElementById('email-error').textContent = '';
+                    }
+                    
+                    // Validate password
+                    if (!password || password.length < 8) {
+                        document.getElementById('password-error').textContent = 'Password must be at least 8 characters long.';
+                        hasError = true;
+                    } else {
+                        document.getElementById('password-error').textContent = '';
+                    }
+                    
+                    // Confirm passwords match
+                    if (password !== confirmPassword) {
+                        document.getElementById('confirm-password-error').textContent = 'Passwords do not match.';
+                        hasError = true;
+                    } else {
+                        document.getElementById('confirm-password-error').textContent = '';
+                    }
+                    
+                    // Check terms
+                    if (!termsCheck) {
+                        document.getElementById('terms-error').textContent = 'You must agree to the Terms & Conditions.';
+                        hasError = true;
+                    } else {
+                        document.getElementById('terms-error').textContent = '';
+                    }
+                    
+                    if (hasError) {
+                        return; // Stop if there are validation errors
+                    }
+                    
+                    // Submit to Supabase
+                    try {
+                        const { error } = await signUp(email, password, fullName);
+                        
+                        if (error) {
+                            signupError.textContent = error.message || 'Failed to create account. Please try again.';
+                            signupError.style.display = 'block';
+                        }
+                    } catch (err) {
+                        console.error('Registration error:', err);
+                        signupError.textContent = 'An unexpected error occurred. Please try again.';
+                        signupError.style.display = 'block';
+                    }
+                });
+            }
+
+            // Social signup buttons
+            const googleSignupBtn = document.getElementById('signup-google');
+            const facebookSignupBtn = document.getElementById('signup-facebook');
+            
+            if (googleSignupBtn) {
+                googleSignupBtn.addEventListener('click', async () => {
+                    try {
+                        await signInWithGoogle();
+                    } catch (err) {
+                        console.error('Google signup error:', err);
+                        signupError.textContent = 'Failed to sign up with Google. Please try again.';
+                        signupError.style.display = 'block';
+                    }
+                });
+            }
+            
+            if (facebookSignupBtn) {
+                facebookSignupBtn.addEventListener('click', async () => {
+                    try {
+                        await signInWithFacebook();
+                    } catch (err) {
+                        console.error('Facebook signup error:', err);
+                        signupError.textContent = 'Failed to sign up with Facebook. Please try again.';
+                        signupError.style.display = 'block';
+                    }
+                });
+            }
+
+            // Password strength indicator
+            const strengthIndicator = document.getElementById('strength-indicator');
+            const strengthText = document.getElementById('strength-text');
+            
+            if (passwordInput && strengthIndicator && strengthText) {
+                passwordInput.addEventListener('input', () => {
+                    const password = passwordInput.value;
+                    let strength = 0;
+                    
+                    if (password.length >= 8) {
+                        strength += 1;
+                    }
+                    
+                    if (password.match(/[A-Z]/)) {
+                        strength += 1;
+                    }
+                    
+                    if (password.match(/[0-9]/)) {
+                        strength += 1;
+                    }
+                    
+                    if (password.match(/[^A-Za-z0-9]/)) {
+                        strength += 1;
+                    }
+                    
+                    const width = (strength / 4) * 100;
+                    let color = '';
+                    let text = '';
+                    
+                    switch (strength) {
+                        case 0:
+                            color = '#ff4d4d';
+                            text = 'Very Weak';
+                            break;
+                        case 1:
+                            color = '#ff4d4d';
+                            text = 'Weak';
+                            break;
+                        case 2:
+                            color = '#ffc14d';
+                            text = 'Fair';
+                            break;
+                        case 3:
+                            color = '#2eb82e';
+                            text = 'Good';
+                            break;
+                        case 4:
+                            color = '#1a8cff';
+                            text = 'Strong';
+                            break;
+                    }
+                    
+                    strengthIndicator.style.width = width + '%';
+                    strengthIndicator.style.backgroundColor = color;
+                    strengthText.textContent = text || 'Password strength';
+                });
+            }
+
+            // Check if user is already logged in
+            setTimeout(async () => {
+                try {
+                    await redirectBasedOnAuth(false);
+                } catch (err) {
+                    console.error('Auth check error:', err);
+                }
+            }, 1000); // Give time for Supabase client to load
+        });
+    </script>
 </body>
 </html>

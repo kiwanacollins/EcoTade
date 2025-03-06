@@ -245,3 +245,209 @@ document.addEventListener('DOMContentLoaded', function() {
         element.textContent = '';
     }
 });
+
+// Form validation functions for EcoTrade
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize form validation
+    initializeFormValidation();
+});
+
+// Initialize form validation for all forms
+function initializeFormValidation() {
+    // Add validation to login form
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        setupLoginFormValidation(loginForm);
+    }
+
+    // Add validation to signup form
+    const signupForm = document.getElementById('signup-form');
+    if (signupForm) {
+        setupSignupFormValidation(signupForm);
+    }
+
+    // Add validation to other forms as needed
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        setupContactFormValidation(contactForm);
+    }
+
+    // Setup password reset form
+    const resetForm = document.getElementById('reset-password-form');
+    if (resetForm) {
+        setupPasswordResetValidation(resetForm);
+    }
+}
+
+// Add error message to form input
+function showError(input, message) {
+    // Safety check - ensure input is not null
+    if (!input) {
+        console.error('Cannot show error: Input element is null');
+        return;
+    }
+
+    // Find the form-group container
+    const formGroup = input.parentNode;
+    if (!formGroup) {
+        console.error('Cannot show error: Parent node of input is null');
+        return;
+    }
+
+    // Remove any existing error message first
+    removeError(input);
+
+    // Create error message element
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    
+    // Add error class to form group
+    formGroup.classList.add('has-error');
+    
+    // Add error message after the input
+    formGroup.appendChild(errorDiv);
+}
+
+// Remove error message
+function removeError(input) {
+    // Safety check - ensure input is not null
+    if (!input) {
+        console.error('Cannot remove error: Input element is null');
+        return;
+    }
+
+    // Find the form-group container
+    const formGroup = input.parentNode;
+    if (!formGroup) {
+        console.error('Cannot remove error: Parent node of input is null');
+        return;
+    }
+
+    // Remove error class
+    formGroup.classList.remove('has-error');
+    
+    // Find and remove any existing error message
+    const errorMessage = formGroup.querySelector('.error-message');
+    if (errorMessage) {
+        formGroup.removeChild(errorMessage);
+    }
+}
+
+// Validate email format
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(email).toLowerCase());
+}
+
+// Validate password strength
+function validatePassword(password) {
+    // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
+    const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return re.test(password);
+}
+
+// Setup login form validation
+function setupLoginFormValidation(form) {
+    if (!form) return;
+    
+    const emailInput = form.querySelector('input[name="email"]');
+    const passwordInput = form.querySelector('input[name="password"]');
+    
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        // Reset previous errors
+        if (emailInput) removeError(emailInput);
+        if (passwordInput) removeError(passwordInput);
+        
+        // Validate email
+        if (emailInput && !emailInput.value.trim()) {
+            showError(emailInput, 'Email is required');
+            isValid = false;
+        } else if (emailInput && !validateEmail(emailInput.value.trim())) {
+            showError(emailInput, 'Please enter a valid email');
+            isValid = false;
+        }
+        
+        // Validate password
+        if (passwordInput && !passwordInput.value.trim()) {
+            showError(passwordInput, 'Password is required');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+}
+
+// Setup signup form validation
+function setupSignupFormValidation(form) {
+    if (!form) return;
+    
+    const nameInput = form.querySelector('input[name="fullName"]');
+    const emailInput = form.querySelector('input[name="email"]');
+    const passwordInput = form.querySelector('input[name="password"]');
+    const confirmPasswordInput = form.querySelector('input[name="confirmPassword"]');
+    
+    form.addEventListener('submit', function(event) {
+        let isValid = true;
+        
+        // Reset previous errors
+        if (nameInput) removeError(nameInput);
+        if (emailInput) removeError(emailInput);
+        if (passwordInput) removeError(passwordInput);
+        if (confirmPasswordInput) removeError(confirmPasswordInput);
+        
+        // Validate name
+        if (nameInput && !nameInput.value.trim()) {
+            showError(nameInput, 'Full name is required');
+            isValid = false;
+        }
+        
+        // Validate email
+        if (emailInput && !emailInput.value.trim()) {
+            showError(emailInput, 'Email is required');
+            isValid = false;
+        } else if (emailInput && !validateEmail(emailInput.value.trim())) {
+            showError(emailInput, 'Please enter a valid email');
+            isValid = false;
+        }
+        
+        // Validate password
+        if (passwordInput && !passwordInput.value.trim()) {
+            showError(passwordInput, 'Password is required');
+            isValid = false;
+        } else if (passwordInput && !validatePassword(passwordInput.value)) {
+            showError(passwordInput, 'Password must be at least 8 characters with uppercase, lowercase, and numbers');
+            isValid = false;
+        }
+        
+        // Validate confirm password
+        if (confirmPasswordInput && !confirmPasswordInput.value.trim()) {
+            showError(confirmPasswordInput, 'Please confirm your password');
+            isValid = false;
+        } else if (confirmPasswordInput && passwordInput && confirmPasswordInput.value !== passwordInput.value) {
+            showError(confirmPasswordInput, 'Passwords do not match');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+}
+
+// Setup contact form validation
+function setupContactFormValidation(form) {
+    // Similar pattern to other form validations
+    // Implementation depends on form fields
+}
+
+// Setup password reset validation
+function setupPasswordResetValidation(form) {
+    // Similar pattern to other form validations
+    // Implementation depends on form fields
+}
