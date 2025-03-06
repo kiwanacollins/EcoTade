@@ -9,8 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./styles/styles.css">
-    <script src="./js/supabase-client.js" defer></script>
-    <script src="./js/auth.js" defer></script>
     <script src="./js/form-validation.js" defer></script>
 </head>
 <body>
@@ -85,114 +83,5 @@
         </div>
     </section>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Password toggle functionality
-            const passwordToggle = document.getElementById('password-toggle');
-            const passwordInput = document.getElementById('password');
-            
-            if (passwordToggle && passwordInput) {
-                passwordToggle.addEventListener('click', () => {
-                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passwordInput.setAttribute('type', type);
-                    passwordToggle.classList.toggle('fa-eye');
-                    passwordToggle.classList.toggle('fa-eye-slash');
-                });
-            }
-
-            // Form submission for login
-            const loginForm = document.getElementById('login-form');
-            const loginError = document.getElementById('login-error');
-            
-            if (loginForm) {
-                loginForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    
-                    try {
-                        const { error } = await signIn(email, password);
-                        
-                        if (error) {
-                            loginError.textContent = error.message || 'Failed to log in. Please check your credentials.';
-                            loginError.style.display = 'block';
-                        }
-                    } catch (err) {
-                        console.error('Login error:', err);
-                        loginError.textContent = 'An unexpected error occurred. Please try again.';
-                        loginError.style.display = 'block';
-                    }
-                });
-            }
-
-            // Social login buttons
-            const googleLoginBtn = document.getElementById('login-google');
-            const facebookLoginBtn = document.getElementById('login-facebook');
-            const forgotPasswordLink = document.getElementById('forgot-password');
-            
-            if (googleLoginBtn) {
-                googleLoginBtn.addEventListener('click', async () => {
-                    try {
-                        await signInWithGoogle();
-                    } catch (err) {
-                        console.error('Google login error:', err);
-                        loginError.textContent = 'Failed to log in with Google. Please try again.';
-                        loginError.style.display = 'block';
-                    }
-                });
-            }
-            
-            if (facebookLoginBtn) {
-                facebookLoginBtn.addEventListener('click', async () => {
-                    try {
-                        await signInWithFacebook();
-                    } catch (err) {
-                        console.error('Facebook login error:', err);
-                        loginError.textContent = 'Failed to log in with Facebook. Please try again.';
-                        loginError.style.display = 'block';
-                    }
-                });
-            }
-            
-            if (forgotPasswordLink) {
-                forgotPasswordLink.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    
-                    const email = document.getElementById('email').value;
-                    
-                    if (!email) {
-                        loginError.textContent = 'Please enter your email address to reset your password.';
-                        loginError.style.display = 'block';
-                        return;
-                    }
-                    
-                    try {
-                        const { error } = await resetPassword(email);
-                        
-                        if (error) {
-                            loginError.textContent = error.message || 'Failed to send password reset email.';
-                        } else {
-                            loginError.textContent = 'Password reset email sent. Please check your inbox.';
-                            loginError.style.display = 'block';
-                        }
-                    } catch (err) {
-                        console.error('Password reset error:', err);
-                        loginError.textContent = 'An unexpected error occurred. Please try again.';
-                        loginError.style.display = 'block';
-                    }
-                });
-            }
-
-            // Check if user is already logged in
-            setTimeout(async () => {
-                try {
-                    await redirectBasedOnAuth(false);
-                } catch (err) {
-                    console.error('Auth check error:', err);
-                }
-            }, 1000); // Give time for Supabase client to load
-        });
-    </script>
 </body>
 </html>
