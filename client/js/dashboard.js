@@ -200,6 +200,30 @@ function setupEventListeners() {
             updatePaymentMethod(this.value);
         });
     }
+    
+    // Select Trader button in overview panel
+    const selectTraderBtn = document.getElementById('select-trader-btn');
+    if (selectTraderBtn) {
+        selectTraderBtn.addEventListener('click', function() {
+            switchPanel('traders');
+            
+            // Update navigation item active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-panel') === 'traders') {
+                    item.classList.add('active');
+                }
+            });
+        });
+    }
+    
+    // Add event listeners for trader selection buttons
+    document.querySelectorAll('.btn-select-trader').forEach(button => {
+        button.addEventListener('click', function() {
+            const traderId = this.getAttribute('data-trader-id');
+            selectTrader(traderId);
+        });
+    });
 }
 
 // Open the deposit modal
@@ -768,6 +792,127 @@ function switchPanel(panelId) {
         const headerTitle = document.querySelector('.header-left h2');
         if (headerTitle) {
             headerTitle.textContent = panelId.charAt(0).toUpperCase() + panelId.slice(1);
+        }
+    }
+}
+
+// Handle trader selection
+function selectTrader(traderId) {
+    console.log(`Selected trader with ID: ${traderId}`);
+    
+    // Find the trader card based on the trader ID
+    const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
+    const traderName = traderCard.querySelector('h4').textContent;
+    
+    // Show confirmation modal or notification
+    showNotification('success', `You have selected ${traderName} as your trader. They will now manage your investments.`);
+    
+    // You would typically make an API call here to associate this trader with the user's account
+    
+    // After a short delay, navigate back to overview
+    setTimeout(() => {
+        switchPanel('overview');
+        
+        // Update navigation item active state
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-panel') === 'overview') {
+                item.classList.add('active');
+            }
+        });
+        
+        // Update the top traders section in the overview
+        updateTopTraders(traderId, traderName);
+    }, 2000);
+}
+
+// Update the top traders section in overview
+function updateTopTraders(traderId, traderName) {
+    const topTradersContainer = document.querySelector('.top-traders');
+    if (topTradersContainer) {
+        // Clear the "no traders selected" message if present
+        topTradersContainer.innerHTML = '';
+        
+        // Create the trader element
+        const traderElement = document.createElement('div');
+        traderElement.className = 'top-trader-item';
+        
+        // Set different styles based on trader ID
+        let performanceColor = '#4CD964';
+        let performance = '+0%';
+        
+        // Extended performance mapping for all trader IDs (1-20)
+        if (traderId === '1') {
+            performance = '+24.6%';
+        } else if (traderId === '2') {
+            performance = '+18.3%';
+        } else if (traderId === '3') {
+            performance = '+21.7%';
+        } else if (traderId === '4') {
+            performance = '+19.2%';
+        } else if (traderId === '5') {
+            performance = '+16.8%';
+        } else if (traderId === '6') {
+            performance = '+22.4%';
+        } else if (traderId === '7') {
+            performance = '+17.9%';
+        } else if (traderId === '8') {
+            performance = '+14.5%';
+        } else if (traderId === '9') {
+            performance = '+23.8%';
+        } else if (traderId === '10') {
+            performance = '+15.2%';
+        } else if (traderId === '11') {
+            performance = '+25.7%';
+        } else if (traderId === '12') {
+            performance = '+16.9%';
+        } else if (traderId === '13') {
+            performance = '+13.1%';
+        } else if (traderId === '14') {
+            performance = '+14.8%';
+        } else if (traderId === '15') {
+            performance = '+21.2%';
+        } else if (traderId === '16') {
+            performance = '+18.5%';
+        } else if (traderId === '17') {
+            performance = '+20.4%';
+        } else if (traderId === '18') {
+            performance = '+27.1%';
+        } else if (traderId === '19') {
+            performance = '+19.8%';
+        } else if (traderId === '20') {
+            performance = '+22.5%';
+        }
+        
+        traderElement.innerHTML = `
+            <div class="trader-item-info">
+                <div class="trader-item-name">${traderName}</div>
+                <div class="trader-item-performance" style="color: ${performanceColor}">${performance}</div>
+            </div>
+            <div class="trader-item-actions">
+                <button class="btn-small btn-success">Active</button>
+            </div>
+        `;
+        
+        topTradersContainer.appendChild(traderElement);
+        
+        // Add to activity timeline
+        const timeline = document.getElementById('activity-timeline');
+        if (timeline) {
+            const noActivity = timeline.querySelector('.no-activity');
+            if (noActivity) {
+                timeline.innerHTML = '';
+            }
+            
+            const li = document.createElement('li');
+            const now = new Date();
+            li.innerHTML = `
+                <span class="activity-time">${formatDateTime(now)}</span>
+                <div class="activity-content">
+                    <p>Selected ${traderName} as your trader</p>
+                </div>
+            `;
+            timeline.prepend(li);
         }
     }
 }

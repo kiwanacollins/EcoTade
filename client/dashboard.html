@@ -91,12 +91,18 @@
                 <!-- Overview Panel (Default) -->
                 <div class="panel active" id="overview-panel">
                     <div class="welcome-banner">
-                        <h3>Welcome back, <span class="user-fullname">User</span>!</h3>
-                        <p>Here's an overview of your investments</p>
-                        <!-- Add prominent deposit button in welcome banner -->
-                        <button id="quick-deposit-btn" class="btn btn-highlight">
-                            <i class="fas fa-plus-circle"></i> Deposit Funds
-                        </button>
+                        <div class="banner-content">
+                            <h3>Welcome back, <span class="user-fullname">User</span>!</h3>
+                            <p>Here's an overview of your investments</p>
+                        </div>
+                        <div class="banner-actions">
+                            <button id="select-trader-btn" class="btn btn-trader">
+                                <i class="fas fa-user-tie"></i> Select Trader
+                            </button>
+                            <button id="quick-deposit-btn" class="btn btn-highlight">
+                                <i class="fas fa-plus-circle"></i> Deposit Funds
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="stats-cards">
@@ -199,9 +205,493 @@
                 
                 <!-- Other panels would go here -->
                 <div class="panel" id="traders-panel">
-                    <h3>Traders</h3>
-                    <p>Select traders to manage your investments</p>
-                    <!-- Traders content would go here -->
+                    <div class="panel-header">
+                        <h3>Select a Trader</h3>
+                        <p>Choose professional traders to manage your investments</p>
+                    </div>
+                    
+                    <div class="traders-container">
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="John Smith">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>John Smith</h4>
+                                <span class="trader-spec">Crypto Specialist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+24.6%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+142%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="1">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Emma Johnson">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Emma Johnson</h4>
+                                <span class="trader-spec">Forex Expert</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+18.3%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+95%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="2">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="Michael Chen">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Michael Chen</h4>
+                                <span class="trader-spec">Stock Market Analyst</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+21.7%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+118%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="3">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional 17 professional traders -->
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/28.jpg" alt="Sarah Johnson">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Sarah Johnson</h4>
+                                <span class="trader-spec">Algorithmic Trading Expert</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+19.2%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+127%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="4">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/42.jpg" alt="David Rodriguez">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>David Rodriguez</h4>
+                                <span class="trader-spec">Commodities Specialist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+16.8%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+105%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="5">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/33.jpg" alt="Jessica Kim">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Jessica Kim</h4>
+                                <span class="trader-spec">Options Trading Strategist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+22.4%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+136%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="6">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/55.jpg" alt="Robert Taylor">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Robert Taylor</h4>
+                                <span class="trader-spec">Technical Analyst</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+17.9%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+92%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="7">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/60.jpg" alt="Linda Martinez">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Linda Martinez</h4>
+                                <span class="trader-spec">ETF Portfolio Manager</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+14.5%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+88%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="8">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/22.jpg" alt="James Wilson">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>James Wilson</h4>
+                                <span class="trader-spec">Quantitative Strategist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+23.8%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+153%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="9">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/18.jpg" alt="Jennifer Lee">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Jennifer Lee</h4>
+                                <span class="trader-spec">Value Investing Expert</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+15.2%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+87%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="10">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/36.jpg" alt="Thomas Brown">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Thomas Brown</h4>
+                                <span class="trader-spec">Day Trading Specialist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+25.7%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+173%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="11">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/75.jpg" alt="Sophia Williams">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Sophia Williams</h4>
+                                <span class="trader-spec">Global Markets Analyst</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+16.9%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+95%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="12">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/47.jpg" alt="Daniel Garcia">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Daniel Garcia</h4>
+                                <span class="trader-spec">Fixed Income Specialist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+13.1%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+71%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="13">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/42.jpg" alt="Emily Thompson">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Emily Thompson</h4>
+                                <span class="trader-spec">Dividend Growth Strategist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+14.8%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+90%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="14">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/63.jpg" alt="Alexander White">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Alexander White</h4>
+                                <span class="trader-spec">Futures Trader</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+21.2%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+132%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="15">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/52.jpg" alt="Olivia Harris">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Olivia Harris</h4>
+                                <span class="trader-spec">Swing Trading Expert</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+18.5%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+110%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="16">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/83.jpg" alt="William Martin">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>William Martin</h4>
+                                <span class="trader-spec">Growth Investing Strategist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+20.4%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+129%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="17">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/24.jpg" alt="Natalie Lewis">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Natalie Lewis</h4>
+                                <span class="trader-spec">DeFi & Web3 Specialist</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+27.1%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+156%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="18">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/men/15.jpg" alt="Christopher Clark">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Christopher Clark</h4>
+                                <span class="trader-spec">Energy Markets Expert</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+19.8%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+125%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="19">Select Trader</button>
+                            </div>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-avatar">
+                                <img src="https://randomuser.me/api/portraits/women/37.jpg" alt="Rachel Green">
+                                <span class="trader-status online"></span>
+                            </div>
+                            <div class="trader-info">
+                                <h4>Rachel Green</h4>
+                                <span class="trader-spec">Biotech Sector Analyst</span>
+                                <div class="trader-stats">
+                                    <div class="stat">
+                                        <span class="stat-value">+22.5%</span>
+                                        <span class="stat-label">This Month</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-value">+138%</span>
+                                        <span class="stat-label">All Time</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="trader-action">
+                                <button class="btn btn-select-trader" data-trader-id="20">Select Trader</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="panel" id="investments-panel">
