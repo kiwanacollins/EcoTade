@@ -1560,7 +1560,6 @@ body {
 /* Registration Form Styles */
 .registration-section {
     padding: 100px 20px 40px; /* Reduced top padding */
-    min-height: 100vh; /* Use viewport height */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1574,8 +1573,6 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     padding: 25px; /* Reduced padding */
     margin: 0 auto;
-    overflow-y: auto; /* Add scroll if needed */
-    max-height: 85vh; /* Limit height to viewport */
 }
 
 .registration-header {
