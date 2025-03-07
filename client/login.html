@@ -9,8 +9,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./styles/styles.css">
+    <!-- Preconnect to Google accounts to improve loading performance -->
+    <link rel="preconnect" href="https://accounts.google.com">
+    
+    <!-- Updated Google API client library with better error handling -->
+    <script src="https://accounts.google.com/gsi/client" 
+            async 
+            defer 
+            onload="console.log('Google API script loaded successfully');" 
+            onerror="handleGoogleApiFailure()"
+            data-auto_select="false"
+            data-use_fedcm_for_prompt="true"></script>
+    
+    <!-- Add script to handle Google API failures -->
+    <script>
+        function handleGoogleApiFailure() {
+            console.error('Google API script failed to load');
+            // Add a custom event to notify our application
+            document.dispatchEvent(new Event('googleApiFailedToLoad'));
+        }
+    </script>
+    
     <script src="./js/api-client.js"></script>
     <script src="./js/auth.js"></script>
+    <script src="./js/fallback.js"></script>
     <script src="./js/form-validation.js" defer></script>
 </head>
 <body>
@@ -71,10 +93,10 @@
                                 style="width: 20px; height: 20px;">
                             <span>Google</span>
                         </button>
-                        <button type="button" class="btn-social btn-facebook" id="login-facebook">
+                        <!-- <button type="button" class="btn-social btn-facebook" id="login-facebook">
                             <img src="./images/facebook.png" alt="Facebook Icon" style="width: 20px; height: 20px;">
                             <span>Facebook</span>
-                        </button>
+                        </button> -->
                     </div>
                 </div>
 

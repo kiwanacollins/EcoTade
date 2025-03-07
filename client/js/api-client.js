@@ -39,6 +39,32 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
   }
 }
 
+// Check if server is online
+async function checkServerStatus() {
+  try {
+    // Use the server's root endpoint instead of /api
+    const response = await fetch('http://localhost:5000/', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+      cache: 'no-cache',
+    });
+    
+    if (response.ok) {
+      console.log('Server is online');
+      return true;
+    } else {
+      console.error('Server returned error:', response.status);
+      return false;
+    }
+  } catch (error) {
+    console.error('Server connection error:', error);
+    return false;
+  }
+}
+
 // Auth functions
 const auth = {
   // Register a new user
@@ -49,6 +75,33 @@ const auth = {
   // Login user
   login: async (credentials) => {
     return await apiRequest('/auth/login', 'POST', credentials);
+  },
+  
+  // Google Authentication
+  googleAuth: async (idToken) => {
+    try {
+      console.log('Making Google auth API request');
+      
+      // Check if server is online first
+      const serverOnline = await checkServerStatus();
+      if (!serverOnline) {
+        throw new Error('Server is not running or not accessible. Please start the server before continuing.');
+      }
+      
+      console.log('Token length:', idToken ? idToken.length : 0);
+      console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
+      
+      const result = await apiRequest('/auth/google', 'POST', { idToken });
+      console.log('Server response for Google auth:', result);
+      return result;
+    } catch (error) {
+      console.error('Google auth API request failed:', error);
+      // Try to provide more detailed error info
+      if (error.response) {
+        console.error('Error response:', error.response);
+      }
+      throw error;
+    }
   },
   
   // Get current user

@@ -13,10 +13,25 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: ['http://localhost:5501', 'http://127.0.0.1:5501'], // Allow both origins
-  credentials: true
-}));
+// CORS options with more permissive settings
+const corsOptions = {
+  // Add all possible development and production origins
+  origin: function(origin, callback) {
+    // Allow any origin in development for easier testing
+    // In production, this should be restricted
+    callback(null, true);
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+};
+
+app.use(cors(corsOptions));
+
+// Enable preflight for all routes
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -29,6 +44,11 @@ app.use('/api/users', require('./routes/user.routes'));
 // Default route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to EcoTrade API' });
+});
+
+// Add a health check route for /api
+app.get('/api', (req, res) => {
+  res.json({ message: 'API is running' });
 });
 
 // Error handler

@@ -9,28 +9,57 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./styles/styles.css">
+    <!-- Preconnect to Google accounts to improve loading performance -->
+    <link rel="preconnect" href="https://accounts.google.com">
+    
+    <!-- Updated Google API client library with better error handling -->
+    <script src="https://accounts.google.com/gsi/client" 
+            async 
+            defer 
+            onload="console.log('Google API script loaded successfully');" 
+            onerror="handleGoogleApiFailure()"
+            data-auto_select="false"
+            data-use_fedcm_for_prompt="true"></script>
+    
+    <!-- Add script to handle Google API failures -->
+    <script>
+        function handleGoogleApiFailure() {
+            console.error('Google API script failed to load');
+            // Add a custom event to notify our application
+            document.dispatchEvent(new Event('googleApiFailedToLoad'));
+            
+            // Hide Google sign-in buttons or show alternative message
+            document.addEventListener('DOMContentLoaded', function() {
+                const googleButtons = document.querySelectorAll('.btn-google');
+                if (googleButtons.length > 0) {
+                    googleButtons.forEach(btn => {
+                        btn.style.opacity = '0.5';
+                        btn.title = "Google Sign-In unavailable";
+                        btn.innerHTML = '<i class="fab fa-google"></i> <span>Google Sign-In Unavailable</span>';
+                        btn.disabled = true;
+                    });
+                }
+            });
+        }
+    </script>
+    
     <script src="./js/api-client.js"></script>
     <script src="./js/auth.js"></script>
     <script src="./js/form-validation.js" defer></script>
 </head>
 <body>
-  
-
     <section class="registration-section">
         <div class="registration-container">
             <div class="registration-header">
-
                 <div class="navbar-logo" id="navbarLogo">
                    <!-- <a href="./index.html"> -->
                        <img src="./images/logo.png" alt="EcoTrade Logo">
                        <span>EcoTrade</span>
                    <!-- </a> -->
                 </div>
-
                 <h1>Create Your Account</h1>
                 <p>Join thousands of successful traders worldwide</p>
             </div>
-
             <form id="registration-form" class="registration-form">
                 <div class="form-group">
                     <label for="fullname">Full Name</label>
@@ -40,7 +69,6 @@
                     </div>
                     <div class="error-message" id="fullname-error"></div>
                 </div>
-
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <div class="input-container">
@@ -49,7 +77,6 @@
                     </div>
                     <div class="error-message" id="email-error"></div>
                 </div>
-
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="input-container">
@@ -65,7 +92,6 @@
                     </div>
                     <div class="error-message" id="password-error"></div>
                 </div>
-
                 <div class="form-group">
                     <label for="confirm-password">Confirm Password</label>
                     <div class="input-container">
@@ -75,7 +101,6 @@
                     </div>
                     <div class="error-message" id="confirm-password-error"></div>
                 </div>
-
                 <div class="form-group">
                     <div class="checkbox-container">
                         <input type="checkbox" id="terms" name="terms" required>
@@ -83,10 +108,8 @@
                     </div>
                     <div class="error-message" id="terms-error"></div>
                 </div>
-
                 <button type="submit" class="btn btn-registration btn-full">Create Account</button>
                 <div class="auth-error" id="signup-error"></div>
-
                 <div class="social-signup">
                     <span>Or sign up with</span>
                     <div class="social-buttons">
@@ -94,13 +117,8 @@
                             <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google Icon" style="width: 20px; height: 20px;">
                             <span>Google</span>
                         </button>
-                        <button type="button" class="btn-social btn-facebook" id="signup-facebook">
-                            <i class="fab fa-facebook-f"></i>
-                            <span>Facebook</span>
-                        </button>
                     </div>
                 </div>
-
                 <div class="login-link">
                     Already have an account? <a href="./login.html">Log in</a>
                 </div>

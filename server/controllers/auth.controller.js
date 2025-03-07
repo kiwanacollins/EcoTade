@@ -1,4 +1,8 @@
 const User = require('../models/user.model');
+const { OAuth2Client } = require('google-auth-library');
+
+// Create a new OAuth2 client
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -65,6 +69,94 @@ exports.login = async (req, res, next) => {
     sendTokenResponse(user, 200, res);
   } catch (error) {
     next(error);
+  }
+};
+
+// @desc    Authenticate with Google
+// @route   POST /api/auth/google
+// @access  Public
+exports.googleAuth = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    
+    console.log('Google Auth Request received');
+    
+    if (!idToken) {
+      console.error('Google Auth Error: No ID token provided');
+      return res.status(400).json({
+        success: false,
+        message: 'No Google ID token provided'
+      });
+    }
+    
+    // Make sure the GOOGLE_CLIENT_ID is set in environment
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error('Server misconfiguration: GOOGLE_CLIENT_ID not set in environment');
+      return res.status(500).json({
+        success: false,
+        message: 'Server authentication configuration error'
+      });
+    }
+    
+    console.log('Verifying Google ID token');
+    
+    try {
+      // Verify the token
+      console.log('Attempting to verify ID token:', idToken); // Log the ID token
+      const ticket = await client.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      
+      const payload = ticket.getPayload();
+      console.log('Google token verified, user:', payload.email);
+      
+      const { email, name, sub: googleId } = payload;
+      
+      // Check if user exists with this email
+      let user = await User.findOne({ email });
+      
+      if (!user) {
+        // If user doesn't exist, create a new one
+        console.log('Creating new user from Google authentication:', email);
+        try {
+          user = await User.create({
+            name,
+            email,
+            googleId,
+            password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8) // Generate random password
+          });
+        } catch (createError) {
+          console.error('Error creating user from Google auth:', createError);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to create user account'
+          });
+        }
+      } else {
+        // If user exists but hasn't linked Google yet, update their Google ID
+        if (!user.googleId) {
+          console.log('Linking existing user to Google account:', email);
+          user.googleId = googleId;
+          await user.save();
+        }
+      }
+      
+      sendTokenResponse(user, 200, res);
+    } catch (verificationError) {
+      console.error('Google token verification failed:', verificationError);
+      console.error('Verification error details:', verificationError); // Log the error details
+      return res.status(401).json({
+        success: false,
+        message: 'Google authentication failed: Invalid token'
+      });
+    }
+  } catch (error) {
+    console.error('Google auth unexpected error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Google authentication failed: ' + (error.message || 'Unknown error')
+    });
   }
 };
 
