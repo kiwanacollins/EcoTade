@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="./js/api-client.js"></script>
     <script src="./js/auth.js"></script>
+    <script src="./js/crypto-exchange.js"></script>
     <script src="./js/dashboard.js" defer></script>
 </head>
 <body>
@@ -339,56 +340,126 @@
     <div id="deposit-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Deposit Funds</h3>
+                <div class="modal-title">
+                    <i class="fas fa-wallet modal-icon"></i>
+                    <h3>Deposit Funds</h3>
+                </div>
                 <span class="close-modal">&times;</span>
             </div>
+            
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="modal-deposit-amount">Amount to Deposit</label>
-                    <input type="number" id="modal-deposit-amount" min="10" step="1" placeholder="Enter amount (min $10)">
+                <div class="deposit-steps">
+                    <div class="step active">
+                        <span class="step-number">1</span>
+                        <span class="step-label">Amount</span>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class="step active">
+                        <span class="step-number">2</span>
+                        <span class="step-label">Currency</span>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class="step active">
+                        <span class="step-number">3</span>
+                        <span class="step-label">Pay</span>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="payment-method">Payment Method</label>
-                    <select id="payment-method">
-                        <option value="credit-card">Credit Card</option>
-                        <option value="bank-transfer">Bank Transfer</option>
-                        <option value="paypal">PayPal</option>
-                    </select>
+                
+                <div class="deposit-section">
+                    <h4 class="section-title">Deposit Amount</h4>
+                    <div class="form-group amount-input">
+                        <div class="input-icon-wrapper">
+                            <span class="input-icon">$</span>
+                            <input type="number" id="modal-deposit-amount" min="10" step="1" placeholder="Enter amount (min $10)">
+                        </div>
+                        <p class="form-hint">Minimum deposit: $10.00</p>
+                    </div>
                 </div>
+                
+                <div class="deposit-section">
+                    <h4 class="section-title">Select Cryptocurrency</h4>
+                    <div class="form-group">
+                        <div class="crypto-select-wrapper">
+                            <select id="payment-method" class="crypto-select">
+                                <option value="bitcoin" data-icon="₿">Bitcoin (BTC)</option>
+                                <option value="ethereum" data-icon="Ξ">Ethereum (ETH)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="payment-info">
-                    <div id="credit-card-info" class="payment-method-details">
-                        <div class="form-group">
-                            <label for="card-number">Card Number</label>
-                            <input type="text" id="card-number" placeholder="1234 5678 9012 3456">
+                    <div id="bitcoin-info" class="payment-method-details">
+                        <div class="payment-header">
+                            <div class="payment-icon bitcoin">₿</div>
+                            <h4>Bitcoin Payment</h4>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="expiry-date">Expiry Date</label>
-                                <input type="text" id="expiry-date" placeholder="MM/YY">
+                        
+                        <div class="crypto-payment-container">
+                            <div class="crypto-qr">
+                                <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg?ga=GA1.1.1701098370.1730030619&semt=ais_hybrid" alt="Bitcoin QR Code" class="qr-code">
                             </div>
-                            <div class="form-group">
-                                <label for="cvv">CVV</label>
-                                <input type="text" id="cvv" placeholder="123">
+                            <div class="crypto-details">
+                                <p class="send-instructions">Send your <strong>Bitcoin (BTC)</strong> to this address:</p>
+                                <div class="wallet-address">
+                                    <code>bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
+                                    <button class="copy-address" data-address="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" title="Copy address">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="payment-instructions">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p class="crypto-note">Please send the exact amount. Your account will be credited after 1 confirmation.</p>
+                                </div>
+                                <div class="confirmation-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Average confirmation time: ~10 minutes</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div id="bank-transfer-info" class="payment-method-details hidden">
-                        <p>Use the following details for bank transfers:</p>
-                        <div class="bank-details">
-                            <p><strong>Bank Name:</strong> EcoTrade Financial</p>
-                            <p><strong>Account Number:</strong> 1234567890</p>
-                            <p><strong>Routing Number:</strong> 987654321</p>
-                            <p><strong>Reference:</strong> Include your EcoTrade ID</p>
+                    
+                    <div id="ethereum-info" class="payment-method-details hidden">
+                        <div class="payment-header">
+                            <div class="payment-icon ethereum">Ξ</div>
+                            <h4>Ethereum Payment</h4>
+                        </div>
+                        
+                        <div class="crypto-payment-container">
+                            <div class="crypto-qr">
+                                <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg?ga=GA1.1.1701098370.1730030619&semt=ais_hybrid" alt="Ethereum QR Code" class="qr-code">
+                            </div>
+                            <div class="crypto-details">
+                                <p class="send-instructions">Send your <strong>Ethereum (ETH)</strong> to this address:</p>
+                                <div class="wallet-address">
+                                    <code>0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
+                                    <button class="copy-address" data-address="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" title="Copy address">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="payment-instructions">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p class="crypto-note">Please send the exact amount. Your account will be credited after 10 confirmations.</p>
+                                </div>
+                                <div class="confirmation-time">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Average confirmation time: ~5 minutes</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div id="paypal-info" class="payment-method-details hidden">
-                        <p>You will be redirected to PayPal to complete your payment.</p>
-                    </div>
+                    
+                    <!-- REMOVE USDT, SOL, and BNB payment method details sections -->
                 </div>
             </div>
+            
             <div class="modal-footer">
-                <button class="btn btn-outline" id="cancel-deposit">Cancel</button>
-                <button class="btn" id="confirm-deposit">Confirm Deposit</button>
+                <button class="btn btn-outline" id="cancel-deposit">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-primary" id="confirm-deposit">
+                    <i class="fas fa-check"></i> Confirm Deposit
+                </button>
             </div>
         </div>
     </div>
