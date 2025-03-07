@@ -61,10 +61,12 @@ body {
 }
 
 #navbarLogo img {
-    margin-right: -30px; /* Add some space between logo and text */
+    height: 60px; /* Reduced height */
+    margin-right: -20px; /* Adjusted spacing */
 }
 
 #navbarLogo span {
+    font-size: 22px; /* Reduced font size */
     margin-left: 0; /* Reset the negative margin that exists in regular navbar-logo */
 }
 
@@ -444,17 +446,17 @@ body {
     margin: 0 auto;
 }
 
+/* Adjusted card styles for better appearance */
 .market {
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    border-radius: 10px;
+    margin-bottom: 20px; /* Reduced margin-bottom */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Reduced box shadow */
+    transition: all 0.2s ease; /* Faster transition */
+    border-radius: 8px; /* Reduced border radius */
     background-color: #fff;
-    padding: 25px;
-    /* Adjusted width calculation for better wrapping */
-    width: calc(45% - 30px);
-    max-width: 500px;
-    min-width: 300px;
+    padding: 20px; /* Reduced padding */
+    width: calc(45% - 20px); /* Adjusted width calculation */
+    max-width: 400px; /* Reduced max-width */
+    min-width: 250px; /* Reduced min-width */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -468,9 +470,9 @@ body {
 
 .market h3 {
     font-family: var(--font-heading);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
-    margin: 0 0 20px 0;
+    margin: 0 0 15px 0;
     color: #08c;
     position: relative;
     padding-bottom: 10px;
@@ -498,8 +500,8 @@ body {
 }
 
 .market-items img {
-    width: 50px;
-    height: 50px;
+    width: 40px; /* Reduced width */
+    height: 40px; /* Reduced height */
     border-radius: 10px;
     transition: all 0.3s ease;
     padding: 8px;
@@ -520,20 +522,25 @@ body {
 /* Improve responsiveness with additional breakpoints */
 @media (max-width: 1200px) {
     .market {
-        width: calc(50% - 30px);
+        width: calc(50% - 20px); /* Adjusted width calculation */
     }
 }
 
 @media (max-width: 900px) {
     .market {
-        width: calc(70% - 30px);
+        width: calc(70% - 20px); /* Adjusted width calculation */
     }
 }
 
 @media (max-width: 768px) {
     .market {
-        width: 88%;
-        max-width: none;
+        width: 85%; /* Adjusted width calculation */
+    }
+}
+
+@media (max-width: 576px) {
+    .market {
+        width: 100%; /* Adjusted width calculation */
     }
 }
 
@@ -1552,40 +1559,41 @@ body {
 
 /* Registration Form Styles */
 .registration-section {
-    padding: 140px 20px 60px;
-    background-color: #f5f9fd;
-    min-height: calc(100vh - 300px);
+    padding: 100px 20px 40px; /* Reduced top padding */
+    min-height: 100vh; /* Use viewport height */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .registration-container {
-    max-width: 600px;
+    max-width: 500px; /* Reduced max-width */
     width: 100%;
     background-color: #fff;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    padding: 40px;
+    padding: 25px; /* Reduced padding */
     margin: 0 auto;
+    overflow-y: auto; /* Add scroll if needed */
+    max-height: 85vh; /* Limit height to viewport */
 }
 
 .registration-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px; /* Reduced margin */
 }
 
 .registration-header h1 {
     font-family: var(--font-heading);
-    font-size: 32px;
+    font-size: 28px; /* Reduced font size */
     font-weight: 700;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 5px; /* Reduced margin */
 }
 
 .registration-header p {
     font-family: var(--font-primary);
-    font-size: 16px;
+    font-size: 14px; /* Reduced font size */
     color: #555;
 }
 
@@ -1594,7 +1602,7 @@ body {
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* Reduced margin */
     position: relative;
     width: 100%;
     clear: both; /* Prevent floating issues */
@@ -1603,16 +1611,16 @@ body {
 .form-group label {
     font-family: var(--font-primary);
     display: block;
-    font-size: 16px;
+    font-size: 14px; /* Reduced font size */
     font-weight: 500;
     color: #333;
-    margin-bottom: 8px;
+    margin-bottom: 4px; /* Reduced margin */
 }
 
 .input-container {
     position: relative;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 8px; /* Reduced margin */
     display: block;
 }
 
@@ -1622,7 +1630,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     color: #08c;
-    font-size: 18px;
+    font-size: 16px; /* Reduced icon size */
     pointer-events: none; /* Prevents icon from intercepting clicks */
     z-index: 2;
 }
@@ -1639,12 +1647,12 @@ body {
 
 .input-container input {
     width: 100%;
-    height: 50px;
-    padding: 14px 45px 14px 45px;
+    height: 45px; /* Reduced height */
+    padding: 8px 40px 8px 40px; /* Reduced padding */
     border: 1px solid #ddd;
     border-radius: 50px;
     font-family: var(--font-primary);
-    font-size: 16px;
+    font-size: 14px; /* Reduced font size */
     color: #333;
     transition: all 0.3s ease;
     box-sizing: border-box;
@@ -1667,17 +1675,17 @@ body {
 
 .error-message {
     font-family: var(--font-primary);
-    font-size: 14px;
+    font-size: 12px; /* Reduced font size */
     color: #ff3b30;
-    margin-top: 6px;
+    margin-top: 3px; /* Reduced margin */
     padding-left: 15px;
-    min-height: 20px;
+    min-height: 16px; /* Reduced height */
     display: block;
     clear: both;
 }
 
 .password-strength {
-    margin: 10px 0 5px;
+    margin: 5px 0 3px; /* Reduced margin */
     width: 100%;
     clear: both; /* Ensure it doesn't overlap with other elements */
 }
@@ -1711,15 +1719,15 @@ body {
 }
 
 .checkbox-container input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 16px; /* Reduced size */
+    height: 16px; /* Reduced size */
     accent-color: #08c;
 }
 
 .checkbox-container label {
     display: inline;
     margin-bottom: 0;
-    font-size: 14px;
+    font-size: 13px; /* Reduced font size */
 }
 
 .checkbox-container label a {
@@ -1733,13 +1741,13 @@ body {
 
 .btn-full {
     width: 100%;
-    padding: 14px !important;
-    margin-top: 15px !important;
-    font-size: 18px !important;
+    padding: 10px !important; /* Reduced padding */
+    margin-top: 10px !important; /* Reduced margin */
+    font-size: 16px !important; /* Reduced font size */
 }
 
 .social-signup {
-    margin: 30px 0;
+    margin: 20px 0; /* Reduced margin */
     text-align: center;
     position: relative;
     width: 100%;
@@ -1755,13 +1763,11 @@ body {
     z-index: 1;
 }
 
-
-
 .social-buttons {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+    gap: 10px; /* Reduced gap */
+    margin-top: 15px; /* Reduced margin */
     width: 100%;
 }
 
@@ -1770,17 +1776,17 @@ body {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 12px 20px;
+    padding: 8px 15px; /* Reduced padding */
     border: 1px solid #ddd;
     border-radius: 50px;
     background: #fff;
     font-family: var(--font-primary);
-    font-size: 16px;
+    font-size: 14px; /* Reduced font size */
     color: #333;
     cursor: pointer;
     transition: all 0.3s ease;
     flex: 1;
-    max-width: 180px;
+    max-width: 160px; /* Reduced width */
 }
 
 .btn-google {
@@ -1820,8 +1826,8 @@ body {
 .login-link {
     text-align: center;
     font-family: var(--font-primary);
-    font-size: 15px;
-    margin-top: 20px;
+    font-size: 14px; /* Reduced font size */
+    margin-top: 15px; /* Reduced margin */
 }
 
 .login-link a {
@@ -1870,38 +1876,31 @@ body {
 /* Responsive adjustments for registration form */
 @media (max-width: 768px) {
     .registration-section {
-        padding: 120px 15px 40px;
+        padding: 80px 15px 20px;
     }
     
     .registration-container {
-        padding: 30px 20px;
+        padding: 20px 15px;
         max-width: 100%;
-        margin-top: -125px;
-    }
-    
-    .social-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .btn-social {
-        max-width: 100%;
-        width: 100%;
     }
 }
 
-@media (max-width: 480px) {
-    .registration-header h1 {
-        font-size: 26px;
-    }
-    
+@media (max-height: 700px) {
     .registration-container {
-        padding: 25px 15px;
+        max-height: 90vh;
+        padding: 15px;
     }
     
-    .input-container input {
-        padding: 12px 12px 12px 40px;
-        font-size: 15px;
+    #navbarLogo img {
+        height: 50px;
+    }
+    
+    .registration-header {
+        margin-bottom: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 10px;
     }
 }
 
