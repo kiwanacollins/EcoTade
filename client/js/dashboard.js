@@ -803,11 +803,22 @@ function selectTrader(traderId) {
     // Find the trader card based on the trader ID
     const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
     const traderName = traderCard.querySelector('h4').textContent;
+    const traderSpec = traderCard.querySelector('.trader-spec').textContent;
+    const traderImg = traderCard.querySelector('.trader-avatar img').src;
     
     // Show confirmation modal or notification
     showNotification('success', `You have selected ${traderName} as your trader. They will now manage your investments.`);
     
-    // You would typically make an API call here to associate this trader with the user's account
+    // Store selected trader in local storage for persistence
+    const selectedTrader = {
+        id: traderId,
+        name: traderName,
+        spec: traderSpec,
+        img: traderImg,
+        performance: getTraderPerformance(traderId)
+    };
+    
+    localStorage.setItem('selectedTrader', JSON.stringify(selectedTrader));
     
     // After a short delay, navigate back to overview
     setTimeout(() => {
@@ -822,99 +833,158 @@ function selectTrader(traderId) {
         });
         
         // Update the top traders section in the overview
-        updateTopTraders(traderId, traderName);
-    }, 2000);
+        updateTopTraders(selectedTrader);
+        
+        // Update active traders count
+        updateActiveTraderCount(1);
+    }, 1500);
 }
 
-// Update the top traders section in overview
-function updateTopTraders(traderId, traderName) {
+// Get trader performance based on trader ID
+function getTraderPerformance(traderId) {
+    // Map of trader performances
+    const performances = {
+        '1': '+24.6%', '2': '+18.3%', '3': '+21.7%', '4': '+19.2%',
+        '5': '+16.8%', '6': '+22.4%', '7': '+17.9%', '8': '+14.5%',
+        '9': '+23.8%', '10': '+15.2%', '11': '+25.7%', '12': '+16.9%',
+        '13': '+13.1%', '14': '+14.8%', '15': '+21.2%', '16': '+18.5%',
+        '17': '+20.4%', '18': '+27.1%', '19': '+19.8%', '20': '+22.5%'
+    };
+    
+    return performances[traderId] || '+0%';
+}
+
+// Update active traders count in the stats card
+function updateActiveTraderCount(count) {
+    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    if (activeTradersStat) {
+        activeTradersStat.textContent = count.toString();
+    }
+}
+
+// Update the top traders section in overview with enhanced styling
+function updateTopTraders(trader) {
     const topTradersContainer = document.querySelector('.top-traders');
-    if (topTradersContainer) {
-        // Clear the "no traders selected" message if present
-        topTradersContainer.innerHTML = '';
-        
-        // Create the trader element
-        const traderElement = document.createElement('div');
-        traderElement.className = 'top-trader-item';
-        
-        // Set different styles based on trader ID
-        let performanceColor = '#4CD964';
-        let performance = '+0%';
-        
-        // Extended performance mapping for all trader IDs (1-20)
-        if (traderId === '1') {
-            performance = '+24.6%';
-        } else if (traderId === '2') {
-            performance = '+18.3%';
-        } else if (traderId === '3') {
-            performance = '+21.7%';
-        } else if (traderId === '4') {
-            performance = '+19.2%';
-        } else if (traderId === '5') {
-            performance = '+16.8%';
-        } else if (traderId === '6') {
-            performance = '+22.4%';
-        } else if (traderId === '7') {
-            performance = '+17.9%';
-        } else if (traderId === '8') {
-            performance = '+14.5%';
-        } else if (traderId === '9') {
-            performance = '+23.8%';
-        } else if (traderId === '10') {
-            performance = '+15.2%';
-        } else if (traderId === '11') {
-            performance = '+25.7%';
-        } else if (traderId === '12') {
-            performance = '+16.9%';
-        } else if (traderId === '13') {
-            performance = '+13.1%';
-        } else if (traderId === '14') {
-            performance = '+14.8%';
-        } else if (traderId === '15') {
-            performance = '+21.2%';
-        } else if (traderId === '16') {
-            performance = '+18.5%';
-        } else if (traderId === '17') {
-            performance = '+20.4%';
-        } else if (traderId === '18') {
-            performance = '+27.1%';
-        } else if (traderId === '19') {
-            performance = '+19.8%';
-        } else if (traderId === '20') {
-            performance = '+22.5%';
+    if (!topTradersContainer) return;
+    
+    // Clear the "no traders selected" message
+    topTradersContainer.innerHTML = '';
+    
+    // Create the trader element with enhanced styling
+    const traderElement = document.createElement('div');
+    traderElement.className = 'top-trader-item';
+    
+    traderElement.innerHTML = `
+        <div class="trader-item-header">
+            <div class="trader-item-avatar">
+                <img src="${trader.img}" alt="${trader.name}">
+                <span class="trader-status online"></span>
+            </div>
+            <div class="trader-item-info">
+                <div class="trader-item-name">${trader.name}</div>
+                <div class="trader-item-spec">${trader.spec}</div>
+                <div class="trader-item-performance" style="color: #4CD964">${trader.performance}</div>
+            </div>
+        </div>
+        <div class="trader-item-actions">
+            <button class="btn-small btn-success">Active</button>
+            <button class="btn-small btn-outline view-profile">View Profile</button>
+        </div>
+    `;
+    
+    topTradersContainer.appendChild(traderElement);
+    
+    // Add event listener to view profile button
+    const viewProfileBtn = traderElement.querySelector('.view-profile');
+    if (viewProfileBtn) {
+        viewProfileBtn.addEventListener('click', function() {
+            switchPanel('traders');
+            // Update navigation item active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-panel') === 'traders') {
+                    item.classList.add('active');
+                }
+            });
+        });
+    }
+    
+    // Add to activity timeline
+    const timeline = document.getElementById('activity-timeline');
+    if (timeline) {
+        const noActivity = timeline.querySelector('.no-activity');
+        if (noActivity) {
+            timeline.innerHTML = '';
         }
         
-        traderElement.innerHTML = `
-            <div class="trader-item-info">
-                <div class="trader-item-name">${traderName}</div>
-                <div class="trader-item-performance" style="color: ${performanceColor}">${performance}</div>
-            </div>
-            <div class="trader-item-actions">
-                <button class="btn-small btn-success">Active</button>
+        const li = document.createElement('li');
+        const now = new Date();
+        li.innerHTML = `
+            <span class="activity-time">${formatDateTime(now)}</span>
+            <div class="activity-content">
+                <p>Selected ${trader.name} as your trader</p>
             </div>
         `;
-        
-        topTradersContainer.appendChild(traderElement);
-        
-        // Add to activity timeline
-        const timeline = document.getElementById('activity-timeline');
-        if (timeline) {
-            const noActivity = timeline.querySelector('.no-activity');
-            if (noActivity) {
-                timeline.innerHTML = '';
-            }
-            
-            const li = document.createElement('li');
-            const now = new Date();
-            li.innerHTML = `
-                <span class="activity-time">${formatDateTime(now)}</span>
-                <div class="activity-content">
-                    <p>Selected ${traderName} as your trader</p>
-                </div>
-            `;
-            timeline.prepend(li);
+        timeline.prepend(li);
+    }
+}
+
+// Check for previously selected trader on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Add this to the existing DOMContentLoaded function or call it from there
+    const storedTrader = localStorage.getItem('selectedTrader');
+    if (storedTrader) {
+        try {
+            const trader = JSON.parse(storedTrader);
+            // Update UI with stored trader after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                updateTopTraders(trader);
+                updateActiveTraderCount(1);
+            }, 500);
+        } catch (e) {
+            console.error('Error parsing stored trader:', e);
         }
     }
+});
+
+// Function to show notifications
+function showNotification(type, message) {
+    // Create notification element if it doesn't exist
+    let notification = document.querySelector('.notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        document.body.appendChild(notification);
+    } else {
+        notification.className = `notification ${type}`;
+    }
+    
+    // Set notification content
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <p>${message}</p>
+        </div>
+        <button class="notification-close">&times;</button>
+    `;
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Add close button event listener
+    const closeBtn = notification.querySelector('.notification-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            notification.classList.remove('show');
+        });
+    }
+    
+    // Auto-hide notification after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 5000);
 }
 
 // Handle outside clicks to close sidebar on mobile

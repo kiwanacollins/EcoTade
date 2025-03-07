@@ -1654,3 +1654,110 @@ body {
     background-color: #007ab8;
     transform: translateY(-2px);
 }
+
+/* Top Traders Styling */
+.top-trader-item {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.top-trader-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.trader-item-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.trader-item-avatar {
+    position: relative;
+    margin-right: 15px;
+}
+
+.trader-item-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.trader-item-avatar .trader-status {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.trader-item-info {
+    flex: 1;
+}
+
+.trader-item-name {
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+}
+
+.trader-item-spec {
+    font-size: 13px;
+    color: var(--text-medium);
+    margin-bottom: 5px;
+}
+
+.trader-item-performance {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.trader-item-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-small.btn-success {
+    background-color: rgba(76, 217, 100, 0.15);
+    color: var(--success-color);
+    border: none;
+}
+
+.btn-small.btn-outline {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-medium);
+}
+
+.btn-small:hover {
+    transform: translateY(-2px);
+}
+
+.btn-small.btn-success:hover {
+    background-color: rgba(76, 217, 100, 0.25);
+}
+
+.btn-small.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
