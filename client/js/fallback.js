@@ -1,5 +1,5 @@
 /**
- * EcoTrade Fallback Handler
+ * Forexprox Fallback Handler
  * This script provides fallback functionality when external services are unavailable
  */
 

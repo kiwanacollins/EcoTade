@@ -26,8 +26,7 @@ const cryptoExchange = {
         if (!price) return null;
         
         return usdAmount / price;
-    },
-    
+    },   
     // Convert cryptocurrency to USD amount
     async convertCryptoToUsd(cryptoAmount, cryptoId) {
         const price = await this.getPrice(cryptoId);

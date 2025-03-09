@@ -178,6 +178,7 @@ body {
     font-size: 60px; /* Increased from 52px */
     font-weight: 800; /* Increased font weight */
     margin: 0 0 20px 0; /* Added bottom margin */
+    margin-top: 50px;
     color: #333;
     line-height: 1.2; /* Improved line height */
 }

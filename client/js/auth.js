@@ -1,4 +1,4 @@
-// Authentication functions for EcoTrade
+// Authentication functions for Forexprox
 
 // Register a new user
 async function register(event) {

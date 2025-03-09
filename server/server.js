@@ -43,7 +43,7 @@ app.use('/api/users', require('./routes/user.routes'));
 
 // Default route
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to EcoTrade API' });
+  res.json({ message: 'Welcome to Forexprox API' });
 });
 
 // Add a health check route for /api

@@ -80,6 +80,18 @@ function updateDashboardUI(dashboardData) {
     
     if (settingsFullname) settingsFullname.value = dashboardData.user.name;
     if (settingsEmail) settingsEmail.value = dashboardData.user.email;
+    
+    // Initialize payment methods dropdown
+    const paymentMethodSelect = document.getElementById('payment-method-select');
+    if (paymentMethodSelect) {
+        // Add change event listener if it doesn't exist
+        if (!paymentMethodSelect.dataset.initialized) {
+            paymentMethodSelect.addEventListener('change', function() {
+                updatePaymentDetails(this.value);
+            });
+            paymentMethodSelect.dataset.initialized = 'true';
+        }
+    }
 
     // Initialize charts after updating UI data
     initializeCharts(dashboardData);
@@ -92,6 +104,40 @@ function updateDashboardUI(dashboardData) {
     
     // Update investments list
     updateInvestmentsList(dashboardData.investments || []);
+}
+
+// Function to handle payment method dropdown change
+function updatePaymentDetails(method) {
+    // Hide all payment details first
+    document.querySelectorAll('.payment-details-section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Show the selected payment method details
+    const selectedSection = document.getElementById(`${method}-details-section`);
+    if (selectedSection) {
+        selectedSection.style.display = 'block';
+        
+        // If it's crypto, make sure we initialize the cryptocurrency dropdown
+        if (method === 'crypto') {
+            // Default to bitcoin
+            if (document.getElementById('payment-method')) {
+                updateCryptoMethod('bitcoin');
+            }
+        }
+        
+        // For animation effect
+        selectedSection.style.opacity = '0';
+        setTimeout(() => {
+            selectedSection.style.opacity = '1';
+        }, 50);
+    }
+    
+    // Update the deposit button state
+    const confirmButton = document.getElementById('confirm-deposit');
+    if (confirmButton) {
+        confirmButton.disabled = false;
+    }
 }
 
 // Set up all necessary event listeners
@@ -226,25 +272,14 @@ function setupEventListeners() {
     });
 }
 
-// Open the deposit modal
+// Open the deposit modal with improved multi-step process
 function openDepositModal() {
     const modal = document.getElementById('deposit-modal');
     if (modal) {
         modal.classList.add('active');
         
-        // Reset input fields
-        document.getElementById('modal-deposit-amount').value = '';
-        const paymentMethodSelect = document.getElementById('payment-method');
-        paymentMethodSelect.value = 'bitcoin'; // Default to bitcoin
-        updatePaymentMethod('bitcoin');
-        
-        // Set focus on the amount input
-        setTimeout(() => {
-            document.getElementById('modal-deposit-amount').focus();
-        }, 300);
-        
-        // Set up event listeners
-        setupDepositModalListeners();
+        // Reset the modal to first step
+        resetDepositModal();
         
         // Add event listener to close when clicking outside
         modal.addEventListener('click', function(e) {
@@ -252,7 +287,504 @@ function openDepositModal() {
                 closeDepositModal();
             }
         });
+
+        // Set default payment method
+        const paymentMethodSelect = document.getElementById('payment-method-select');
+        if (paymentMethodSelect) {
+            // Default to bank
+            paymentMethodSelect.value = 'bank';
+            updatePaymentDetails('bank');
+        }
     }
+}
+
+// Reset deposit modal to initial state
+function resetDepositModal() {
+    // Reset input fields
+    document.getElementById('modal-deposit-amount').value = '';
+    
+    // Show first step, hide others
+    document.getElementById('step-amount').classList.remove('hidden');
+    document.getElementById('step-method').classList.add('hidden');
+    document.getElementById('step-payment').classList.add('hidden');
+    
+    // Update steps indicators
+    const steps = document.querySelectorAll('.deposit-steps .step');
+    steps[0].classList.add('active');
+    steps[1].classList.remove('active');
+    steps[2].classList.remove('active');
+    
+    // Reset payment method selection
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.getElementById('step2-next').disabled = true;
+    
+    // Hide all payment method details
+    document.querySelectorAll('.payment-details').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Reset crypto method to default
+    if (document.getElementById('payment-method')) {
+        document.getElementById('payment-method').value = 'bitcoin';
+        updateCryptoMethod('bitcoin');
+    }
+    
+    // Set focus on the amount input
+    setTimeout(() => {
+        document.getElementById('modal-deposit-amount').focus();
+    }, 300);
+    
+    // Generate unique reference numbers for payment methods
+    generateUniqueReferences();
+    
+    // Set up event listeners for multi-step navigation
+    setupDepositModalListeners();
+}
+
+// Setup all event listeners for the deposit modal
+function setupDepositModalListeners() {
+    // Step 1: Amount input and next button
+    const depositAmount = document.getElementById('modal-deposit-amount');
+    if (depositAmount) {
+        depositAmount.addEventListener('input', function() {
+            // Enable/disable next button based on valid amount
+            const nextButton = document.getElementById('step1-next');
+            const isValid = parseFloat(this.value) >= 10;
+            nextButton.disabled = !isValid;
+        });
+    }
+    
+    const step1Next = document.getElementById('step1-next');
+    if (step1Next) {
+        step1Next.addEventListener('click', function() {
+            const amount = document.getElementById('modal-deposit-amount').value;
+            if (!amount || parseFloat(amount) < 10) {
+                showNotification('error', 'Please enter a valid amount (minimum $10)');
+                return;
+            }
+            
+            // Move to step 2
+            goToStep(2);
+        });
+    }
+    
+    // Step 2: Payment method selection
+    document.querySelectorAll('.payment-method-card').forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected from all cards
+            document.querySelectorAll('.payment-method-card').forEach(c => {
+                c.classList.remove('selected');
+            });
+            
+            // Select this card
+            this.classList.add('selected');
+            
+            // Enable next button
+            document.getElementById('step2-next').disabled = false;
+        });
+    });
+    
+    const step2Back = document.getElementById('step2-back');
+    if (step2Back) {
+        step2Back.addEventListener('click', function() {
+            goToStep(1);
+        });
+    }
+    
+    const step2Next = document.getElementById('step2-next');
+    if (step2Next) {
+        step2Next.addEventListener('click', function() {
+            const selectedMethod = document.querySelector('.payment-method-card.selected');
+            if (!selectedMethod) {
+                showNotification('error', 'Please select a payment method');
+                return;
+            }
+            
+            // Move to step 3
+            goToStep(3);
+            
+            // Show the appropriate payment details
+            const method = selectedMethod.getAttribute('data-method');
+            showPaymentDetails(method);
+        });
+    }
+    
+    // Step 3: Back button
+    const step3Back = document.getElementById('step3-back');
+    if (step3Back) {
+        step3Back.addEventListener('click', function() {
+            goToStep(2);
+        });
+    }
+    
+    // Crypto payment method selection
+    const cryptoPaymentMethod = document.getElementById('payment-method');
+    if (cryptoPaymentMethod) {
+        cryptoPaymentMethod.addEventListener('change', function() {
+            updateCryptoMethod(this.value);
+        });
+    }
+    
+    // Confirm deposit button
+    const confirmDeposit = document.getElementById('confirm-deposit');
+    if (confirmDeposit) {
+        confirmDeposit.addEventListener('click', function() {
+            processDeposit();
+        });
+    }
+    
+    // Cancel deposit button
+    const cancelDeposit = document.getElementById('cancel-deposit');
+    if (cancelDeposit) {
+        cancelDeposit.addEventListener('click', closeDepositModal);
+    }
+    
+    // Copy address buttons for crypto
+    document.querySelectorAll('.copy-address').forEach(button => {
+        button.addEventListener('click', function() {
+            copyToClipboard(this.dataset.address);
+            showCopiedFeedback(this);
+        });
+    });
+    
+    // Copy buttons for bank and mobile money
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            copyToClipboard(this.dataset.copy);
+            showCopiedFeedback(this);
+        });
+    });
+}
+
+// Go to specific step in deposit flow
+function goToStep(stepNumber) {
+    // Hide all steps
+    document.getElementById('step-amount').classList.add('hidden');
+    document.getElementById('step-method').classList.add('hidden');
+    document.getElementById('step-payment').classList.add('hidden');
+    
+    // Update step indicators
+    const steps = document.querySelectorAll('.deposit-steps .step');
+    steps.forEach((step, index) => {
+        if (index < stepNumber) {
+            step.classList.add('active');
+        } else {
+            step.classList.remove('active');
+        }
+    });
+    
+    // Show the current step
+    if (stepNumber === 1) {
+        document.getElementById('step-amount').classList.remove('hidden');
+    } else if (stepNumber === 2) {
+        document.getElementById('step-method').classList.remove('hidden');
+    } else if (stepNumber === 3) {
+        document.getElementById('step-payment').classList.remove('hidden');
+    }
+}
+
+// Show the appropriate payment details based on selected method
+function showPaymentDetails(method) {
+    // Hide all payment details
+    document.querySelectorAll('.payment-details').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show the selected payment details
+    switch (method) {
+        case 'bank':
+            document.getElementById('bank-details').style.display = 'block';
+            break;
+        case 'airtel':
+            document.getElementById('airtel-details').style.display = 'block';
+            break;
+        case 'mtn':
+            document.getElementById('mtn-details').style.display = 'block';
+            break;
+        case 'crypto':
+            document.getElementById('crypto-details').style.display = 'block';
+            updateCryptoMethod('bitcoin'); // Default to Bitcoin
+            break;
+    }
+}
+
+// Enhanced payment method handling specifically for crypto options
+function updateCryptoMethod(method) {
+    // Hide all payment method details
+    document.querySelectorAll('.payment-method-details').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // Show the selected cryptocurrency method
+    const selectedMethod = document.getElementById(`${method}-info`);
+    if (selectedMethod) {
+        selectedMethod.classList.remove('hidden');
+        
+        // Apply subtle entrance animation
+        selectedMethod.style.opacity = '0';
+        selectedMethod.style.transform = 'translateY(-10px)';
+        
+        setTimeout(() => {
+            selectedMethod.style.opacity = '1';
+            selectedMethod.style.transform = 'translateY(0)';
+        }, 50);
+    }
+    
+    // Update the deposit amount input placeholder with the selected crypto
+    const amountInput = document.getElementById('modal-deposit-amount');
+    if (amountInput) {
+        const cryptoName = document.querySelector(`option[value="${method}"]`).textContent.split('(')[0].trim();
+        amountInput.placeholder = `Enter amount in USD (min $10) to convert to ${cryptoName}`;
+    }
+}
+
+// Process deposit with selected payment method
+function processDeposit() {
+    const amount = document.getElementById('modal-deposit-amount').value;
+    
+    if (!amount || parseFloat(amount) < 10) {
+        showNotification('error', 'Please enter a valid amount (minimum $10)');
+        return;
+    }
+    
+    // Get selected payment method
+    const paymentMethodSelect = document.getElementById('payment-method-select');
+    const paymentMethod = paymentMethodSelect.value;
+    
+    // Get payment details based on method
+    let paymentDetails = '';
+    
+    if (paymentMethod === 'bank') {
+        paymentDetails = document.getElementById('bank-reference').textContent;
+        paymentMethod = 'Bank Transfer';
+    } else if (paymentMethod === 'airtel') {
+        paymentDetails = document.getElementById('airtel-reference').textContent;
+        paymentMethod = 'Airtel Money';
+    } else if (paymentMethod === 'mtn') {
+        paymentDetails = document.getElementById('mtn-reference').textContent;
+        paymentMethod = 'MTN Mobile Money';
+    } else if (paymentMethod === 'crypto') {
+        const cryptoSelect = document.getElementById('payment-method');
+        paymentMethod = cryptoSelect.options[cryptoSelect.selectedIndex].text;
+        paymentDetails = cryptoSelect.value;
+    }
+    
+    console.log(`Processing deposit of $${amount} via ${paymentMethod}`);
+    
+    // Show loading state
+    const confirmButton = document.getElementById('confirm-deposit');
+    const originalText = confirmButton.innerHTML;
+    confirmButton.disabled = true;
+    confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+        // Instead of closing modal, show success state within modal
+        const modalBody = document.querySelector('.modal-body');
+        const modalFooter = document.querySelector('.modal-footer');
+        
+        // Store original content for later
+        const originalBody = modalBody.innerHTML;
+        const originalFooter = modalFooter.innerHTML;
+        
+        // Update modal with confirmation
+        modalBody.innerHTML = `
+            <div class="deposit-confirmation">
+                <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success-color); margin-bottom: 15px;"></i>
+                <h5>Your deposit request has been received</h5>
+                <p>Please complete your payment of <strong>$${parseFloat(amount).toFixed(2)}</strong> via <strong>${paymentMethod}</strong>.</p>
+                <p>Your account will be credited after payment confirmation.</p>
+                <a href="#" class="finish-later" id="finish-deposit">I'll finish this later</a>
+            </div>
+        `;
+        
+        modalFooter.innerHTML = `
+            <button class="btn btn-primary" id="new-deposit">
+                <i class="fas fa-plus"></i> New Deposit
+            </button>
+            <button class="btn btn-highlight" id="view-transactions">
+                <i class="fas fa-list"></i> View Transactions
+            </button>
+        `;
+        
+        // Add event listeners for new buttons
+        document.getElementById('finish-deposit').addEventListener('click', function(e) {
+            e.preventDefault();
+            closeDepositModal();
+        });
+        
+        document.getElementById('new-deposit').addEventListener('click', function() {
+            // Restore original form
+            modalBody.innerHTML = originalBody;
+            modalFooter.innerHTML = originalFooter;
+            
+            // Reset form state
+            resetDepositModal();
+        });
+        
+        document.getElementById('view-transactions').addEventListener('click', function() {
+            closeDepositModal();
+            switchPanel('transactions');
+            
+            // Update navigation item active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-panel') === 'transactions') {
+                    item.classList.add('active');
+                }
+            });
+        });
+        
+        // Add to activity timeline
+        const timeline = document.getElementById('activity-timeline');
+        if (timeline) {
+            const noActivity = timeline.querySelector('.no-activity');
+            if (noActivity) {
+                timeline.innerHTML = '';
+            }
+            
+            const li = document.createElement('li');
+            const now = new Date();
+            li.innerHTML = `
+                <span class="activity-time">${formatDateTime(now)}</span>
+                <div class="activity-content">
+                    <p>Initiated deposit of $${parseFloat(amount).toFixed(2)} via ${paymentMethod}</p>
+                </div>
+            `;
+            timeline.prepend(li);
+        }
+        
+        // Add to transactions table
+        updateTransactionsWithNewDeposit(amount, paymentMethod);
+        
+    }, 1500);
+}
+
+// Helper function to update transactions table with new deposit
+function updateTransactionsWithNewDeposit(amount, paymentMethod) {
+    const tbody = document.querySelector('#transactions-history tbody');
+    if (tbody) {
+        // Remove "no data" message if it exists
+        const noDataRow = tbody.querySelector('.no-data-message');
+        if (noDataRow) {
+            tbody.innerHTML = '';
+        }
+        
+        // Create new transaction row
+        const tr = document.createElement('tr');
+        const now = new Date();
+        
+        tr.innerHTML = `
+            <td>${formatDate(now)}</td>
+            <td>Deposit</td>
+            <td>Deposit via ${paymentMethod}</td>
+            <td>$${parseFloat(amount).toFixed(2)}</td>
+            <td><span class="status-badge pending">Pending</span></td>
+        `;
+        
+        // Add to top of table
+        if (tbody.firstChild) {
+            tbody.insertBefore(tr, tbody.firstChild);
+        } else {
+            tbody.appendChild(tr);
+        }
+    }
+}
+
+// Generate unique transaction references for payment methods
+function generateUniqueReferences() {
+    const timestamp = new Date().getTime().toString().slice(-6);
+    const randomDigits = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const reference = `ECOT-${timestamp}-${randomDigits}`;
+    
+    // Update reference fields
+    const bankRef = document.getElementById('bank-reference');
+    const airtelRef = document.getElementById('airtel-reference');
+    const mtnRef = document.getElementById('mtn-reference');
+    
+    if (bankRef) {
+        bankRef.textContent = reference;
+        const copyBtn = bankRef.nextElementSibling;
+        if (copyBtn && copyBtn.classList.contains('copy-btn')) {
+            copyBtn.dataset.copy = reference;
+        }
+    }
+    
+    if (airtelRef) {
+        airtelRef.textContent = reference;
+        const copyBtn = airtelRef.nextElementSibling;
+        if (copyBtn && copyBtn.classList.contains('copy-btn')) {
+            copyBtn.dataset.copy = reference;
+        }
+    }
+    
+    if (mtnRef) {
+        mtnRef.textContent = reference;
+        const copyBtn = mtnRef.nextElementSibling;
+        if (copyBtn && copyBtn.classList.contains('copy-btn')) {
+            copyBtn.dataset.copy = reference;
+        }
+    }
+}
+
+// Helper function to copy text to clipboard
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+                // Fallback for older browsers
+                fallbackCopyTextToClipboard(text);
+            });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+// Fallback copy function for browsers without clipboard API
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        console.error('Fallback: Copy command error', err);
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Show visual feedback when copying
+function showCopiedFeedback(element) {
+    // Create tooltip or use existing one
+    let tooltip = element.querySelector('.copy-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.className = 'copy-tooltip';
+        tooltip.textContent = 'Copied!';
+        element.appendChild(tooltip);
+    } else {
+        tooltip.style.display = 'block';
+    }
+    
+    // Add copied class for styling
+    element.classList.add('copied');
+    
+    // Remove tooltip after delay
+    setTimeout(() => {
+        if (tooltip.parentNode === element) {
+            element.removeChild(tooltip);
+        }
+        element.classList.remove('copied');
+    }, 2000);
 }
 
 // Close the deposit modal

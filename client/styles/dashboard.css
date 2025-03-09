@@ -1090,7 +1090,7 @@ body {
 .copy-address {
     background: none;
     border: none;
-    color: var(--primary-color);
+    color: var (--primary-color);
     cursor: pointer;
     padding: 6px;
     margin-left: 10px;
@@ -1760,4 +1760,242 @@ body {
 .btn-small.btn-outline:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
+}
+
+/* New Payment Method Selection Styles */
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.payment-method-card {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+}
+
+.payment-method-card:hover {
+    border-color: var(--primary-color);
+    background-color: #f0f9ff;
+    transform: translateY(-2px);
+}
+
+.payment-method-card.selected {
+    border-color: var(--primary-color);
+    background-color: #e6f7ff;
+    box-shadow: 0 4px 12px rgba(8, 136, 204, 0.15);
+}
+
+.payment-method-icon {
+    font-size: 28px;
+    width: 60px;
+    height: 60px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-icon i {
+    color: #555;
+}
+
+.payment-method-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.payment-method-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Step Navigation UI */
+.deposit-navigation {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Bank Transfer and Mobile Money Styles */
+.bank-transfer-info, .mobile-money-info {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.mobile-money-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .mobile-money-info {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+.mobile-money-qr {
+    background-color: white;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .mobile-money-qr {
+        margin-bottom: 0;
+        margin-right: 25px;
+    }
+}
+
+.mobile-money-details {
+    flex: 1;
+}
+
+.bank-transfer-field, .mobile-money-field {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.bank-transfer-field:last-child, .mobile-money-field:last-child {
+    border-bottom: none;
+}
+
+.field-label {
+    font-weight: 600;
+    color: var(--text-medium);
+    width: 120px;
+    flex-shrink: 0;
+}
+
+.field-value {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    color: var(--text-dark);
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 5px;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    color: #006699;
+    transform: scale(1.1);
+}
+
+.bank-transfer-note, .mobile-money-note {
+    display: flex;
+    align-items: flex-start;
+    background-color: rgba(8, 136, 204, 0.08);
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-top: 15px;
+}
+
+.bank-transfer-note i, .mobile-money-note i {
+    color: var(--primary-color);
+    font-size: 16px;
+    margin-right: 10px;
+    margin-top: 2px;
+}
+
+.bank-transfer-note p, .mobile-money-note p {
+    color: var(--text-medium);
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Hide elements */
+.hidden {
+    display: none !important;
+}
+
+/* Payment Method Select Dropdown */
+.payment-select-wrapper {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.payment-select-wrapper::after {
+    content: "\f107";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--text-medium);
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.payment-select {
+    appearance: none;
+    width: 100%;
+    padding: 14px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.payment-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(8, 136, 204, 0.1);
+}
+
+.payment-details-section {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    margin-top: 5px;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-dark);
+}
+
+.payment-details-section .section-title {
+    border-bottom: none;
+    margin-top: 20px;
 }

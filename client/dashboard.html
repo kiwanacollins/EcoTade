@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - EcoTrade</title>
+    <title>Dashboard - Forexprox</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,8 +22,8 @@
         <!-- Sidebar -->
         <aside class="dashboard-sidebar">
             <div class="sidebar-logo">
-                <img src="./images/logo.png" alt="EcoTrade Logo">
-                <span>EcoTrade</span>
+                <img src="./images/logo.png" alt="Forexprox Logo">
+                <span>Forexprox</span>
             </div>
             
             <nav class="sidebar-nav">
@@ -838,35 +838,122 @@
             </div>
             
             <div class="modal-body">
-                <div class="deposit-steps">
-                    <div class="step active">
-                        <span class="step-number">1</span>
-                        <span class="step-label">Amount</span>
+                <h4 class="section-title">Deposit Amount</h4>
+                <div class="form-group amount-input">
+                    <div class="input-icon-wrapper">
+                        <span class="input-icon">$</span>
+                        <input type="number" id="modal-deposit-amount" min="10" step="1" placeholder="Enter amount (min $10)">
                     </div>
-                    <div class="step-divider"></div>
-                    <div class="step active">
-                        <span class="step-number">2</span>
-                        <span class="step-label">Currency</span>
-                    </div>
-                    <div class="step-divider"></div>
-                    <div class="step active">
-                        <span class="step-number">3</span>
-                        <span class="step-label">Pay</span>
-                    </div>
+                    <p class="form-hint">Minimum deposit: $10.00</p>
                 </div>
                 
-                <div class="deposit-section">
-                    <h4 class="section-title">Deposit Amount</h4>
-                    <div class="form-group amount-input">
-                        <div class="input-icon-wrapper">
-                            <span class="input-icon">$</span>
-                            <input type="number" id="modal-deposit-amount" min="10" step="1" placeholder="Enter amount (min $10)">
+                <h4 class="section-title">Select Payment Method</h4>
+                <div class="form-group">
+                    <div class="payment-select-wrapper">
+                        <select id="payment-method-select" class="payment-select">
+                            <option value="bank">Bank Transfer</option>
+                            <option value="airtel">Airtel Money</option>
+                            <option value="mtn">MTN Mobile Money</option>
+                            <option value="crypto">Cryptocurrency</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bank Transfer Details -->
+                <div class="payment-details-section" id="bank-details-section">
+                    <div class="bank-transfer-info">
+                        <div class="bank-transfer-field">
+                            <span class="field-label">Bank Name:</span>
+                            <span class="field-value">EcoTrade Bank</span>
                         </div>
-                        <p class="form-hint">Minimum deposit: $10.00</p>
+                        <div class="bank-transfer-field">
+                            <span class="field-label">Account Name:</span>
+                            <span class="field-value">EcoTrade Ltd.</span>
+                        </div>
+                        <div class="bank-transfer-field">
+                            <span class="field-label">Account Number:</span>
+                            <span class="field-value">1234567890</span>
+                            <button class="copy-btn" data-copy="1234567890"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="bank-transfer-field">
+                            <span class="field-label">Swift/BIC Code:</span>
+                            <span class="field-value">ECOTRADEXXX</span>
+                            <button class="copy-btn" data-copy="ECOTRADEXXX"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="bank-transfer-field">
+                            <span class="field-label">Reference:</span>
+                            <span class="field-value" id="bank-reference">ECOT-123456-7890</span>
+                            <button class="copy-btn" data-copy="ECOT-123456-7890"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div class="bank-transfer-note">
+                            <i class="fas fa-info-circle"></i>
+                            <p>Please include the reference number in your transfer description. Your account will be credited once payment is confirmed.</p>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="deposit-section">
+
+                <!-- Airtel Money Details -->
+                <div class="payment-details-section" id="airtel-details-section" style="display:none;">
+                    <div class="mobile-money-info">
+                        <div class="mobile-money-qr">
+                            <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg" alt="Airtel Money QR Code" class="qr-code">
+                            <p>Scan to pay</p>
+                        </div>
+                        <div class="mobile-money-details">
+                            <div class="mobile-money-field">
+                                <span class="field-label">Send to number:</span>
+                                <span class="field-value">0770123456</span>
+                                <button class="copy-btn" data-copy="0770123456"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="mobile-money-field">
+                                <span class="field-label">Business Name:</span>
+                                <span class="field-value">EcoTrade</span>
+                            </div>
+                            <div class="mobile-money-field">
+                                <span class="field-label">Reference:</span>
+                                <span class="field-value" id="airtel-reference">ECOT-123456-7890</span>
+                                <button class="copy-btn" data-copy="ECOT-123456-7890"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="mobile-money-note">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Send payment via Airtel Money to the number above. Your account will be credited within 15 minutes after payment is confirmed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MTN Mobile Money Details -->
+                <div class="payment-details-section" id="mtn-details-section" style="display:none;">
+                    <div class="mobile-money-info">
+                        <div class="mobile-money-qr">
+                            <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg" alt="MTN Mobile Money QR Code" class="qr-code">
+                            <p>Scan to pay</p>
+                        </div>
+                        <div class="mobile-money-details">
+                            <div class="mobile-money-field">
+                                <span class="field-label">Send to number:</span>
+                                <span class="field-value">0780123456</span>
+                                <button class="copy-btn" data-copy="0780123456"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="mobile-money-field">
+                                <span class="field-label">Business Name:</span>
+                                <span class="field-value">EcoTrade</span>
+                            </div>
+                            <div class="mobile-money-field">
+                                <span class="field-label">Reference:</span>
+                                <span class="field-value" id="mtn-reference">ECOT-123456-7890</span>
+                                <button class="copy-btn" data-copy="ECOT-123456-7890"><i class="fas fa-copy"></i></button>
+                            </div>
+                            <div class="mobile-money-note">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Send payment via MTN Mobile Money to the number above. Your account will be credited within 15 minutes after payment is confirmed.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cryptocurrency Details - Keeping unchanged as requested -->
+                <div class="payment-details-section" id="crypto-details-section" style="display:none;">
                     <h4 class="section-title">Select Cryptocurrency</h4>
                     <div class="form-group">
                         <div class="crypto-select-wrapper">
@@ -876,72 +963,70 @@
                             </select>
                         </div>
                     </div>
-                </div>
-                
-                <div class="payment-info">
-                    <div id="bitcoin-info" class="payment-method-details">
-                        <div class="payment-header">
-                            <div class="payment-icon bitcoin">₿</div>
-                            <h4>Bitcoin Payment</h4>
+                    
+                    <div class="payment-info">
+                        <div id="bitcoin-info" class="payment-method-details">
+                            <div class="payment-header">
+                                <div class="payment-icon bitcoin">₿</div>
+                                <h4>Bitcoin Payment</h4>
+                            </div>
+                            
+                            <div class="crypto-payment-container">
+                                <div class="crypto-qr">
+                                    <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg?ga=GA1.1.1701098370.1730030619&semt=ais_hybrid" alt="Bitcoin QR Code" class="qr-code">
+                                </div>
+                                <div class="crypto-details">
+                                    <p class="send-instructions">Send your <strong>Bitcoin (BTC)</strong> to this address:</p>
+                                    <div class="wallet-address">
+                                        <code>bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
+                                        <button class="copy-address" data-address="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" title="Copy address">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <div class="payment-instructions">
+                                        <i class="fas fa-info-circle"></i>
+                                        <p class="crypto-note">Please send the exact amount. Your account will be credited after 1 confirmation.</p>
+                                    </div>
+                                    <div class="confirmation-time">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Average confirmation time: ~10 minutes</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="crypto-payment-container">
-                            <div class="crypto-qr">
-                                <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg?ga=GA1.1.1701098370.1730030619&semt=ais_hybrid" alt="Bitcoin QR Code" class="qr-code">
+                        <div id="ethereum-info" class="payment-method-details hidden">
+                            <div class="payment-header">
+                                <div class="payment-icon ethereum">
+                                    <img src="./images/ethereum.png" alt="" style="width: 30px;">
+                                </div>
+                                <h4>Ethereum Payment</h4>
                             </div>
-                            <div class="crypto-details">
-                                <p class="send-instructions">Send your <strong>Bitcoin (BTC)</strong> to this address:</p>
-                                <div class="wallet-address">
-                                    <code>bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
-                                    <button class="copy-address" data-address="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh" title="Copy address">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
+                            
+                            <div class="crypto-payment-container">
+                                <div class="crypto-qr">
+                                    <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg?ga=GA1.1.1701098370.1730030619&semt=ais_hybrid" alt="Ethereum QR Code" class="qr-code">
                                 </div>
-                                <div class="payment-instructions">
-                                    <i class="fas fa-info-circle"></i>
-                                    <p class="crypto-note">Please send the exact amount. Your account will be credited after 1 confirmation.</p>
-                                </div>
-                                <div class="confirmation-time">
-                                    <i class="fas fa-clock"></i>
-                                    <span>Average confirmation time: ~10 minutes</span>
+                                <div class="crypto-details">
+                                    <p class="send-instructions">Send your <strong>Ethereum (ETH)</strong> to this address:</p>
+                                    <div class="wallet-address">
+                                        <code>0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
+                                        <button class="copy-address" data-address="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" title="Copy address">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <div class="payment-instructions">
+                                        <i class="fas fa-info-circle"></i>
+                                        <p class="crypto-note">Please send the exact amount. Your account will be credited after 10 confirmations.</p>
+                                    </div>
+                                    <div class="confirmation-time">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Average confirmation time: ~5 minutes</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div id="ethereum-info" class="payment-method-details hidden">
-                        <div class="payment-header">
-                            <div class="payment-icon ethereum">
-                                <img src="./images/ethereum.png" alt="" style="width: 30px;">
-                            </div>
-                            <h4>Ethereum Payment</h4>
-                        </div>
-                        
-                        <div class="crypto-payment-container">
-                            <div class="crypto-qr">
-                                <img src="https://img.freepik.com/free-vector/scan-me-qr-code_78370-2915.jpg?ga=GA1.1.1701098370.1730030619&semt=ais_hybrid" alt="Ethereum QR Code" class="qr-code">
-                            </div>
-                            <div class="crypto-details">
-                                <p class="send-instructions">Send your <strong>Ethereum (ETH)</strong> to this address:</p>
-                                <div class="wallet-address">
-                                    <code>0x71C7656EC7ab88b098defB751B7401B5f6d8976F</code>
-                                    <button class="copy-address" data-address="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" title="Copy address">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                                <div class="payment-instructions">
-                                    <i class="fas fa-info-circle"></i>
-                                    <p class="crypto-note">Please send the exact amount. Your account will be credited after 10 confirmations.</p>
-                                </div>
-                                <div class="confirmation-time">
-                                    <i class="fas fa-clock"></i>
-                                    <span>Average confirmation time: ~5 minutes</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- REMOVE USDT, SOL, and BNB payment method details sections -->
                 </div>
             </div>
             

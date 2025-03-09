@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 isConfirmPasswordValid && isTermsAccepted) {
                 
                 // Here you would typically send the form data to your server
-                alert('Registration successful! Welcome to EcoTrade.');
+                alert('Registration successful! Welcome to Forexprox.');
                 form.reset();
             }
         });
@@ -124,6 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const fullName = fullNameInput.value.trim();
         const parentElement = fullNameInput.closest('.input-container');
+        
+        console.log("Validating name:", fullName, "Length:", fullName.length); // Debug log
         
         if (fullName === '') {
             showError(fullNameError, 'Please enter your full name');
@@ -293,9 +295,25 @@ document.addEventListener('DOMContentLoaded', function() {
             return true;
         }
     }
+    
+    // Function to clear error messages - ensure it's properly defined
+    function clearError(errorElement) {
+        if (errorElement) {
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+        }
+    }
+    
+    // Function to show error messages - ensure it's properly defined
+    function showError(errorElement, message) {
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
 });
 
-// Form validation functions for EcoTrade
+// Form validation functions for Forexprox
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize form validation
