@@ -22,8 +22,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Load data into dashboard
         updateDashboardUI(userData);
         
-        // Set up event listeners
+        // Set up event listeners - Make sure this is called after the UI is updated
         setupEventListeners();
+        
+        // Initialize trader detail buttons specifically
+        initTraderDetailButtons();
+        
+        // Check for previously selected trader
+        const storedTrader = localStorage.getItem('selectedTrader');
+        if (storedTrader) {
+            try {
+                const trader = JSON.parse(storedTrader);
+                // Update UI with stored trader after a short delay to ensure DOM is ready
+                setTimeout(() => {
+                    updateTopTraders(trader);
+                    updateActiveTraderCount(1);
+                }, 500);
+            } catch (e) {
+                console.error('Error parsing stored trader:', e);
+            }
+        }
         
     } catch (error) {
         console.error('Dashboard initialization error:', error);
@@ -155,6 +173,15 @@ function setupEventListeners() {
         });
     }
     
+    // Notification icon click event - show motivational widget
+    const notificationIcon = document.querySelector('.notification-icon');
+    if (notificationIcon) {
+        notificationIcon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleMotivationalWidget();
+        });
+    }
+    
     // Navigation between panels
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
@@ -260,37 +287,6 @@ function setupEventListeners() {
                     item.classList.add('active');
                 }
             });
-        });
-    }
-    
-    // Add event listeners for trader selection buttons
-    document.querySelectorAll('.btn-select-trader').forEach(button => {
-        button.addEventListener('click', function() {
-            const traderId = this.getAttribute('data-trader-id');
-            selectTrader(traderId);
-        });
-    });
-    
-    // Add event listeners for trader "More Info" buttons
-    document.querySelectorAll('.btn-more-info').forEach(button => {
-        button.addEventListener('click', function() {
-            const traderId = this.getAttribute('data-trader-id');
-            showTraderDetails(traderId);
-        });
-    });
-    
-    // Add event listeners to close trader details modal
-    document.querySelectorAll('.close-trader-details').forEach(button => {
-        button.addEventListener('click', closeTraderDetailsModal);
-    });
-    
-    // Add event listener for Select Trader button in the trader details modal
-    const traderProfileSelect = document.getElementById('trader-profile-select');
-    if (traderProfileSelect) {
-        traderProfileSelect.addEventListener('click', function() {
-            const traderId = this.getAttribute('data-trader-id');
-            closeTraderDetailsModal();
-            selectTrader(traderId);
         });
     }
 }
@@ -621,6 +617,8 @@ const traderDetails = {
 
 // Function to show trader details modal
 function showTraderDetails(traderId) {
+    console.log(`Showing details for trader ID: ${traderId}`);
+    
     // Get trader details from our data
     const trader = traderDetails[traderId];
     if (!trader) {
@@ -628,55 +626,77 @@ function showTraderDetails(traderId) {
         return;
     }
 
-    // Find trader card to get the image
-    const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
-    const traderImg = traderCard.querySelector('.trader-avatar img').src;
-    
-    // Populate modal with trader details
-    document.getElementById('trader-profile-img').src = traderImg;
-    document.getElementById('trader-profile-name').textContent = trader.name;
-    document.getElementById('trader-profile-spec').textContent = trader.specialty;
-    document.getElementById('trader-profile-monthly').textContent = trader.performance.monthly;
-    document.getElementById('trader-profile-alltime').textContent = trader.performance.allTime;
-    
-    // About section combines background and additional info
-    document.getElementById('trader-profile-about').textContent = `${trader.background} ${trader.additionalInfo}`;
-    
-    // Expertise section combines strategy and risk management
-    document.getElementById('trader-profile-expertise').textContent = 
-        `Trading Strategy: ${trader.strategy}\n\nRisk Management: ${trader.riskManagement}`;
-    
-    // Stats section
-    document.getElementById('trader-profile-experience').textContent = trader.experience;
-    document.getElementById('trader-profile-risk').textContent = trader.riskLevel;
-    document.getElementById('trader-profile-min-investment').textContent = trader.minInvestment;
-    document.getElementById('trader-profile-clients').textContent = trader.activeClients;
-    
-    // Add trader ID to the select button for use when clicked
-    document.getElementById('trader-profile-select').setAttribute('data-trader-id', traderId);
-    
-    // Initialize trader performance chart
-    initTraderPerformanceChart(traderId);
-    
-    // Show the modal
-    const modal = document.getElementById('trader-details-modal');
-    if (modal) {
-        modal.classList.add('active');
+    try {
+        // Find trader card to get the image
+        const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
+        const traderImg = traderCard.querySelector('.trader-avatar img').src;
         
-        // Add event listener to close when clicking outside
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeTraderDetailsModal();
-            }
-        });
+        // Populate modal with trader details
+        document.getElementById('trader-profile-img').src = traderImg;
+        document.getElementById('trader-profile-name').textContent = trader.name;
+        document.getElementById('trader-profile-spec').textContent = trader.specialty;
+        document.getElementById('trader-profile-monthly').textContent = trader.performance.monthly;
+        document.getElementById('trader-profile-alltime').textContent = trader.performance.allTime;
+        
+        // About section combines background and additional info
+        document.getElementById('trader-profile-about').textContent = `${trader.background} ${trader.additionalInfo}`;
+        
+        // Expertise section combines strategy and risk management
+        document.getElementById('trader-profile-expertise').textContent = 
+            `Trading Strategy: ${trader.strategy}\n\nRisk Management: ${trader.riskManagement}`;
+        
+        // Stats section
+        document.getElementById('trader-profile-experience').textContent = trader.experience;
+        document.getElementById('trader-profile-min-investment').textContent = trader.minInvestment;
+        document.getElementById('trader-profile-clients').textContent = trader.activeClients;
+        
+        // Add trader ID to the select button for use when clicked
+        document.getElementById('trader-profile-select').setAttribute('data-trader-id', traderId);
+        
+        // Initialize trader performance chart
+        initTraderPerformanceChart(traderId);
+        
+        // Show the modal with explicit logging
+        const modal = document.getElementById('trader-details-modal');
+        if (modal) {
+            console.log('Displaying trader details modal');
+            modal.style.display = 'flex'; // Force display style first
+            modal.classList.add('active');
+            
+            // Make sure modal is visible in the DOM
+            setTimeout(() => {
+                if (!modal.classList.contains('active')) {
+                    console.log('Modal class was not applied properly, forcing display');
+                    modal.classList.add('active');
+                    modal.style.display = 'flex';
+                }
+            }, 100);
+            
+            // Add event listener to close when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeTraderDetailsModal();
+                }
+            });
+        } else {
+            console.error('Trader details modal element not found');
+        }
+    } catch (error) {
+        console.error('Error showing trader details:', error);
     }
 }
 
 // Close trader details modal
 function closeTraderDetailsModal() {
+    console.log('Closing trader details modal');
     const modal = document.getElementById('trader-details-modal');
     if (modal) {
         modal.classList.remove('active');
+        
+        // Make sure it's hidden
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // Match this to your CSS transition time
     }
 }
 
@@ -2028,3 +2048,234 @@ document.addEventListener('click', function(e) {
         }
     }
 });
+
+// Array of motivational investment messages
+const motivationalMessages = [
+    {
+        title: "Compound Interest Magic",
+        message: "The earlier you invest, the more time your money has to grow. Small investments today can lead to significant returns tomorrow.",
+        icon: "chart-line"
+    },
+    {
+        title: "Diversify Your Portfolio",
+        message: "Spread your investments across different assets to minimize risk and maximize potential returns.",
+        icon: "chart-pie"
+    },
+    {
+        title: "Market Opportunity",
+        message: "The best time to invest was yesterday. The second best time is today. Don't miss out on potential growth.",
+        icon: "arrow-trend-up"
+    },
+    {
+        title: "Long-term Perspective",
+        message: "The stock market has historically provided around 7% annual returns. Patience is key to successful investing.",
+        icon: "clock"
+    },
+    {
+        title: "Dollar-Cost Averaging",
+        message: "Consistent regular investments can help reduce the impact of market volatility on your portfolio.",
+        icon: "calendar-check"
+    },
+    {
+        title: "Take Action Today",
+        message: "Don't wait for the 'perfect time' to invest. Time in the market beats timing the market.",
+        icon: "rocket"
+    },
+    {
+        title: "Professional Management",
+        message: "Our expert traders have consistently outperformed market averages. Let them work for you.",
+        icon: "user-tie"
+    },
+    {
+        title: "Financial Freedom",
+        message: "Every investment you make today is a step toward your future financial independence.",
+        icon: "hand-holding-dollar"
+    },
+    {
+        title: "Wealth Building",
+        message: "Wealth is built gradually through consistent investing and compounding returns over time.",
+        icon: "building"
+    },
+    {
+        title: "Risk Management",
+        message: "Our professional traders use sophisticated strategies to protect your capital while seeking growth.",
+        icon: "shield"
+    }
+];
+
+let currentMessageIndex = 0;
+let messageRotationInterval;
+
+// Function to toggle motivational widget
+function toggleMotivationalWidget() {
+    // Check if widget already exists
+    let widget = document.querySelector('.motivational-widget');
+    
+    // If widget exists, close it
+    if (widget) {
+        closeMotivationalWidget();
+        return;
+    }
+    
+    // Create the widget
+    widget = document.createElement('div');
+    widget.className = 'motivational-widget';
+    widget.innerHTML = `
+        <div class="widget-header">
+            <h4>Investment Insights</h4>
+            <button class="widget-close"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="widget-content">
+            <div class="message-container"></div>
+        </div>
+    `;
+    
+    // Append to body
+    document.body.appendChild(widget);
+    
+    // Display first message
+    displayCurrentMessage();
+    
+    // Add close button event listener
+    widget.querySelector('.widget-close').addEventListener('click', closeMotivationalWidget);
+    
+    // Start rotating messages every 5 seconds
+    messageRotationInterval = setInterval(rotateMessage, 5000);
+    
+    // Add event listener to close when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', handleOutsideClick);
+    }, 10);
+    
+    // Add animation class
+    setTimeout(() => {
+        widget.classList.add('active');
+    }, 10);
+    
+    // Reset notification badge
+    const badge = document.querySelector('.notification-badge');
+    if (badge) {
+        badge.textContent = '0';
+    }
+}
+
+// Function to close motivational widget
+function closeMotivationalWidget() {
+    const widget = document.querySelector('.motivational-widget');
+    if (widget) {
+        widget.classList.remove('active');
+        
+        // Remove widget after animation completes
+        setTimeout(() => {
+            if (widget.parentNode) {
+                widget.parentNode.removeChild(widget);
+            }
+        }, 300);
+        
+        // Clear the message rotation interval
+        if (messageRotationInterval) {
+            clearInterval(messageRotationInterval);
+        }
+        
+        // Remove document click event listener
+        document.removeEventListener('click', handleOutsideClick);
+    }
+}
+
+// Handle clicks outside the widget to close it
+function handleOutsideClick(event) {
+    const widget = document.querySelector('.motivational-widget');
+    const notificationIcon = document.querySelector('.notification-icon');
+    
+    if (widget && !widget.contains(event.target) && !notificationIcon.contains(event.target)) {
+        closeMotivationalWidget();
+    }
+}
+
+// Display current motivational message
+function displayCurrentMessage() {
+    const messageContainer = document.querySelector('.message-container');
+    if (!messageContainer) return;
+    
+    const message = motivationalMessages[currentMessageIndex];
+    
+    // Create message element with animation
+    const messageElement = document.createElement('div');
+    messageElement.className = 'motivational-message';
+    messageElement.innerHTML = `
+        <div class="message-icon">
+            <i class="fas fa-${message.icon}"></i>
+        </div>
+        <div class="message-text">
+            <h5>${message.title}</h5>
+            <p>${message.message}</p>
+        </div>
+    `;
+    
+    // Clear previous messages
+    messageContainer.innerHTML = '';
+    messageContainer.appendChild(messageElement);
+    
+    // Add animation
+    setTimeout(() => {
+        messageElement.classList.add('active');
+    }, 10);
+}
+
+// Rotate through messages
+function rotateMessage() {
+    const messageElement = document.querySelector('.motivational-message');
+    if (!messageElement) return;
+    
+    // Remove current message with animation
+    messageElement.classList.add('fade-out');
+    
+    setTimeout(() => {
+        // Update index to next message
+        currentMessageIndex = (currentMessageIndex + 1) % motivationalMessages.length;
+        
+        // Display next message
+        displayCurrentMessage();
+    }, 300);
+}
+
+// New function to specifically initialize trader detail buttons
+function initTraderDetailButtons() {
+    console.log('Initializing trader detail buttons');
+    
+    // Add event listeners for trader "More Info" buttons
+    document.querySelectorAll('.btn-more-info').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default button behavior
+            const traderId = this.getAttribute('data-trader-id');
+            console.log(`More Info button clicked for trader ID: ${traderId}`);
+            showTraderDetails(traderId);
+        });
+    });
+    
+    // Add event listeners for trader selection buttons
+    document.querySelectorAll('.btn-select-trader').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default button behavior
+            const traderId = this.getAttribute('data-trader-id');
+            selectTrader(traderId);
+        });
+    });
+    
+    // Add event listeners to close trader details modal
+    document.querySelectorAll('.close-trader-details').forEach(button => {
+        button.addEventListener('click', closeTraderDetailsModal);
+    });
+    
+    // Add event listener for Select Trader button in the trader details modal
+    const traderProfileSelect = document.getElementById('trader-profile-select');
+    if (traderProfileSelect) {
+        traderProfileSelect.addEventListener('click', function() {
+            const traderId = this.getAttribute('data-trader-id');
+            closeTraderDetailsModal();
+            selectTrader(traderId);
+        });
+    }
+    
+    console.log('Trader detail buttons initialized');
+}
