@@ -1999,3 +1999,128 @@ body {
     border-bottom: none;
     margin-top: 20px;
 }
+
+/* Add Trader More Info Button Styles */
+.btn-more-info {
+    width: 100%;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background-color: transparent;
+    color: var(--text-medium);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-more-info:hover {
+    background-color: #f0f9ff;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Trader Details Modal Styles */
+.trader-details-content {
+    max-width: 800px;
+}
+
+.trader-profile {
+    padding: 0;
+}
+
+.trader-profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+}
+
+.trader-profile-avatar {
+    margin-right: 20px;
+}
+
+.trader-profile-avatar img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.trader-profile-info {
+    flex: 1;
+}
+
+.trader-profile-info h4 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.trader-profile-spec {
+    display: inline-block;
+    font-size: 15px;
+    background-color: #e6f7ff;
+    color: var(--primary-color);
+    border-radius: 20px;
+    padding: 4px 15px;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.trader-profile-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.trader-profile-details h5 {
+    font-size: 18px;
+    margin: 25px 0 12px 0;
+    color: var(--text-dark);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.trader-profile-details p {
+    color: var(--text-medium);
+    line-height: 1.6;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.trader-profile-stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.trader-profile-stats-item {
+    background-color: #f8fafc;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stats-label {
+    font-size: 14px;
+    color: var(--text-medium);
+    margin-bottom: 8px;
+}
+
+.stats-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.trader-performance-chart-container {
+    height: 250px;
+    margin-top: 30px;
+}
