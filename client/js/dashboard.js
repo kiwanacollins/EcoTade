@@ -270,6 +270,504 @@ function setupEventListeners() {
             selectTrader(traderId);
         });
     });
+    
+    // Add event listeners for trader "More Info" buttons
+    document.querySelectorAll('.btn-more-info').forEach(button => {
+        button.addEventListener('click', function() {
+            const traderId = this.getAttribute('data-trader-id');
+            showTraderDetails(traderId);
+        });
+    });
+    
+    // Add event listeners to close trader details modal
+    document.querySelectorAll('.close-trader-details').forEach(button => {
+        button.addEventListener('click', closeTraderDetailsModal);
+    });
+    
+    // Add event listener for Select Trader button in the trader details modal
+    const traderProfileSelect = document.getElementById('trader-profile-select');
+    if (traderProfileSelect) {
+        traderProfileSelect.addEventListener('click', function() {
+            const traderId = this.getAttribute('data-trader-id');
+            closeTraderDetailsModal();
+            selectTrader(traderId);
+        });
+    }
+}
+
+// Trader details data
+const traderDetails = {
+    "1": {
+        name: "John Smith",
+        specialty: "Crypto Specialist",
+        background: "A seasoned trader focused on digital assets, John has developed deep insights into the crypto market over several years.",
+        strategy: "Leverages technical analysis, blockchain sentiment, and emerging token trends to identify opportunities in both major and altcoins.",
+        performance: {
+            monthly: "+24.6%",
+            allTime: "+142%"
+        },
+        riskManagement: "Uses diversified holdings and strict stop-loss orders to navigate crypto volatility.",
+        additionalInfo: "Actively involved in crypto communities and early-adopter projects, always on the lookout for breakthrough blockchain innovations.",
+        experience: "8+ years",
+        riskLevel: "Moderate-High",
+        minInvestment: "$500",
+        activeClients: "384"
+    },
+    "2": {
+        name: "Emma Johnson",
+        specialty: "Forex Expert",
+        background: "With a decade of experience in currency markets, Emma is well-versed in the dynamics of forex trading.",
+        strategy: "Combines technical chart patterns with fundamental economic indicators to time entries and exits accurately.",
+        performance: {
+            monthly: "+18.3%",
+            allTime: "+95%"
+        },
+        riskManagement: "Employs careful leverage management and dynamic stop-loss strategies to protect capital.",
+        additionalInfo: "Known for her precision and ability to read volatile market conditions, ensuring steady returns.",
+        experience: "10+ years",
+        riskLevel: "Moderate",
+        minInvestment: "$1,000",
+        activeClients: "256"
+    },
+    "3": {
+        name: "Michael Chen",
+        specialty: "Stock Market Analyst",
+        background: "Michael brings robust equity research and market insight to the table, focusing on stock performance analysis.",
+        strategy: "Uses a blend of fundamental analysis and technical indicators to identify undervalued stocks and growth opportunities.",
+        performance: {
+            monthly: "+21.7%",
+            allTime: "+118%"
+        },
+        riskManagement: "Diversifies across sectors and utilizes hedging techniques with options to minimize downside risk.",
+        additionalInfo: "Relies on comprehensive market research and real-time data to fine-tune his stock selection process.",
+        experience: "12+ years",
+        riskLevel: "Moderate",
+        minInvestment: "$1,000",
+        activeClients: "312"
+    },
+    "4": {
+        name: "Sarah Johnson",
+        specialty: "Algorithmic Trading Expert",
+        background: "With a strong background in both coding and finance, Sarah excels at designing automated trading systems.",
+        strategy: "Implements and continuously refines quantitative models that automate trade execution based on historical data and real-time signals.",
+        performance: {
+            monthly: "+19.2%",
+            allTime: "+127%"
+        },
+        riskManagement: "Uses backtesting and rigorous parameter optimization to ensure algorithms perform reliably under varied market conditions.",
+        additionalInfo: "Constantly monitors system performance and market trends to adjust strategies on the fly.",
+        experience: "7+ years",
+        riskLevel: "Moderate",
+        minInvestment: "$2,000",
+        activeClients: "195"
+    },
+    "5": {
+        name: "David Rodriguez",
+        specialty: "Commodities Specialist",
+        background: "David has extensive experience in commodities, with a focus on metals, energy, and agriculture.",
+        strategy: "Analyzes supply and demand fundamentals combined with technical chart patterns to identify commodity price movements.",
+        performance: {
+            monthly: "+16.8%",
+            allTime: "+105%"
+        },
+        riskManagement: "Implements hedging strategies and diversifies across multiple commodity types to mitigate sector-specific risks.",
+        additionalInfo: "Monitors global economic indicators and geopolitical events to stay ahead in the commodity markets.",
+        experience: "15+ years",
+        riskLevel: "Moderate-High",
+        minInvestment: "$1,500",
+        activeClients: "178"
+    },
+    "6": {
+        name: "Jessica Kim",
+        specialty: "Options Trading Strategist",
+        background: "Jessica is a specialist in derivatives with an in-depth understanding of options markets and pricing models.",
+        strategy: "Uses advanced options strategies (spreads, straddles, iron condors) to capitalize on market volatility and directional moves.",
+        performance: {
+            monthly: "+22.4%",
+            allTime: "+136%"
+        },
+        riskManagement: "Conducts detailed risk/reward analysis and closely monitors options greeks to adjust positions swiftly.",
+        additionalInfo: "Recognized for her ability to design flexible strategies that adapt to changing market conditions.",
+        experience: "9+ years",
+        riskLevel: "High",
+        minInvestment: "$2,500",
+        activeClients: "142"
+    },
+    "7": {
+        name: "Robert Taylor",
+        specialty: "Technical Analyst",
+        background: "Robert's expertise lies in interpreting market charts and identifying technical patterns that forecast price movements.",
+        strategy: "Utilizes candlestick analysis, moving averages, and oscillators to pinpoint high-probability trade signals.",
+        performance: {
+            monthly: "+17.9%",
+            allTime: "+92%"
+        },
+        riskManagement: "Relies on systematic stop-loss and take-profit levels based on technical indicators to safeguard investments.",
+        additionalInfo: "Known for his disciplined, methodical approach, ensuring consistency in his trading performance.",
+        experience: "11+ years",
+        riskLevel: "Moderate",
+        minInvestment: "$1,000",
+        activeClients: "263"
+    },
+    "8": {
+        name: "Linda Martinez",
+        specialty: "ETF Portfolio Manager",
+        background: "Linda specializes in constructing diversified portfolios using Exchange Traded Funds, ensuring broad market exposure.",
+        strategy: "Focuses on balanced asset allocation across various sectors, emphasizing low-cost, liquid ETFs.",
+        performance: {
+            monthly: "+14.5%",
+            allTime: "+88%"
+        },
+        riskManagement: "Regularly rebalances portfolios and maintains a long-term perspective to minimize volatility.",
+        additionalInfo: "Valued for her ability to build stable, growth-oriented portfolios that perform reliably over time.",
+        experience: "14+ years",
+        riskLevel: "Low-Moderate",
+        minInvestment: "$1,000",
+        activeClients: "410"
+    },
+    "9": {
+        name: "James Wilson",
+        specialty: "Quantitative Strategist",
+        background: "James merges advanced mathematical techniques with financial market analysis to create data-driven trading strategies.",
+        strategy: "Develops and implements statistical models that identify inefficiencies and automate execution across multiple assets.",
+        performance: {
+            monthly: "+23.8%",
+            allTime: "+153%"
+        },
+        riskManagement: "Applies robust quantitative risk controls and diversification methods to maintain portfolio resilience.",
+        additionalInfo: "Continually refines his algorithms to adapt to evolving market conditions and new data sets.",
+        experience: "10+ years",
+        riskLevel: "Moderate-High",
+        minInvestment: "$3,000",
+        activeClients: "156"
+    },
+    "10": {
+        name: "Jennifer Lee",
+        specialty: "Value Investing Expert",
+        background: "Jennifer is dedicated to finding undervalued opportunities through rigorous fundamental analysis.",
+        strategy: "Focuses on companies with strong balance sheets and sustainable competitive advantages, emphasizing long-term growth.",
+        performance: {
+            monthly: "+15.2%",
+            allTime: "+87%"
+        },
+        riskManagement: "Relies on in-depth research and a margin-of-safety approach to limit downside risk.",
+        additionalInfo: "Known for her patient, disciplined investment approach that favors long-term wealth accumulation.",
+        experience: "16+ years",
+        riskLevel: "Low-Moderate",
+        minInvestment: "$2,000",
+        activeClients: "285"
+    },
+    "11": {
+        name: "Thomas Brown",
+        specialty: "Day Trading Specialist",
+        background: "Thomas is an expert in high-frequency, intraday trading, thriving on the fast pace of the market.",
+        strategy: "Executes rapid trades based on real-time technical analysis and momentum indicators, capitalizing on small price movements.",
+        performance: {
+            monthly: "+25.7%",
+            allTime: "+173%"
+        },
+        riskManagement: "Uses strict risk controls, including tight stop-losses, to manage the high volatility inherent in day trading.",
+        additionalInfo: "Renowned for his quick decision-making and ability to consistently capture short-term market opportunities.",
+        experience: "8+ years",
+        riskLevel: "Very High",
+        minInvestment: "$5,000",
+        activeClients: "128"
+    },
+    "12": {
+        name: "Sophia Williams",
+        specialty: "Global Markets Analyst",
+        background: "Sophia possesses a deep understanding of international markets and global economic trends.",
+        strategy: "Combines macroeconomic analysis with geopolitical insights to navigate diverse global markets.",
+        performance: {
+            monthly: "+16.9%",
+            allTime: "+95%"
+        },
+        riskManagement: "Diversifies across regions and sectors to hedge against global economic uncertainties.",
+        additionalInfo: "Provides valuable market commentary and forecasts that help shape strategic investment decisions.",
+        experience: "13+ years",
+        riskLevel: "Moderate",
+        minInvestment: "$1,500",
+        activeClients: "219"
+    },
+    "13": {
+        name: "Daniel Garcia",
+        specialty: "Fixed Income Specialist",
+        background: "Daniel has extensive experience in the bond and treasury markets, specializing in income-generating assets.",
+        strategy: "Analyzes interest rate trends, credit ratings, and macroeconomic indicators to optimize fixed income portfolios.",
+        performance: {
+            monthly: "+13.1%",
+            allTime: "+71%"
+        },
+        riskManagement: "Emphasizes conservative positions and duration management to reduce exposure to rate fluctuations.",
+        additionalInfo: "Known for his disciplined approach in creating stable, income-focused portfolios.",
+        experience: "18+ years",
+        riskLevel: "Low",
+        minInvestment: "$2,500",
+        activeClients: "356"
+    },
+    "14": {
+        name: "Emily Thompson",
+        specialty: "Dividend Growth Strategist",
+        background: "Emily focuses on building portfolios around companies with a strong history of dividend growth.",
+        strategy: "Selects stocks with consistent dividend increases and robust fundamentals to drive long-term returns.",
+        performance: {
+            monthly: "+14.8%",
+            allTime: "+90%"
+        },
+        riskManagement: "Uses dividend reinvestment and sector diversification to stabilize portfolio performance.",
+        additionalInfo: "Combines income with growth, offering a balanced approach that appeals to long-term investors.",
+        experience: "12+ years",
+        riskLevel: "Low-Moderate",
+        minInvestment: "$2,000",
+        activeClients: "275"
+    },
+    "15": {
+        name: "Alexander White",
+        specialty: "Futures Trader",
+        background: "Alexander specializes in trading futures contracts across commodities and financial instruments.",
+        strategy: "Utilizes technical indicators and market sentiment analysis to identify optimal entry and exit points in the futures markets.",
+        performance: {
+            monthly: "+21.2%",
+            allTime: "+132%"
+        },
+        riskManagement: "Applies disciplined leverage and strict margin controls to manage exposure in volatile futures markets.",
+        additionalInfo: "Known for his agility in seizing opportunities in fast-moving markets and adjusting positions as needed.",
+        experience: "9+ years",
+        riskLevel: "High",
+        minInvestment: "$3,000",
+        activeClients: "164"
+    },
+    "16": {
+        name: "Olivia Harris",
+        specialty: "Swing Trading Expert",
+        background: "Olivia is adept at identifying and capitalizing on mid-term market movements.",
+        strategy: "Combines technical analysis with trend evaluation to pinpoint lucrative swing trading opportunities.",
+        performance: {
+            monthly: "+18.5%",
+            allTime: "+110%"
+        },
+        riskManagement: "Uses moving averages and signal-based exits to optimize timing and minimize risk.",
+        additionalInfo: "Balances market trends with tactical entries, ensuring a favorable risk-reward balance in each trade.",
+        experience: "7+ years",
+        riskLevel: "Moderate",
+        minInvestment: "$1,500",
+        activeClients: "238"
+    },
+    "17": {
+        name: "William Martin",
+        specialty: "Growth Investing Strategist",
+        background: "William focuses on high-growth sectors and emerging companies poised for rapid expansion.",
+        strategy: "Analyzes innovation, market position, and earnings potential to select growth stocks with strong future prospects.",
+        performance: {
+            monthly: "+20.4%",
+            allTime: "+129%"
+        },
+        riskManagement: "Diversifies across high-potential sectors and continually monitors earnings reports to adjust positions.",
+        additionalInfo: "Known for his forward-thinking approach and ability to identify emerging market leaders.",
+        experience: "11+ years",
+        riskLevel: "Moderate-High",
+        minInvestment: "$2,000",
+        activeClients: "201"
+    },
+    "18": {
+        name: "Natalie Lewis",
+        specialty: "DeFi & Web3 Specialist",
+        background: "Natalie is immersed in the decentralized finance and Web3 ecosystem, with a keen eye on blockchain innovations.",
+        strategy: "Evaluates tokenomics, smart contract viability, and market sentiment to identify disruptive projects and profitable opportunities.",
+        performance: {
+            monthly: "+27.1%",
+            allTime: "+156%"
+        },
+        riskManagement: "Implements dynamic portfolio adjustments and stringent risk controls to manage the inherent volatility of digital assets.",
+        additionalInfo: "Passionate about emerging tech, Natalie stays ahead of trends in the DeFi and Web3 space to maximize returns.",
+        experience: "6+ years",
+        riskLevel: "Very High",
+        minInvestment: "$2,000",
+        activeClients: "132"
+    },
+    "19": {
+        name: "Christopher Clark",
+        specialty: "Energy Markets Expert",
+        background: "Christopher brings deep expertise in energy commodities, including oil, gas, and renewable sectors.",
+        strategy: "Combines fundamental supply-demand analysis with technical indicators to navigate shifts in energy prices.",
+        performance: {
+            monthly: "+19.8%",
+            allTime: "+125%"
+        },
+        riskManagement: "Diversifies his exposure within the energy sector and employs hedging strategies to reduce risk.",
+        additionalInfo: "Monitors geopolitical and regulatory developments closely, ensuring timely adjustments to his trading positions.",
+        experience: "14+ years",
+        riskLevel: "Moderate-High",
+        minInvestment: "$2,500",
+        activeClients: "179"
+    },
+    "20": {
+        name: "Rachel Green",
+        specialty: "Biotech Sector Analyst",
+        background: "Rachel specializes in the biotech arena, analyzing clinical trials, regulatory updates, and market trends to inform her decisions.",
+        strategy: "Focuses on companies at the forefront of innovation in healthcare, balancing potential breakthroughs with inherent risks.",
+        performance: {
+            monthly: "+22.5%",
+            allTime: "+138%"
+        },
+        riskManagement: "Uses thorough research and sector diversification to navigate the volatility of biotech investments.",
+        additionalInfo: "Known for her forward-thinking approach, Rachel provides insightful commentary on emerging biotech trends and market opportunities.",
+        experience: "9+ years",
+        riskLevel: "High",
+        minInvestment: "$2,000",
+        activeClients: "153"
+    }
+};
+
+// Function to show trader details modal
+function showTraderDetails(traderId) {
+    // Get trader details from our data
+    const trader = traderDetails[traderId];
+    if (!trader) {
+        console.error(`No details found for trader ID: ${traderId}`);
+        return;
+    }
+
+    // Find trader card to get the image
+    const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
+    const traderImg = traderCard.querySelector('.trader-avatar img').src;
+    
+    // Populate modal with trader details
+    document.getElementById('trader-profile-img').src = traderImg;
+    document.getElementById('trader-profile-name').textContent = trader.name;
+    document.getElementById('trader-profile-spec').textContent = trader.specialty;
+    document.getElementById('trader-profile-monthly').textContent = trader.performance.monthly;
+    document.getElementById('trader-profile-alltime').textContent = trader.performance.allTime;
+    
+    // About section combines background and additional info
+    document.getElementById('trader-profile-about').textContent = `${trader.background} ${trader.additionalInfo}`;
+    
+    // Expertise section combines strategy and risk management
+    document.getElementById('trader-profile-expertise').textContent = 
+        `Trading Strategy: ${trader.strategy}\n\nRisk Management: ${trader.riskManagement}`;
+    
+    // Stats section
+    document.getElementById('trader-profile-experience').textContent = trader.experience;
+    document.getElementById('trader-profile-risk').textContent = trader.riskLevel;
+    document.getElementById('trader-profile-min-investment').textContent = trader.minInvestment;
+    document.getElementById('trader-profile-clients').textContent = trader.activeClients;
+    
+    // Add trader ID to the select button for use when clicked
+    document.getElementById('trader-profile-select').setAttribute('data-trader-id', traderId);
+    
+    // Initialize trader performance chart
+    initTraderPerformanceChart(traderId);
+    
+    // Show the modal
+    const modal = document.getElementById('trader-details-modal');
+    if (modal) {
+        modal.classList.add('active');
+        
+        // Add event listener to close when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeTraderDetailsModal();
+            }
+        });
+    }
+}
+
+// Close trader details modal
+function closeTraderDetailsModal() {
+    const modal = document.getElementById('trader-details-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Initialize trader performance chart
+function initTraderPerformanceChart(traderId) {
+    const ctx = document.getElementById('trader-performance-chart');
+    if (!ctx) return;
+    
+    // Destroy existing chart instance if it exists
+    if (window.traderChart) {
+        window.traderChart.destroy();
+    }
+    
+    // Generate some mock performance data based on trader's performance numbers
+    const trader = traderDetails[traderId];
+    if (!trader) return;
+    
+    // Parse monthly performance percentage
+    const monthlyPerf = parseFloat(trader.performance.monthly) / 100;
+    
+    // Generate last 12 months performance data with some variations
+    const labels = [];
+    const data = [];
+    let baseValue = 10000; // Starting with $10,000 investment
+    
+    // Create month labels (last 12 months)
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        labels.push(date.toLocaleString('default', { month: 'short' }));
+        
+        // Calculate performance with some random variation around the monthly average
+        const variation = (Math.random() * 0.04) - 0.02; // Random variation between -2% and +2%
+        const monthlyReturn = monthlyPerf / 12 + variation;
+        
+        // Compound the returns
+        baseValue = baseValue * (1 + monthlyReturn);
+        data.push(baseValue.toFixed(2));
+    }
+    
+    // Create the chart
+    window.traderChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Portfolio Value ($)',
+                data: data,
+                borderColor: '#08c',
+                backgroundColor: 'rgba(8, 136, 204, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `Value: $${Number(context.raw).toLocaleString()}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    grid: {
+                        drawBorder: false
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
 }
 
 // Open the deposit modal with improved multi-step process
