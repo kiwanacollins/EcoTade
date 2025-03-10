@@ -15,6 +15,12 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+      
       - name: Debug Information
         run: |
           echo "Checking SSH agent..."
@@ -23,23 +29,23 @@ jobs:
       - name: Create deployment directory
         run: |
           echo "Creating deployment directory if needed..."
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}"
           
       - name: Deploy to VPS
         run: |
           echo "Deploying to VPS at path: ${{ secrets.DEPLOY_PATH }}"
-          rsync -avz --stats --exclude '.git' --exclude 'node_modules' ./ ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:"${{ secrets.DEPLOY_PATH }}/" -e "ssh -o StrictHostKeyChecking=no"
+          rsync -avz --stats --exclude '.git' --exclude 'node_modules' ./ ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:"${{ secrets.DEPLOY_PATH }}/"
           echo "Deployment complete, verifying files..."
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "ls -la ${{ secrets.DEPLOY_PATH }}/"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "ls -la ${{ secrets.DEPLOY_PATH }}/"
           
       - name: Install dependencies
         run: |
           echo "Installing dependencies..."
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && if [ -f package.json ]; then npm install; else echo 'No package.json found'; fi"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && if [ -f package.json ]; then npm install; else echo 'No package.json found'; fi"
           
       - name: Restart services
         run: |
           echo "Checking if PM2 is installed..."
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "command -v pm2 || npm install -g pm2"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "command -v pm2 || npm install -g pm2"
           echo "Restarting services..."
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && (pm2 list | grep server || pm2 start server/app.js)"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && (pm2 list | grep server || pm2 start server/app.js)"
