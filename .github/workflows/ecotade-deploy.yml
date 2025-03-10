@@ -35,19 +35,6 @@ jobs:
           
       - name: Deploy to VPS
         run: |
-          echo "Deploying to VPS at path: ${{ secrets.DEPLOY_PATH }}"
-          rsync -avz --stats --exclude '.git' --exclude 'node_modules' ./ ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:"${{ secrets.DEPLOY_PATH }}/"
-          echo "Deployment complete, verifying files..."
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "ls -la ${{ secrets.DEPLOY_PATH }}/"
-          
-      - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && if [ -f package.json ]; then npm install; else echo 'No package.json found'; fi"
-          
-      - name: Restart services
-        run: |
-          echo "Checking if PM2 is installed..."
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "command -v pm2 || npm install -g pm2"
-          echo "Restarting services..."
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && (pm2 list | grep server || pm2 start server/app.js)"
+          echo "Deploying to VPS..."
+          rsync -avz --exclude '.git' --exclude 'node_modules' ./ ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.DEPLOY_PATH }} -e "ssh -o StrictHostKeyChecking=no"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && npm install && pm2 describe ecotade > /dev/null && pm2 restart ecotade || pm2 start server/server.js --name ecotade"
