@@ -41,6 +41,11 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
 // You can add more routes as needed
 
+// Add health check routes
+const healthRoutes = require('./health');
+app.use('/health', healthRoutes);
+app.use('/api/health', healthRoutes);
+
 // Default route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Forexprox API' });
@@ -48,7 +53,11 @@ app.get('/', (req, res) => {
 
 // Add a health check route for /api
 app.get('/api', (req, res) => {
-  res.json({ message: 'API is running' });
+  res.json({ 
+    message: 'API is running',
+    version: '1.0.0',
+    status: 'online'
+  });
 });
 
 // Error handler
