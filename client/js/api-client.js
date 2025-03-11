@@ -1,13 +1,28 @@
 // API client for handling requests to the backend
 
-// Environment detection with proper domain support
+// Environment detection with more robust checks
 const ENV = {
-  isDev: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
-  domain: 'forexprox.com'
+  isDev: function() {
+    // Check if running on localhost or development environment
+    return window.location.hostname === 'localhost' || 
+           window.location.hostname === '127.0.0.1' || 
+           window.location.hostname.includes('192.168.') || 
+           window.location.hostname.includes('.local');
+  },
+  domain: 'forexprox.com',
+  // Cache the result to avoid repeated checks
+  _cachedIsDev: null,
+  get isDevEnvironment() {
+    if (this._cachedIsDev === null) {
+      this._cachedIsDev = this.isDev();
+      console.log(`Environment detected as: ${this._cachedIsDev ? 'DEVELOPMENT' : 'PRODUCTION'}`);
+    }
+    return this._cachedIsDev;
+  }
 };
 
 // Configure API URL based on environment
-const API_URL = ENV.isDev ? 
+const API_URL = ENV.isDevEnvironment ? 
   'http://localhost:5000/api' : 
   `https://${ENV.domain}/api`;
 
@@ -17,7 +32,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
     const url = `${API_URL}${endpoint}`;
     
     // Only log in development
-    if (ENV.isDev) {
+    if (ENV.isDevEnvironment) {
       console.log(`Making ${method} request to ${url}`);
     }
     
@@ -100,19 +115,18 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
   }
 }
 
-// Check if server is online with proper domain
+// Check if server is online - completely skip in production
 async function checkServerStatus() {
+  // Immediately return true in production - never even try to check
+  if (!ENV.isDevEnvironment) {
+    return true;
+  }
+  
   try {
-    // Use the correct server URL based on environment
-    const healthEndpoint = ENV.isDev ? 
-      'http://localhost:5000/health' : 
-      `https://${ENV.domain}/health`;
+    // Only run this code in development
+    const healthEndpoint = 'http://localhost:5000/health';
     
-    if (!ENV.isDev) {
-      // Skip health check in production for better performance
-      // We assume the server is online in production
-      return true;
-    }
+    console.log('Checking server status in DEVELOPMENT mode...');
     
     const response = await fetch(healthEndpoint, {
       method: 'GET',
@@ -124,23 +138,15 @@ async function checkServerStatus() {
     });
     
     if (response.ok) {
-      if (ENV.isDev) {
-        console.log('Server is online');
-      }
+      console.log('Server is online');
       return true;
     } else {
       console.error('Server returned error:', response.status);
       return false;
     }
   } catch (error) {
-    if (ENV.isDev) {
-      console.error('Server connection error:', error);
-      return false;
-    } else {
-      // In production, assume server is online even if health check fails
-      console.warn('Health check failed but continuing in production');
-      return true;
-    }
+    console.error('Server connection error:', error);
+    return false;
   }
 }
 
@@ -159,51 +165,46 @@ const auth = {
   // Google Authentication
   googleAuth: async (idToken) => {
     try {
-      console.log('Making Google auth API request');
+      // Log environment mode
+      console.log(`Running in ${ENV.isDevEnvironment ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
       
-      // In production, we'll skip the server check to improve performance
-      if (!ENV.isDev) {
-        // Directly make the API request in production
-        const result = await apiRequest('/auth/google', 'POST', { idToken });
-        return result;
+      // In production, COMPLETELY bypass server checks and debug logs
+      if (!ENV.isDevEnvironment) {
+        console.log('Production mode: directly making Google auth API request');
+        try {
+          return await apiRequest('/auth/google', 'POST', { idToken });
+        } catch (apiError) {
+          console.error('Google auth API request failed in production:', apiError.message);
+          throw apiError;
+        }
       }
       
-      // Only check server status in development
+      // Everything below this point only runs in development
+      console.log('Development mode: checking server status before Google auth');
       const serverOnline = await checkServerStatus();
       if (!serverOnline) {
         throw new Error('Server is not running or not accessible. Please try again later.');
       }
       
       // Log token details for debugging (only in development)
-      if (ENV.isDev) {
-        console.log('Token length:', idToken ? idToken.length : 0);
-        console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
-      }
+      console.log('Token length:', idToken ? idToken.length : 0);
+      console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
       
       // Detect mobile device for specific handling
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile && ENV.isDev) {
+      if (isMobile) {
         console.log('Mobile device detected for Google auth');
       }
       
       const result = await apiRequest('/auth/google', 'POST', { idToken });
-      
-      if (ENV.isDev) {
-        console.log('Server response for Google auth:', result);
-      }
-      
+      console.log('Server response for Google auth:', result);
       return result;
     } catch (error) {
       console.error('Google auth API request failed:', error);
       
       // Provide more helpful error messages for mobile users
       if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        throw new Error('Network connection issue. Please check your mobile data or WiFi connection.');
-      }
-      
-      // More detailed error info only in development
-      if (error.response && ENV.isDev) {
-        console.error('Error response:', error.response);
+        throw new Error('Network connection issue. Please check your internet connection and try again.');
       }
       
       throw error;
