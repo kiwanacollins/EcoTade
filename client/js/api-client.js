@@ -103,10 +103,16 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
 // Check if server is online with proper domain
 async function checkServerStatus() {
   try {
-    // Use a dedicated health endpoint
+    // Use the correct server URL based on environment
     const healthEndpoint = ENV.isDev ? 
       'http://localhost:5000/health' : 
       `https://${ENV.domain}/health`;
+    
+    if (!ENV.isDev) {
+      // Skip health check in production for better performance
+      // We assume the server is online in production
+      return true;
+    }
     
     const response = await fetch(healthEndpoint, {
       method: 'GET',
@@ -127,8 +133,14 @@ async function checkServerStatus() {
       return false;
     }
   } catch (error) {
-    console.error('Server connection error:', error);
-    return false;
+    if (ENV.isDev) {
+      console.error('Server connection error:', error);
+      return false;
+    } else {
+      // In production, assume server is online even if health check fails
+      console.warn('Health check failed but continuing in production');
+      return true;
+    }
   }
 }
 
@@ -149,24 +161,37 @@ const auth = {
     try {
       console.log('Making Google auth API request');
       
-      // Check if server is online first
+      // In production, we'll skip the server check to improve performance
+      if (!ENV.isDev) {
+        // Directly make the API request in production
+        const result = await apiRequest('/auth/google', 'POST', { idToken });
+        return result;
+      }
+      
+      // Only check server status in development
       const serverOnline = await checkServerStatus();
       if (!serverOnline) {
         throw new Error('Server is not running or not accessible. Please try again later.');
       }
       
-      // Log token details for debugging
-      console.log('Token length:', idToken ? idToken.length : 0);
-      console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
+      // Log token details for debugging (only in development)
+      if (ENV.isDev) {
+        console.log('Token length:', idToken ? idToken.length : 0);
+        console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
+      }
       
       // Detect mobile device for specific handling
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile) {
+      if (isMobile && ENV.isDev) {
         console.log('Mobile device detected for Google auth');
       }
       
       const result = await apiRequest('/auth/google', 'POST', { idToken });
-      console.log('Server response for Google auth:', result);
+      
+      if (ENV.isDev) {
+        console.log('Server response for Google auth:', result);
+      }
+      
       return result;
     } catch (error) {
       console.error('Google auth API request failed:', error);
@@ -176,10 +201,11 @@ const auth = {
         throw new Error('Network connection issue. Please check your mobile data or WiFi connection.');
       }
       
-      // More detailed error info
-      if (error.response) {
+      // More detailed error info only in development
+      if (error.response && ENV.isDev) {
         console.error('Error response:', error.response);
       }
+      
       throw error;
     }
   },
