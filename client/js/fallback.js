@@ -41,7 +41,22 @@ function updateAuthUI() {
       // Replace original click handler
       btn.addEventListener('click', function(e) {
         e.preventDefault();
-        alert('Google Sign-In is currently unavailable. Please use email registration/login instead.');
+        
+        // Mobile-friendly alert
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (isMobile) {
+          // Show error message in the form instead of alert for better mobile experience
+          const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
+          if (errorElem) {
+            errorElem.textContent = 'Google Sign-In is currently unavailable on this mobile device. Please use email login instead.';
+            errorElem.style.display = 'block';
+          } else {
+            alert('Google Sign-In is currently unavailable. Please use email login instead.');
+          }
+        } else {
+          alert('Google Sign-In is currently unavailable. Please use email registration/login instead.');
+        }
       });
     });
     
@@ -78,6 +93,22 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Fallback handler: Google API failed to load');
     authMethods.google = false;
     updateAuthUI();
+    
+    // Add specific mobile handling
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
+      if (errorElem) {
+        errorElem.textContent = 'Google Sign-In is not available on this mobile browser. Please use email login instead.';
+        errorElem.style.display = 'block';
+      }
+      
+      // Make email fields more prominent
+      const emailInput = document.querySelector('input[type="email"]');
+      if (emailInput) {
+        emailInput.placeholder = "Enter your email to sign in";
+      }
+    }
   });
 });
 
@@ -85,4 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
 window.addEventListener('load', function() {
   // Give external scripts time to load
   setTimeout(updateAuthMethodsAvailability, 1000);
+  
+  // Extra time for mobile devices which may be slower to load
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (isMobile) {
+    setTimeout(updateAuthMethodsAvailability, 3000);
+  }
 });

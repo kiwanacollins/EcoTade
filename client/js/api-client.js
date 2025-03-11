@@ -6,35 +6,82 @@ const API_URL = 'http://localhost:5000/api';
 async function apiRequest(endpoint, method = 'GET', data = null) {
   try {
     const url = `${API_URL}${endpoint}`;
+    console.log(`Making ${method} request to ${url}`);
     
-    const options = {
-      method,
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include' // Important for cookies
+    // Prepare request headers
+    const headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
     };
     
-    // Add authorization token from localStorage if it exists
+    // Add auth token if available
     const token = localStorage.getItem('token');
     if (token) {
-      options.headers.Authorization = `Bearer ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     }
     
+    // Prepare request options
+    const options = {
+      method,
+      headers,
+      mode: 'cors',
+      cache: 'no-cache',
+    };
+    
+    // Add request body if data exists
     if (data) {
       options.body = JSON.stringify(data);
     }
     
-    const response = await fetch(url, options);
-    const result = await response.json();
+    // Make the request with timeout for mobile networks
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    options.signal = controller.signal;
     
-    if (!response.ok) {
-      throw new Error(result.message || 'Something went wrong');
+    try {
+      const response = await fetch(url, options);
+      clearTimeout(timeoutId);
+      
+      // Handle API response
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const responseData = await response.json();
+        
+        if (!response.ok) {
+          // Format error message
+          const errorMsg = responseData.message || `Error ${response.status}: ${response.statusText}`;
+          console.error(`API Error: ${errorMsg}`);
+          throw new Error(errorMsg);
+        }
+        
+        return responseData;
+      } else {
+        // Handle non-JSON responses
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        return { success: true };
+      }
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      // Handle network errors with mobile-friendly messages
+      if (fetchError.name === 'AbortError') {
+        console.error('Request timed out');
+        throw new Error('Request timed out. Please check your internet connection and try again.');
+      }
+      
+      // Provide mobile-friendly error messages
+      if (!navigator.onLine) {
+        throw new Error('You appear to be offline. Please check your internet connection and try again.');
+      } else if (fetchError.message.includes('Failed to fetch')) {
+        throw new Error('Network error. Please check your connection and try again.');
+      }
+      
+      throw fetchError;
     }
-    
-    return result;
   } catch (error) {
-    console.error('API Request Error:', error);
+    console.error('API request failed:', error);
     throw error;
   }
 }
@@ -85,18 +132,31 @@ const auth = {
       // Check if server is online first
       const serverOnline = await checkServerStatus();
       if (!serverOnline) {
-        throw new Error('Server is not running or not accessible. Please start the server before continuing.');
+        throw new Error('Server is not running or not accessible. Please try again later.');
       }
       
+      // Log token details for debugging
       console.log('Token length:', idToken ? idToken.length : 0);
       console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
+      
+      // Detect mobile device for specific handling
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        console.log('Mobile device detected for Google auth');
+      }
       
       const result = await apiRequest('/auth/google', 'POST', { idToken });
       console.log('Server response for Google auth:', result);
       return result;
     } catch (error) {
       console.error('Google auth API request failed:', error);
-      // Try to provide more detailed error info
+      
+      // Provide more helpful error messages for mobile users
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        throw new Error('Network connection issue. Please check your mobile data or WiFi connection.');
+      }
+      
+      // More detailed error info
       if (error.response) {
         console.error('Error response:', error.response);
       }

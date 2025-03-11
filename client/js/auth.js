@@ -267,29 +267,32 @@ function initializeGoogleSignIn() {
     const clientId = '1031648174548-ufj6a2fmumi5s6bpcvgiuvni77olcvrd.apps.googleusercontent.com';
     console.log('Using client ID:', clientId);
     
-    // Initialize Google Identity Services with relaxed settings
+    // Initialize Google Identity Services with enhanced mobile support
     google.accounts.id.initialize({
       client_id: clientId,
       callback: handleGoogleAuth,
       auto_select: false,
       cancel_on_tap_outside: true,
-      ux_mode: 'popup', // Try popup mode instead of redirect
-      itp_support: true // Enable Intelligent Tracking Prevention support
+      ux_mode: 'popup', // Better for mobile support
+      itp_support: true, // Enable Intelligent Tracking Prevention support
+      use_fedcm_for_prompt: true, // Enable FedCM API for better mobile support
+      context: 'signin', // Explicitly specify signin context
+      native_callback: handleGoogleAuth, // Same callback for native flows
+      prompt_parent_id: 'googleButtonContainer' // Specify parent container
     });
 
-    // Attempt to render a button as fallback
+    // Attempt to render buttons with mobile-friendly settings
     try {
       // Try to render a Google button as a fallback
       const googleButtonContainers = document.querySelectorAll('.social-buttons');
       if (googleButtonContainers.length > 0) {
         googleButtonContainers.forEach(container => {
-          // Create a container for the Google button
+          // Create a container div with specific ID for the Google button
           const buttonContainer = document.createElement('div');
-          buttonContainer.id = 'g_id_onload';
-          buttonContainer.style.marginTop = '10px';
+          buttonContainer.id = 'googleButtonContainer';
           container.appendChild(buttonContainer);
           
-          // Render the button
+          // Render the button with mobile-friendly options
           google.accounts.id.renderButton(
             buttonContainer,
             { 
@@ -298,7 +301,9 @@ function initializeGoogleSignIn() {
               type: 'standard',
               text: 'sign_in_with',
               shape: 'rectangular',
-              logo_alignment: 'center'
+              logo_alignment: 'center',
+              width: container.offsetWidth || 240, // Responsive width
+              locale: 'en' // Ensure consistent language
             }
           );
         });
@@ -307,62 +312,56 @@ function initializeGoogleSignIn() {
       console.error('Error rendering Google button:', renderError);
     }
     
-    // Set up click handlers for Google buttons
+    // Set up click handlers with touch support for Google buttons
     const googleButtons = document.querySelectorAll('.btn-google');
     googleButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        console.log('Google button clicked, showing prompt');
-        
-        try {
-          // Show the Google sign-in prompt with improved error handling
-          google.accounts.id.prompt((notification) => {
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              const reason = notification.getNotDisplayedReason() || 
-                             notification.getSkippedReason() || 
-                             'unknown_reason';
-              console.log('Google sign-in prompt not displayed:', reason);
-              
-              const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
-              if (errorElem) {
-                // Show user-friendly error message based on reason
-                let errorMessage = 'Google sign-in prompt could not be displayed. ';
+      ['click', 'touchend'].forEach(eventType => {
+        btn.addEventListener(eventType, (e) => {
+          e.preventDefault();
+          e.stopPropagation(); // Prevent event bubbling
+          console.log('Google button interaction detected via ' + eventType);
+          
+          try {
+            // Show the Google sign-in prompt with improved error handling
+            google.accounts.id.prompt((notification) => {
+              if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                const reason = notification.getNotDisplayedReason() || 
+                               notification.getSkippedReason() || 
+                               'unknown_reason';
+                console.log('Google sign-in prompt not displayed:', reason);
                 
-                switch (reason) {
-                  case 'browser_not_supported':
-                    errorMessage += 'Your browser might not support this feature.';
-                    break;
-                  case 'third_party_cookies_blocked':
-                    errorMessage += 'Please enable third-party cookies in your browser settings.';
-                    break;
-                  case 'missing_client_id':
-                    errorMessage += 'Application configuration error.';
-                    break;
-                  default:
-                    errorMessage += 'Try disabling ad blockers or using incognito mode.';
+                const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
+                if (errorElem) {
+                  // Show user-friendly error message based on reason
+                  let errorMessage = 'Google sign-in prompt could not be displayed. ';
+                  
+                  // Mobile-friendly error messages
+                  switch (reason) {
+                    case 'browser_not_supported':
+                      errorMessage += 'Your mobile browser might not support this feature.';
+                      break;
+                    case 'third_party_cookies_blocked':
+                      errorMessage += 'Please enable third-party cookies in your mobile browser settings.';
+                      break;
+                    case 'missing_client_id':
+                      errorMessage += 'Application configuration error.';
+                      break;
+                    case 'suppressed_by_user':
+                      errorMessage += 'Sign-in prompt was blocked. Try using the email login option.';
+                      break;
+                    default:
+                      errorMessage += 'Try disabling ad blockers or using a desktop browser.';
+                  }
+                  
+                  errorElem.textContent = errorMessage;
+                  errorElem.style.display = 'block';
                 }
-                
-                errorElem.textContent = errorMessage;
-                errorElem.style.display = 'block';
-                
-                // Create a direct link for manual Google sign-in as last resort
-                const signInLink = document.createElement('a');
-                signInLink.href = `https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=${clientId}&redirect_uri=${encodeURIComponent(window.location.origin + '/callback.html')}&scope=email%20profile`;
-                signInLink.className = 'btn btn-google-alt';
-                signInLink.textContent = "Try Alternative Google Sign-In";
-                signInLink.target = "_blank";
-                errorElem.parentNode.appendChild(signInLink);
               }
-            }
-          });
-        } catch (promptError) {
-          console.error('Error displaying Google sign-in prompt:', promptError);
-          const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
-          if (errorElem) {
-            errorElem.textContent = 'Google sign-in is currently unavailable. Please try using email registration or try again later.';
-            errorElem.style.display = 'block';
+            });
+          } catch (promptError) {
+            console.error('Error displaying Google sign-in prompt:', promptError);
           }
-        }
+        });
       });
     });
     
@@ -379,25 +378,47 @@ function disableGoogleButtons(message) {
   googleBtns.forEach(btn => {
     btn.style.opacity = '0.5';
     btn.title = message;
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      alert('Google Sign-In is currently unavailable. Please use email registration/login instead.');
-    });
+    
+    // Clean up existing listeners
+    btn.replaceWith(btn.cloneNode(true));
+    
+    // Add new listeners with touch support
+    const newBtn = document.querySelector('.btn-google');
+    if (newBtn) {
+      ['click', 'touchend'].forEach(eventType => {
+        newBtn.addEventListener(eventType, function(e) {
+          e.preventDefault();
+          alert('Google Sign-In is currently unavailable on this device. Please use email registration/login instead.');
+        });
+      });
+    }
   });
 }
 
-// Add event listeners after page loads
+// Add event listeners after page loads with enhanced mobile support
 document.addEventListener('DOMContentLoaded', () => {
   // Registration form
   const registrationForm = document.getElementById('registration-form');
   if (registrationForm) {
     registrationForm.addEventListener('submit', register);
+    
+    // Ensure buttons and form elements are properly sized for touch
+    const formButtons = registrationForm.querySelectorAll('button');
+    formButtons.forEach(button => {
+      button.style.minHeight = '44px'; // Minimum touch target size
+    });
   }
   
-  // Login form
+  // Login form with enhanced mobile support
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
     loginForm.addEventListener('submit', login);
+    
+    // Ensure buttons and form elements are properly sized for touch
+    const formButtons = loginForm.querySelectorAll('button');
+    formButtons.forEach(button => {
+      button.style.minHeight = '44px'; // Minimum touch target size
+    });
   }
   
   // Listen for Google API failures

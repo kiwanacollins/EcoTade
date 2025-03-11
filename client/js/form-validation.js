@@ -16,29 +16,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPasswordError = document.getElementById('confirm-password-error');
     const termsError = document.getElementById('terms-error');
     
-    // Toggle password visibility - improved implementation with null check
+    // Toggle password visibility with touch support
     if (passwordToggle && passwordInput) {
-        passwordToggle.addEventListener('click', function(e) {
-            e.preventDefault(); // Prevent any default behavior
-            e.stopPropagation(); // Stop event from propagating
-            
-            // Toggle between password and text type
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Toggle eye icon
-            if (type === 'password') {
-                passwordToggle.classList.remove('fa-eye-slash');
-                passwordToggle.classList.add('fa-eye');
-            } else {
-                passwordToggle.classList.remove('fa-eye');
-                passwordToggle.classList.add('fa-eye-slash');
-            }
+        ['click', 'touchend'].forEach(eventType => {
+            passwordToggle.addEventListener(eventType, function(e) {
+                e.preventDefault(); // Prevent any default behavior
+                e.stopPropagation(); // Stop event from propagating
+                
+                // Toggle between password and text type
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Toggle eye icon
+                if (type === 'password') {
+                    passwordToggle.classList.remove('fa-eye-slash');
+                    passwordToggle.classList.add('fa-eye');
+                } else {
+                    passwordToggle.classList.remove('fa-eye');
+                    passwordToggle.classList.add('fa-eye-slash');
+                }
+            });
         });
     }
     
-    // Also fix the confirm password toggle if needed
-    // Only add confirm password toggle if the confirm password input exists
+    // Also fix the confirm password toggle with touch support
     if (confirmPasswordInput) {
         const confirmPasswordToggle = document.createElement('i');
         confirmPasswordToggle.className = 'fas fa-eye password-toggle';
@@ -48,32 +49,47 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!document.getElementById('confirm-password-toggle') && confirmPasswordInput.parentNode) {
             confirmPasswordInput.parentNode.appendChild(confirmPasswordToggle);
             
-            confirmPasswordToggle.addEventListener('click', function(e) {
-                e.preventDefault(); // Prevent any default behavior
-                e.stopPropagation(); // Stop event from propagating
-                
-                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                confirmPasswordInput.setAttribute('type', type);
-                
-                // Toggle eye icon
-                if (type === 'password') {
-                    confirmPasswordToggle.classList.remove('fa-eye-slash');
-                    confirmPasswordToggle.classList.add('fa-eye');
-                } else {
-                    confirmPasswordToggle.classList.remove('fa-eye');
-                    confirmPasswordToggle.classList.add('fa-eye-slash');
-                }
+            ['click', 'touchend'].forEach(eventType => {
+                confirmPasswordToggle.addEventListener(eventType, function(e) {
+                    e.preventDefault(); // Prevent any default behavior
+                    e.stopPropagation(); // Stop event from propagating
+                    
+                    const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    confirmPasswordInput.setAttribute('type', type);
+                    
+                    // Toggle eye icon
+                    if (type === 'password') {
+                        confirmPasswordToggle.classList.remove('fa-eye-slash');
+                        confirmPasswordToggle.classList.add('fa-eye');
+                    } else {
+                        confirmPasswordToggle.classList.remove('fa-eye');
+                        confirmPasswordToggle.classList.add('fa-eye-slash');
+                    }
+                });
             });
         }
     }
     
-    // Ensure inputs receive focus properly
+    // Ensure inputs receive focus properly on touch devices
     document.querySelectorAll('.input-container input').forEach(input => {
         if (input) {
-            input.addEventListener('click', function(e) {
-                // Explicitly focus the input when clicked
-                this.focus();
-                e.stopPropagation();
+            ['click', 'touchstart'].forEach(eventType => {
+                input.addEventListener(eventType, function(e) {
+                    // Fix for iOS focus issues
+                    setTimeout(() => {
+                        this.focus();
+                    }, 0);
+                    e.stopPropagation();
+                });
+            });
+            
+            // Add explicit blur handler for better mobile behavior
+            input.addEventListener('blur', function() {
+                // Validate on blur for better mobile experience
+                if (this.id === 'fullname' && validateFullName) validateFullName();
+                if (this.id === 'email' && validateEmail) validateEmail();
+                if (this.id === 'password' && validatePassword) validatePassword();
+                if (this.id === 'confirm-password' && validateConfirmPassword) validateConfirmPassword();
             });
         }
     });

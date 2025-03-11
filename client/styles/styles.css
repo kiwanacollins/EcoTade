@@ -1024,6 +1024,67 @@ body {
     .new-section h2, .steps-section h2, .markets-section h2, .blog-section h2 {
         font-size: 32px;
     }
+    
+    /* Enhanced mobile form controls */
+    .input-container {
+        position: relative;
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    
+    .input-container input {
+        font-size: 16px; /* Prevent iOS zoom on focus */
+        height: 44px; /* Minimum touch target size */
+        padding-left: 40px; /* Ensure space for icon */
+    }
+    
+    .input-container .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        z-index: 10;
+        padding: 8px; /* Larger touch target */
+    }
+    
+    .btn, button[type="submit"] {
+        min-height: 44px; /* Minimum touch target size */
+        font-size: 16px;
+    }
+    
+    /* Fix Google button container on mobile */
+    #googleButtonContainer {
+        width: 100% !important;
+        margin: 10px auto;
+        overflow: hidden;
+        text-align: center;
+    }
+    
+    /* Fix checkbox on mobile */
+    .checkbox-container input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Fix error message display on mobile */
+    .error-message, .auth-error {
+        font-size: 14px;
+        padding: 8px;
+        margin-top: 5px;
+    }
+    
+    /* Ensure forms are usable on iOS */
+    input, select, textarea, button {
+        -webkit-appearance: none;
+        border-radius: 4px;
+    }
+    
+    /* Fix for iOS focus issues */
+    input:focus {
+        position: relative;
+        z-index: 1;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1940,5 +2001,104 @@ body {
 
 #navbarLogo > span{
     color: rgb(29, 29, 29);
+}
+
+/* Fix password toggle on iOS devices */
+@supports (-webkit-touch-callout: none) {
+    .input-container .password-toggle {
+        pointer-events: auto;
+    }
+    
+    /* Fix for iOS scrolling issues during form input */
+    body.has-focus {
+        position: fixed;
+        width: 100%;
+    }
+}
+
+/* Mobile touch interactions */
+.touch-active {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+/* Mobile-specific Google button fixes */
+.mobile-device #googleButtonContainer {
+    margin: 15px auto;
+    width: 100% !important;
+    display: flex;
+    justify-content: center;
+}
+
+.mobile-device #googleButtonContainer iframe {
+    scale: 0.95;
+    transform-origin: center;
+}
+
+/* Fix iOS sticky hover states */
+@media (hover: hover) {
+    .btn:hover, .btn-social:hover {
+        opacity: 0.9;
+        transform: translateY(-3px);
+    }
+}
+
+/* Prevent iOS form zoom */
+@supports (-webkit-touch-callout: none) {
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+        font-size: 16px !important;
+    }
+}
+
+/* Fix for mobile focus issues */
+.mobile-device input:focus {
+    font-size: 16px !important;
+    position: relative;
+    z-index: 10;
+}
+
+/* Improve touch targets on mobile */
+.mobile-device .btn, 
+.mobile-device button[type="submit"], 
+.mobile-device .btn-google, 
+.mobile-device .btn-social {
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* Fix password toggle positioning on mobile devices */
+.mobile-device .password-toggle {
+    padding: 10px;
+    right: 10px;
+}
+
+/* Android-specific fixes */
+.mobile-device.android .input-container input {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* iOS-specific fixes */
+.ios-device input, 
+.ios-device select, 
+.ios-device textarea {
+    -webkit-appearance: none;
+    border-radius: 25px;
+}
+
+/* Fix display issues with Google auth container */
+@media (max-width: 380px) {
+    #googleButtonContainer > div {
+        transform: scale(0.9);
+        transform-origin: center;
+    }
+    
+    .social-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
