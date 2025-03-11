@@ -165,7 +165,7 @@ async function checkServerStatus() {
     const timeoutId = setTimeout(() => controller.abort(), 5000); // Shorter timeout for status check
     
     // Use a dedicated health endpoint
-    const healthEndpoint = ENV.isDev ? 'http://localhost:5000/health' : 'https://api.forexprox.com/health';
+    const healthEndpoint = ENV.isDev ? 'http://localhost:5000/health' : 'https://forexprox.com/health';
     
     const response = await fetch(healthEndpoint, {
       method: 'GET',
