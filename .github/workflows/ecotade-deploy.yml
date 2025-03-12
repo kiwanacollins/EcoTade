@@ -37,4 +37,4 @@ jobs:
         run: |
           echo "Deploying to VPS..."
           rsync -avz --exclude '.git' --exclude 'node_modules' ./ ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.DEPLOY_PATH }} -e "ssh -o StrictHostKeyChecking=no"
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && npm install && pm2 describe ecotade > /dev/null && pm2 restart ecotade || pm2 start server/server.js --name ecotade"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.DEPLOY_PATH }} && npm install && pm2 describe forexprox > /dev/null && pm2 restart forexprox || pm2 start server/server.js --name forexprox"
