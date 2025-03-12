@@ -60,7 +60,7 @@ const app = express();
 // Updated CORS options to set origin based on environment
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
-    ? 'https://forexprox.com'
+    ? ['https://forexprox.com', 'https://www.forexprox.com']
     : function(origin, callback) { callback(null, true); },
   credentials: true,
   optionsSuccessStatus: 200,
