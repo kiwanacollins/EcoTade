@@ -249,23 +249,34 @@ async function handleGoogleAuth(response) {
 
 // Get API base URL based on environment - must be IDENTICAL to the one in api-client.js
 function getApiBaseUrl() {
+  // Just use the already defined API URL from api-client.js if it exists
+  if (window.API_URL) {
+    console.log('Using already defined API_URL from api-client.js:', window.API_URL);
+    return window.API_URL.replace('/api', ''); // Remove the /api part to get the base URL
+  }
+  
+  // HARDCODED PRODUCTION API URL - Using the actual VPS domain
+  const PRODUCTION_API_URL = 'https://srv749600.hstgr.cloud'; // Updated to actual VPS domain
+  
   const hostname = window.location.hostname;
   console.log('Current hostname for API endpoint detection (auth.js):', hostname);
   
-  // Explicitly check for production domains first
-  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
-    console.log('Production domain detected, using https://forexprox.com');
-    return 'https://forexprox.com'; // Production
-  } 
-  // Only these specific hostnames are considered development
+  // Force production API for these domains
+  if (hostname === 'forexprox.com' || 
+      hostname.includes('forexprox.com') || 
+      hostname.includes('www.forexprox.com')) {
+    console.log('Production domain detected - FORCING production API URL:', PRODUCTION_API_URL);
+    return PRODUCTION_API_URL;
+  }
+  // Local development
   else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    console.log('Local development domain detected, using http://localhost:5000');
-    return 'http://localhost:5000'; // Development
-  } 
-  // For any other hostname, use current origin to avoid cross-origin issues
+    console.log('Local development detected - using localhost:5000');
+    return 'http://localhost:5000';
+  }
+  // Default to production for any other domains
   else {
-    console.log('Unknown domain, falling back to current origin:', window.location.origin);
-    return window.location.origin;
+    console.log('Unknown domain - defaulting to PRODUCTION API:', PRODUCTION_API_URL);
+    return PRODUCTION_API_URL;
   }
 }
 

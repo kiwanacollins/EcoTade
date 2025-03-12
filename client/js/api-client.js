@@ -2,22 +2,29 @@
 
 // Get API base URL based on environment - improved detection
 function getApiBaseUrl() {
+  // HARDCODED PRODUCTION API URL - Using the actual VPS domain
+  const PRODUCTION_API_URL = 'https://srv749600.hstgr.cloud'; // Updated to actual VPS domain
+  
   const hostname = window.location.hostname;
   
-  // Check explicitly for production domain
-  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
-    console.log('Production environment detected: using forexprox.com API');
-    return 'https://forexprox.com'; // Production with https protocol
+  console.log('Hostname detection for API URL:', hostname);
+  
+  // Force production API for these domains
+  if (hostname === 'forexprox.com' || 
+      hostname.includes('forexprox.com') || 
+      hostname.includes('www.forexprox.com')) {
+    console.log('Production domain detected - FORCING production API URL:', PRODUCTION_API_URL);
+    return PRODUCTION_API_URL;
   }
-  // Check for localhost or development IPs
+  // Local development
   else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('192.168.')) {
-    console.log('Development environment detected: using localhost API');
-    return 'http://localhost:5000'; // Development
+    console.log('Local development detected - using localhost:5000');
+    return 'http://localhost:5000';
   }
-  // For any other hostname, use current origin to avoid cross-origin issues
+  // Default to production for any other domains
   else {
-    console.log('Unknown domain, falling back to current origin:', window.location.origin);
-    return window.location.origin;
+    console.log('Unknown domain - defaulting to PRODUCTION API:', PRODUCTION_API_URL);
+    return PRODUCTION_API_URL;
   }
 }
 
@@ -73,8 +80,24 @@ const API_URL = window.API_URL;
 // Add explicit log of which API URL is being used
 console.log(`Using API URL: ${API_URL}`);
 
+// Create a global function to output the complete API configuration
+window.debugAPIConfig = function() {
+  return {
+    hostname: window.location.hostname,
+    baseUrl: baseUrl,
+    apiUrl: API_URL,
+    isProduction: ENV.isProductionEnvironment,
+    isDev: ENV.isDevEnvironment
+  };
+};
+console.log('API configuration:', window.debugAPIConfig());
+
 // Main API request function
 async function apiRequest(endpoint, method = 'GET', data = null) {
+  // Print the full URL we're requesting to make debugging easier
+  const url = `${API_URL}${endpoint}`;
+  console.log(`API REQUEST: ${method} ${url}`);
+  
   try {
     // Additional safeguard: check hostname again at request time
     if (window.location.hostname === 'forexprox.com' || window.location.hostname.includes('forexprox.com')) {
@@ -83,8 +106,6 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
         throw new Error('Server configuration error. Please contact support.');
       }
     }
-    
-    const url = `${API_URL}${endpoint}`;
     
     console.log(`Making ${method} request to ${url}`);
     
