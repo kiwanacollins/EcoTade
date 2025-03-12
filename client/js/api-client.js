@@ -1,14 +1,23 @@
 // API client for handling requests to the backend
 
-// Import getApiBaseUrl from auth.js or redefine it here
+// Get API base URL based on environment - improved detection
 function getApiBaseUrl() {
   const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000'; // Development
-  } else if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+  console.log('Current hostname for API endpoint detection:', hostname);
+  
+  // Explicitly check for production domains first
+  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+    console.log('Production domain detected, using https://forexprox.com');
     return 'https://forexprox.com'; // Production
-  } else {
-    // Fallback to current origin
+  } 
+  // Only these specific hostnames are considered development
+  else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    console.log('Local development domain detected, using http://localhost:5000');
+    return 'http://localhost:5000'; // Development
+  } 
+  // For any other hostname, use current origin to avoid cross-origin issues
+  else {
+    console.log('Unknown domain, falling back to current origin:', window.location.origin);
     return window.location.origin;
   }
 }
@@ -38,6 +47,20 @@ const ENV = {
       console.log(`Current hostname: ${window.location.hostname}`);
     }
     return this._cachedIsDev;
+  },
+  
+  isProduction: function() {
+    const hostname = window.location.hostname;
+    return hostname === 'forexprox.com' || hostname.includes('forexprox.com');
+  },
+  
+  _cachedIsProduction: null,
+  get isProductionEnvironment() {
+    if (this._cachedIsProduction === null) {
+      this._cachedIsProduction = this.isProduction();
+      console.log(`Production environment check: ${this._cachedIsProduction ? 'YES' : 'NO'}`);
+    }
+    return this._cachedIsProduction;
   }
 };
 
@@ -54,10 +77,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
   try {
     const url = `${API_URL}${endpoint}`;
     
-    // Only log in development
-    if (ENV.isDevEnvironment) {
-      console.log(`Making ${method} request to ${url}`);
-    }
+    console.log(`Making ${method} request to ${url}`);
     
     // Prepare request headers
     const headers = {
@@ -117,6 +137,17 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       
+      // Enhanced error logging
+      console.error('Fetch error details:', {
+        message: fetchError.message,
+        endpoint: endpoint,
+        url: url,
+        online: navigator.onLine,
+        apiUrl: API_URL,
+        baseUrl: baseUrl,
+        hostname: window.location.hostname
+      });
+      
       // Handle network errors with mobile-friendly messages
       if (fetchError.name === 'AbortError') {
         console.error('Request timed out');
@@ -133,7 +164,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
       throw fetchError;
     }
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error('API request failed:', error, 'to endpoint:', endpoint);
     throw error;
   }
 }
@@ -141,8 +172,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
 // Check if server is online - completely skip in production
 async function checkServerStatus() {
   // Triple-check we're not in production to prevent localhost calls
-  const hostname = window.location.hostname;
-  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+  if (ENV.isProductionEnvironment) {
     console.log('Production environment detected - skipping server status check');
     return true; // Just return success in production
   }
@@ -208,6 +238,8 @@ setupCSPErrorHandling();
 const auth = {
   // Register a new user
   register: async (userData) => {
+    console.log('Register API call with base URL:', baseUrl);
+    console.log('Register API call with API URL:', API_URL);
     return await apiRequest('/auth/register', 'POST', userData);
   },
   
@@ -219,9 +251,9 @@ const auth = {
   // Google Authentication with CSP handling
   googleAuth: async (idToken) => {
     try {
-      // Check explicitly if we're in production
-      const hostname = window.location.hostname;
-      const isProduction = hostname === 'forexprox.com' || hostname.includes('forexprox.com');
+      // Better production detection using the ENV object
+      const isProduction = ENV.isProductionEnvironment;
+      console.log('Google Auth - production mode?', isProduction);
       
       // If we've detected CSP issues, log this information
       if (localStorage.getItem('use_popup_auth') === 'true') {
@@ -232,6 +264,7 @@ const auth = {
       // In production, COMPLETELY bypass server checks
       if (isProduction) {
         console.log('Production mode: directly making Google auth API request');
+        console.log('Using API endpoint:', API_URL);
         try {
           return await apiRequest('/auth/google', 'POST', { idToken });
         } catch (apiError) {
@@ -250,7 +283,6 @@ const auth = {
       
       // Development environment code - SKIP SERVER CHECK IN PRODUCTION
       console.log('Development mode: checking server status before Google auth');
-      // Only check server status in development environment
       const serverOnline = await checkServerStatus(); 
       if (!serverOnline) {
         throw new Error('Server is not running or not accessible. Please try again later.');

@@ -38,6 +38,10 @@ async function register(event) {
     submitButton.textContent = 'Creating Account...';
     submitButton.disabled = true;
     
+    // Log environment info before making API call
+    console.log('Registration - Current hostname:', window.location.hostname);
+    console.log('Registration - API endpoint:', getApiBaseUrl());
+    
     // Call API
     const response = await auth.register({
       name: fullName,
@@ -62,6 +66,14 @@ async function register(event) {
     }
   } catch (error) {
     console.error('Registration error:', error);
+    
+    // Log detailed error information
+    console.error('Registration error details:', {
+      message: error.message,
+      hostname: window.location.hostname,
+      apiBase: getApiBaseUrl(),
+      online: navigator.onLine
+    });
     
     // Provide more user-friendly error messages for connection issues
     if (error.message && error.message.includes('Failed to fetch')) {
@@ -101,6 +113,10 @@ async function login(event) {
     // Show loading state
     submitButton.textContent = 'Logging In...';
     submitButton.disabled = true;
+    
+    // Log environment info before making API call
+    console.log('Login - Current hostname:', window.location.hostname);
+    console.log('Login - API endpoint:', getApiBaseUrl());
     
     // Call API
     const response = await auth.login({
@@ -231,22 +247,33 @@ async function handleGoogleAuth(response) {
   }
 }
 
-// Get API base URL based on environment
+// Get API base URL based on environment - must be IDENTICAL to the one in api-client.js
 function getApiBaseUrl() {
   const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000'; // Development
-  } else if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+  console.log('Current hostname for API endpoint detection (auth.js):', hostname);
+  
+  // Explicitly check for production domains first
+  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+    console.log('Production domain detected, using https://forexprox.com');
     return 'https://forexprox.com'; // Production
-  } else {
-    // Fallback to current origin
+  } 
+  // Only these specific hostnames are considered development
+  else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    console.log('Local development domain detected, using http://localhost:5000');
+    return 'http://localhost:5000'; // Development
+  } 
+  // For any other hostname, use current origin to avoid cross-origin issues
+  else {
+    console.log('Unknown domain, falling back to current origin:', window.location.origin);
     return window.location.origin;
   }
 }
 
-// Log the current environment and API endpoint
+// Log the current environment and API endpoint with more detail
 console.log('Current environment hostname:', window.location.hostname);
 console.log('Using API endpoint:', getApiBaseUrl());
+console.log('Window location origin:', window.location.origin);
+console.log('Full current URL:', window.location.href);
 
 // Show loading state for Google button
 function showGoogleLoadingState() {
