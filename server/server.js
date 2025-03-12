@@ -2,9 +2,46 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
-const connectDB = require('./config/db');
 const fs = require('fs');
 const path = require('path');
+
+// Try to load environment from dotenv files
+try {
+  // First try .env.production in production
+  if (process.env.NODE_ENV === 'production') {
+    if (fs.existsSync(path.join(__dirname, '.env.production'))) {
+      dotenv.config({ path: path.join(__dirname, '.env.production') });
+      console.log('Loaded environment variables from .env.production');
+    }
+  }
+  
+  // Then try regular .env file
+  if (fs.existsSync(path.join(__dirname, '.env'))) {
+    dotenv.config();
+    console.log('Loaded environment variables from .env');
+  }
+} catch (error) {
+  console.error('Error loading environment variables:', error);
+}
+
+// Hard-coded fallback for crucial variables
+if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
+  console.warn('WARNING: No MongoDB URI found in environment variables.');
+  console.warn('Using fallback connection string - THIS SHOULD BE PROPERLY CONFIGURED!');
+  
+  // This is a placeholder - replace with your actual connection string
+  // but remember not to commit sensitive credentials to version control
+  process.env.MONGODB_URI = "mongodb+srv://kiwanacollinskiwana:Snillock256kiwana$@forexproxdb.sy2lk.mongodb.net/?retryWrites=true&w=majority&appName=forexproxDB";
+}
+
+// Log what we're using
+console.log('Application Settings:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- MongoDB URI found:', Boolean(process.env.MONGODB_URI || process.env.MONGO_URI));
+console.log('- Running on port:', process.env.PORT || 5000);
+
+// Continue with the existing server.js content
+const connectDB = require('./config/db');
 
 // Ensure logs directory exists
 const logsDir = path.join(__dirname, 'logs');
@@ -49,9 +86,6 @@ process.on('uncaughtException', (error) => {
 process.on('unhandledRejection', (reason, promise) => {
   logMessage(`UNHANDLED REJECTION: ${reason}`, 'error');
 });
-
-// Load environment variables
-dotenv.config();
 
 // Initialize the Express app
 const app = express();
