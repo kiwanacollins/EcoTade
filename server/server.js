@@ -3,22 +3,63 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
+const fs = require('fs');
+const path = require('path');
+
+// Ensure logs directory exists
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Create log streams
+const accessLogStream = fs.createWriteStream(
+  path.join(logsDir, 'access.log'), 
+  { flags: 'a' }
+);
+const errorLogStream = fs.createWriteStream(
+  path.join(logsDir, 'error.log'), 
+  { flags: 'a' }
+);
+
+// Custom logger function
+function logMessage(message, type = 'info') {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] [${type.toUpperCase()}] ${message}\n`;
+  
+  console[type === 'error' ? 'error' : 'log'](message);
+  
+  if (type === 'error') {
+    errorLogStream.write(logEntry);
+  } else {
+    accessLogStream.write(logEntry);
+  }
+}
+
+// Handle uncaught exceptions - prevent immediate crash
+process.on('uncaughtException', (error) => {
+  logMessage(`UNCAUGHT EXCEPTION: ${error.message}\n${error.stack}`, 'error');
+  // Give time to log before exiting
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  logMessage(`UNHANDLED REJECTION: ${reason}`, 'error');
+});
 
 // Load environment variables
 dotenv.config();
 
-// Connect to MongoDB
-connectDB();
-
+// Initialize the Express app
 const app = express();
 
 // Middleware
 // CORS options with more permissive settings
 const corsOptions = {
-  // Add all possible development and production origins
   origin: function(origin, callback) {
-    // Allow any origin in development for easier testing
-    // In production, this should be restricted
     callback(null, true);
   },
   credentials: true,
@@ -36,39 +77,122 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Routes
-app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/users', require('./routes/user.routes'));
-// You can add more routes as needed
+// Setup database connection with retry logic
+let dbConnected = false;
+const maxRetries = 5;
+const connectWithRetry = (retryCount = 0) => {
+  logMessage(`Attempting to connect to database (attempt ${retryCount + 1}/${maxRetries})...`);
+  
+  connectDB()
+    .then(() => {
+      dbConnected = true;
+      logMessage('Database connection established successfully');
+    })
+    .catch((err) => {
+      logMessage(`Database connection failed: ${err.message}`, 'error');
+      
+      if (retryCount < maxRetries - 1) {
+        const retryDelay = Math.pow(2, retryCount) * 1000; // Exponential backoff
+        logMessage(`Retrying in ${retryDelay/1000} seconds...`);
+        
+        setTimeout(() => {
+          connectWithRetry(retryCount + 1);
+        }, retryDelay);
+      } else {
+        logMessage('Maximum database connection attempts reached. Starting server without database connection.', 'error');
+        // Don't crash - let endpoints handle the lack of DB connection
+      }
+    });
+};
 
-// Add health check routes
-const healthRoutes = require('./health');
-app.use('/health', healthRoutes);
-app.use('/api/health', healthRoutes);
+// Start database connection process
+connectWithRetry();
 
-// Default route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Forexprox API' });
-});
-
-// Add a health check route for /api
-app.get('/api', (req, res) => {
-  res.json({ 
-    message: 'API is running',
-    version: '1.0.0',
-    status: 'online'
+// Routes with try-catch blocks
+try {
+  // Add health check routes
+  const healthRoutes = require('./health');
+  app.use('/health', healthRoutes);
+  app.use('/api/health', healthRoutes);
+  
+  // Only set up routes that need database if connected
+  app.use('/api/auth', (req, res, next) => {
+    if (!dbConnected) {
+      return res.status(503).json({ 
+        message: 'Database connection not available',
+        status: 'maintenance',
+        retry: true
+      });
+    }
+    next();
+  }, require('./routes/auth.routes'));
+  
+  app.use('/api/users', (req, res, next) => {
+    if (!dbConnected) {
+      return res.status(503).json({ 
+        message: 'Database connection not available',
+        status: 'maintenance',
+        retry: true
+      });
+    }
+    next();
+  }, require('./routes/user.routes'));
+  
+  // Default route - always accessible
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: 'Welcome to Forexprox API',
+      status: dbConnected ? 'online' : 'limited',
+      databaseConnected: dbConnected
+    });
   });
-});
+  
+  // API status endpoint - always accessible
+  app.get('/api', (req, res) => {
+    res.json({ 
+      message: 'API is running',
+      version: '1.0.0',
+      status: dbConnected ? 'online' : 'limited',
+      databaseConnected: dbConnected
+    });
+  });
+} catch (error) {
+  logMessage(`Error setting up routes: ${error.message}\n${error.stack}`, 'error');
+}
 
-// Error handler
+// Global error handler
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  console.error(err.message, err.stack);
-  res.status(statusCode).json({ message: err.message });
+  const message = err.message || 'Internal Server Error';
+  
+  logMessage(`[${req.method}] ${req.url} - ${statusCode}: ${message}\n${err.stack || ''}`, 'error');
+  
+  res.status(statusCode).json({ 
+    message,
+    status: 'error',
+    path: req.url
+  });
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  logMessage(`Server running on port ${PORT}`);
 });
+
+// Handle server shutdown gracefully
+process.on('SIGTERM', () => {
+  logMessage('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    logMessage('Process terminated');
+  });
+});
+
+process.on('SIGINT', () => {
+  logMessage('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    logMessage('Process terminated');
+  });
+});
+
+module.exports = server; // Export for testing

@@ -1,6 +1,6 @@
 // API client for handling requests to the backend
 
-// Environment detection with more robust checks
+// Environment detection with additional debugging
 const ENV = {
   isDev: function() {
     // Check if running on localhost or development environment
