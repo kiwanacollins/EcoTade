@@ -5,8 +5,8 @@ module.exports = {
     watch: false,
     env: {
       NODE_ENV: "production",
-      // Docker MongoDB connection only
-      MONGODB_URI: "mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin",
+      // Update to use localhost instead of 'mongodb' container name
+      MONGODB_URI: "mongodb://admin:password@localhost:27017/forexproxdb?authSource=admin",
       PORT: "5000"
     },
     env_production: {

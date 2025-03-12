@@ -1,11 +1,15 @@
 #!/bin/bash
 
+# First ensure MongoDB is running
+echo "Ensuring MongoDB container is running..."
+bash ../start-mongodb.sh
+
 # Display current PM2 status
 echo "Current PM2 status:"
 pm2 status
 
-# MongoDB Docker connection string
-MONGODB_URI="mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin"
+# MongoDB Docker connection string (using localhost since we're connecting from host)
+MONGODB_URI="mongodb://admin:password@localhost:27017/forexproxdb?authSource=admin"
 
 # Stop existing process if running
 pm2 stop forexprox 2>/dev/null || true

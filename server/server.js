@@ -32,11 +32,15 @@ if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
   // Use Docker MongoDB connection string instead of Atlas
   const DOCKER_MONGO_USER = process.env.MONGO_INITDB_ROOT_USERNAME || 'admin';
   const DOCKER_MONGO_PASS = process.env.MONGO_INITDB_ROOT_PASSWORD || 'password';
-  const DOCKER_MONGO_HOST = process.env.MONGO_HOST || 'mongodb'; // 'mongodb' is the service name in docker-compose
+  // Change the default to localhost when running outside Docker
+  const DOCKER_MONGO_HOST = process.env.MONGO_HOST || 'localhost'; 
   const DOCKER_MONGO_PORT = process.env.MONGO_PORT || '27017';
   const DOCKER_MONGO_DB = process.env.MONGO_DB || 'forexproxdb';
   
-  process.env.MONGODB_URI = `mongodb://${DOCKER_MONGO_USER}:${DOCKER_MONGO_PASS}@${DOCKER_MONGO_HOST}:${DOCKER_MONGO_PORT}/${DOCKER_MONGO_DB}?authSource=admin`;
+  const connectionString = `mongodb://${DOCKER_MONGO_USER}:${DOCKER_MONGO_PASS}@${DOCKER_MONGO_HOST}:${DOCKER_MONGO_PORT}/${DOCKER_MONGO_DB}?authSource=admin`;
+  process.env.MONGODB_URI = connectionString;
+  
+  console.log('Using fallback connection string:', connectionString.replace(/\/\/.*:.*@/, '//****:****@')); // Hide credentials in logs
 }
 
 // Log what we're using
