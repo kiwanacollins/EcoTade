@@ -142,9 +142,9 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
 async function checkServerStatus() {
   // Triple-check we're not in production to prevent localhost calls
   const hostname = window.location.hostname;
-  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com') || !ENV.isDevEnvironment) {
+  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
     console.log('Production environment detected - skipping server status check');
-    return true;
+    return true; // Just return success in production
   }
   
   try {
@@ -190,15 +190,12 @@ const auth = {
   // Google Authentication
   googleAuth: async (idToken) => {
     try {
-      // Triple-check environment to ensure correct behavior
+      // Check explicitly if we're in production
       const hostname = window.location.hostname;
       const isProduction = hostname === 'forexprox.com' || hostname.includes('forexprox.com');
       
-      console.log(`Running in ${ENV.isDevEnvironment ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
-      console.log(`Hostname: ${hostname}, Direct production check: ${isProduction}`);
-      
-      // In production, COMPLETELY bypass server checks and debug logs
-      if (isProduction || !ENV.isDevEnvironment) {
+      // In production, COMPLETELY bypass server checks
+      if (isProduction) {
         console.log('Production mode: directly making Google auth API request');
         try {
           return await apiRequest('/auth/google', 'POST', { idToken });
@@ -208,7 +205,7 @@ const auth = {
         }
       }
       
-      // Everything below this point only runs in development
+      // Development environment code
       console.log('Development mode: checking server status before Google auth');
       const serverOnline = await checkServerStatus();
       if (!serverOnline) {
@@ -218,12 +215,6 @@ const auth = {
       // Log token details for debugging (only in development)
       console.log('Token length:', idToken ? idToken.length : 0);
       console.log('Token first few characters:', idToken ? idToken.substring(0, 10) + '...' : 'null');
-      
-      // Detect mobile device for specific handling
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile) {
-        console.log('Mobile device detected for Google auth');
-      }
       
       const result = await apiRequest('/auth/google', 'POST', { idToken });
       console.log('Server response for Google auth:', result);

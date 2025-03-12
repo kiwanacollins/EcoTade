@@ -173,7 +173,6 @@ async function handleGoogleAuth(response) {
     try {
       // Call our API with the Google token
       console.log('Sending token to backend...');
-      console.log('Credential being sent:', credential); // Log the credential
       const authResponse = await auth.googleAuth(credential);
       
       console.log('Google authentication successful:', authResponse);
