@@ -175,7 +175,6 @@ async function handleGoogleAuth(response) {
   try {
     console.log('Google sign-in response received:', response);
     
-    // Check if we have a credential in the response
     if (!response || !response.credential) {
       console.error('Invalid Google response - missing credential');
       throw new Error('No valid credential received from Google');
@@ -187,23 +186,19 @@ async function handleGoogleAuth(response) {
     showGoogleLoadingState();
     
     try {
-      // Call our API with the Google token
       console.log('Sending token to backend...');
       const authResponse = await auth.googleAuth(credential);
       
       console.log('Google authentication successful:', authResponse);
       
-      // Store token if returned
       if (authResponse.token) {
         console.log('Storing auth token');
         localStorage.setItem('token', authResponse.token);
         
-        // Store user info if available
         if (authResponse.user) {
           localStorage.setItem('user', JSON.stringify(authResponse.user));
         }
         
-        // Redirect to dashboard after a short delay
         setTimeout(() => {
           window.location.href = './dashboard.html';
         }, 500);
@@ -220,7 +215,6 @@ async function handleGoogleAuth(response) {
       console.error('API error during Google auth:', apiError);
       const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
       if (errorElem) {
-        // Provide more helpful message for connection errors
         if (apiError.message && apiError.message.includes('Server is not running')) {
           errorElem.textContent = 'Cannot connect to authentication server. Please try again later or contact support.';
         } else {
@@ -234,10 +228,8 @@ async function handleGoogleAuth(response) {
     console.error('Google auth error:', error);
     const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
     if (errorElem) {
-      // Provide more user-friendly error messages for connection issues
       if (error.message && error.message.includes('Failed to fetch')) {
-        errorElem.textContent = 
-          'Unable to connect to the authentication server. Please check your internet connection or try again later.';
+        errorElem.textContent = 'Unable to connect to the authentication server. Please check your internet connection or try again later.';
       } else {
         errorElem.textContent = error.message || 'Google authentication failed';
       }

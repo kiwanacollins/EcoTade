@@ -78,41 +78,35 @@ console.log('API configuration:', window.debugAPIConfig());
 
 // Main API request function
 async function apiRequest(endpoint, method = 'GET', data = null) {
-  // Print the full URL we're requesting to make debugging easier
   const url = `${API_URL}${endpoint}`;
   console.log(`API REQUEST: ${method} ${url}`);
   trackURLUsage('apiRequest', url);
   
   try {
-    // Simplified headers - no conditional logic
     const headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
     
-    // Add auth token if available
     const token = localStorage.getItem('token');
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // Prepare request options
     const options = {
       method,
       headers,
       mode: 'cors',
       cache: 'no-cache',
-      credentials: 'include' // Use include instead of same-origin for cross-domain cookies
+      credentials: 'include',
     };
     
-    // Add request body if data exists
     if (data) {
       options.body = JSON.stringify(data);
     }
     
-    // Make the request with timeout for mobile networks
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     options.signal = controller.signal;
     
     console.log('Making fetch request to:', url, 'with options:', JSON.stringify(options));
@@ -141,7 +135,6 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       
-      // Enhanced error diagnostic for connection refused specifically
       if (fetchError.message === 'Failed to fetch' && url.includes('localhost')) {
         console.error('CRITICAL ERROR: Still trying to connect to localhost instead of VPS!');
         console.error('Current API_URL:', API_URL);
@@ -160,7 +153,6 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
       });
       
       if (fetchError.name === 'AbortError') {
-        console.error('Request timed out');
         throw new Error('Request timed out. Please check your internet connection and try again.');
       }
       
