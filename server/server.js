@@ -27,17 +27,22 @@ try {
 // Hard-coded fallback for crucial variables
 if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
   console.warn('WARNING: No MongoDB URI found in environment variables.');
-  console.warn('Using fallback connection string - THIS SHOULD BE PROPERLY CONFIGURED!');
+  console.warn('Using Docker MongoDB connection as fallback');
   
-  // This is a placeholder - replace with your actual connection string
-  // but remember not to commit sensitive credentials to version control
-  process.env.MONGODB_URI = "mongodb+srv://kiwanacollinskiwana:Snillock256kiwana$@forexproxdb.sy2lk.mongodb.net/?retryWrites=true&w=majority&appName=forexproxDB";
+  // Use Docker MongoDB connection string instead of Atlas
+  const DOCKER_MONGO_USER = process.env.MONGO_INITDB_ROOT_USERNAME || 'admin';
+  const DOCKER_MONGO_PASS = process.env.MONGO_INITDB_ROOT_PASSWORD || 'password';
+  const DOCKER_MONGO_HOST = process.env.MONGO_HOST || 'mongodb'; // 'mongodb' is the service name in docker-compose
+  const DOCKER_MONGO_PORT = process.env.MONGO_PORT || '27017';
+  const DOCKER_MONGO_DB = process.env.MONGO_DB || 'forexproxdb';
+  
+  process.env.MONGODB_URI = `mongodb://${DOCKER_MONGO_USER}:${DOCKER_MONGO_PASS}@${DOCKER_MONGO_HOST}:${DOCKER_MONGO_PORT}/${DOCKER_MONGO_DB}?authSource=admin`;
 }
 
 // Log what we're using
 console.log('Application Settings:');
 console.log('- NODE_ENV:', process.env.NODE_ENV);
-console.log('- MongoDB URI found:', Boolean(process.env.MONGODB_URI || process.env.MONGO_URI));
+console.log('- Docker MongoDB connection configured:', Boolean(process.env.MONGODB_URI || process.env.MONGO_URI));
 console.log('- Running on port:', process.env.PORT || 5000);
 
 // Continue with the existing server.js content

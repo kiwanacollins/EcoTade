@@ -30,15 +30,15 @@ if (missingVars.length > 0) {
   console.error('Missing variables:', missingVars.join(', '));
   
   if (missingVars.includes('MONGODB_URI')) {
-    console.error('\nFor MongoDB connection, ensure you have one of these set:');
-    console.error('1. MONGODB_URI=mongodb+srv://username:password@your-cluster.mongodb.net/dbname');
-    console.error('2. MONGO_URI=mongodb+srv://username:password@your-cluster.mongodb.net/dbname');
+    console.error('\nFor Docker MongoDB connection, ensure you have one of these set:');
+    console.error('1. MONGODB_URI=mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin');
+    console.error('2. MONGO_URI=mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin');
     
     if (isPM2) {
       console.error('\nSince you are using PM2, make sure to configure environment variables using one of these methods:');
       console.error('1. Create/update .env file in your project root directory');
       console.error('2. Use the ecosystem.config.js file with env_file option');
-      console.error('3. Set the variable directly with: pm2 set MONGODB_URI mongodb+srv://...');
+      console.error('3. Set the variable directly with: pm2 set MONGODB_URI mongodb://...');
       console.error('4. Set in ecosystem file: pm2 restart ecosystem.config.js --update-env');
     }
   }

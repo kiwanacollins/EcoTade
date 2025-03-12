@@ -4,8 +4,8 @@
 echo "Current PM2 status:"
 pm2 status
 
-# MongoDB connection string - replace with your actual connection string!
-MONGODB_URI="mongodb+srv://kiwanacollinskiwana:Snillock256kiwana$@forexproxdb.sy2lk.mongodb.net/?retryWrites=true&w=majority&appName=forexproxDB"
+# MongoDB Docker connection string
+MONGODB_URI="mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin"
 
 # Stop existing process if running
 pm2 stop forexprox 2>/dev/null || true

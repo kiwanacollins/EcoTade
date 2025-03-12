@@ -5,10 +5,8 @@ module.exports = {
     watch: false,
     env: {
       NODE_ENV: "production",
-      // Provide a fallback MongoDB URI directly in the ecosystem file
-      // NOTE: Replace this with your actual MongoDB connection string!
-      MONGODB_URI: "mongodb+srv://kiwanacollinskiwana:Snillock256kiwana$@forexproxdb.sy2lk.mongodb.net/?retryWrites=true&w=majority&appName=forexproxDB",
-      // Other environment variables can be added here
+      // Docker MongoDB connection only
+      MONGODB_URI: "mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin",
       PORT: "5000"
     },
     env_production: {
