@@ -2,25 +2,18 @@
 
 // Get API base URL based on environment - improved detection
 function getApiBaseUrl() {
-  // If the FORCE_PROD_API flag is set (e.g., for testing production from localhost), return production URL.
-  if (window.FORCE_PROD_API) {
-    console.log('FORCE_PROD_API flag is set, using https://forexprox.com');
-    return 'https://forexprox.com';
-  }
-  
   const hostname = window.location.hostname;
-  console.log('Current hostname for API endpoint detection:', hostname);
   
-  // Explicitly check for production domains first
+  // Check explicitly for production domain
   if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
-    console.log('Production domain detected, using https://forexprox.com');
-    return 'https://forexprox.com'; // Production
-  } 
-  // Only these specific hostnames are considered development
-  else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    console.log('Local development domain detected, using http://localhost:5000');
+    console.log('Production environment detected: using forexprox.com API');
+    return 'https://forexprox.com'; // Production with https protocol
+  }
+  // Check for localhost or development IPs
+  else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('192.168.')) {
+    console.log('Development environment detected: using localhost API');
     return 'http://localhost:5000'; // Development
-  } 
+  }
   // For any other hostname, use current origin to avoid cross-origin issues
   else {
     console.log('Unknown domain, falling back to current origin:', window.location.origin);
