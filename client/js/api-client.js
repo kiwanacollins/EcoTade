@@ -175,6 +175,35 @@ async function checkServerStatus() {
   }
 }
 
+// Add CSP error detection and handling
+function setupCSPErrorHandling() {
+  if (typeof window !== 'undefined') {
+    // Listen for CSP violation reports
+    document.addEventListener('securitypolicyviolation', (e) => {
+      console.log('CSP violation detected:', e.blockedURI, 'directive:', e.violatedDirective);
+      
+      // Check specifically for Google authentication issues
+      if (e.blockedURI.includes('accounts.google.com') && 
+          (e.violatedDirective.includes('frame-ancestors') || e.violatedDirective.includes('frame-src'))) {
+        
+        console.warn('Google authentication frame blocked by CSP. Will use alternative auth method.');
+        
+        // Set a flag to use alternative auth method
+        localStorage.setItem('use_popup_auth', 'true');
+        
+        // Dispatch custom event that can be handled by auth.js
+        const event = new CustomEvent('googleFrameBlocked', { 
+          detail: { message: 'Google authentication frame blocked by CSP' } 
+        });
+        document.dispatchEvent(event);
+      }
+    });
+  }
+}
+
+// Call setup function immediately
+setupCSPErrorHandling();
+
 // Auth functions
 const auth = {
   // Register a new user
@@ -187,12 +216,18 @@ const auth = {
     return await apiRequest('/auth/login', 'POST', credentials);
   },
   
-  // Google Authentication
+  // Google Authentication with CSP handling
   googleAuth: async (idToken) => {
     try {
       // Check explicitly if we're in production
       const hostname = window.location.hostname;
       const isProduction = hostname === 'forexprox.com' || hostname.includes('forexprox.com');
+      
+      // If we've detected CSP issues, log this information
+      if (localStorage.getItem('use_popup_auth') === 'true') {
+        console.log('Using popup authentication flow due to detected CSP restrictions');
+        // This flag is just informational - the actual popup implementation should be in auth.js
+      }
       
       // In production, COMPLETELY bypass server checks
       if (isProduction) {
@@ -200,6 +235,14 @@ const auth = {
         try {
           return await apiRequest('/auth/google', 'POST', { idToken });
         } catch (apiError) {
+          // Look for CSP-related errors
+          if (apiError.message && (
+              apiError.message.includes('Content Security Policy') || 
+              apiError.message.includes('frame-ancestors') ||
+              apiError.message.includes('Refused to frame'))) {
+            console.error('CSP error detected during Google authentication:', apiError.message);
+            throw new Error('Google authentication blocked by browser security policy. Please try using a different browser or contact support.');
+          }
           console.error('Google auth API request failed in production:', apiError.message);
           throw apiError;
         }
@@ -220,6 +263,16 @@ const auth = {
       console.log('Server response for Google auth:', result);
       return result;
     } catch (error) {
+      // Additional CSP error handling
+      if (error.message && (
+          error.message.includes('Content Security Policy') || 
+          error.message.includes('frame-ancestors') ||
+          error.message.includes('Refused to frame'))) {
+        console.error('CSP error detected:', error.message);
+        localStorage.setItem('use_popup_auth', 'true');
+        throw new Error('Authentication blocked by browser security policy. Please try again.');
+      }
+      
       console.error('Google auth API request failed:', error);
       
       // Provide more helpful error messages for mobile users
