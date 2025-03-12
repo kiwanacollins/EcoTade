@@ -13,7 +13,7 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 5000,
-      MONGO_URI:'mongodb+srv://kiwanacollinskiwana:KYVf3J8KXBJEiCkN@forexproxdb.sy2lk.mongodb.net/?retryWrites=true&w=majority&appName=forexproxDB'
+      MONGO_URI:'mongodb+srv://kiwanacollinskiwana:Snillock256kiwana$@forexproxdb.sy2lk.mongodb.net/?retryWrites=true&w=majority&appName=forexproxDB'
     },
     error_file: './server/logs/pm2-error.log',
     out_file: './server/logs/pm2-out.log',
