@@ -248,9 +248,10 @@ const auth = {
         }
       }
       
-      // Development environment code
+      // Development environment code - SKIP SERVER CHECK IN PRODUCTION
       console.log('Development mode: checking server status before Google auth');
-      const serverOnline = await checkServerStatus();
+      // Only check server status in development environment
+      const serverOnline = await checkServerStatus(); 
       if (!serverOnline) {
         throw new Error('Server is not running or not accessible. Please try again later.');
       }

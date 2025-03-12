@@ -232,17 +232,17 @@ async function handleGoogleAuth(response) {
 }
 
 // Get API base URL based on environment
-// function getApiBaseUrl() {
-//   const hostname = window.location.hostname;
-//   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-//     return 'http://localhost:5000'; // Development
-//   } else if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
-//     return 'https://forexprox.com'; // Production
-//   } else {
-//     // Fallback to current origin
-//     return window.location.origin;
-//   }
-// }
+function getApiBaseUrl() {
+  const hostname = window.location.hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:5000'; // Development
+  } else if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+    return 'https://forexprox.com'; // Production
+  } else {
+    // Fallback to current origin
+    return window.location.origin;
+  }
+}
 
 // Log the current environment and API endpoint
 console.log('Current environment hostname:', window.location.hostname);
