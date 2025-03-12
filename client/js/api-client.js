@@ -1,4 +1,4 @@
-// API client for handling requests to the backend
+// API client for handling requests to the backend now
 
 // Get API base URL based on environment - improved detection
 function getApiBaseUrl() {
