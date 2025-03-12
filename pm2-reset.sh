@@ -46,6 +46,7 @@ pm2 start server.js --name forexprox \
   --env-var "MONGODB_URI=mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin" \
   --env-var "NODE_ENV=production" \
   --env-var "PORT=5000" \
+  --env-var "ALLOWED_ORIGINS=*" \
   --update-env
 
 # Save PM2 settings

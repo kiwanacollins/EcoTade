@@ -85,7 +85,7 @@ const app = express();
 // Updated CORS options to set origin based on environment
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production'
-    ? process.env.ALLOWED_ORIGINS.split(',')
+    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*')
     : function(origin, callback) { callback(null, true); },
   credentials: true,
   optionsSuccessStatus: 200,

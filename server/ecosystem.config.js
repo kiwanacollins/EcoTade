@@ -7,7 +7,8 @@ module.exports = {
       NODE_ENV: "production",
       // Update port to 27018 which is the actual port being used
       MONGODB_URI: "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin",
-      PORT: "5000"
+      PORT: "5000",
+      ALLOWED_ORIGINS: "*"
     },
     env_production: {
       NODE_ENV: "production"

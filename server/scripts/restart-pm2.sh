@@ -32,6 +32,7 @@ cat > ../.env <<EOL
 MONGODB_URI=$MONGODB_URI
 NODE_ENV=production
 PORT=5000
+ALLOWED_ORIGINS=*
 EOL
 
 echo "Environment file created:"
@@ -48,7 +49,9 @@ else
     pm2 start server.js --name forexprox \
       --env-var "MONGODB_URI=$MONGODB_URI" \
       --env-var "NODE_ENV=production" \
-      --env-var "PORT=5000"
+      --env-var "PORT=5000" \
+      --env-var "ALLOWED_ORIGINS=*" \
+      --update-env
 fi
 
 # Check if process started successfully
