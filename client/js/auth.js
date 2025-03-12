@@ -247,43 +247,22 @@ async function handleGoogleAuth(response) {
   }
 }
 
-// Get API base URL based on environment - must be IDENTICAL to the one in api-client.js
+// Get API base URL - simplified to ALWAYS use production
 function getApiBaseUrl() {
-  // Just use the already defined API URL from api-client.js if it exists
+  // Use the already defined API URL from api-client.js if it exists
   if (window.API_URL) {
     console.log('Using already defined API_URL from api-client.js:', window.API_URL);
-    return window.API_URL.replace('/api', ''); // Remove the /api part to get the base URL
+    return window.API_URL.replace('/api', '');
   }
   
-  // HARDCODED PRODUCTION API URL - Using the actual VPS domain
-  const PRODUCTION_API_URL = 'https://srv749600.hstgr.cloud'; // Updated to actual VPS domain
-  
-  const hostname = window.location.hostname;
-  console.log('Current hostname for API endpoint detection (auth.js):', hostname);
-  
-  // Force production API for these domains
-  if (hostname === 'forexprox.com' || 
-      hostname.includes('forexprox.com') || 
-      hostname.includes('www.forexprox.com')) {
-    console.log('Production domain detected - FORCING production API URL:', PRODUCTION_API_URL);
-    return PRODUCTION_API_URL;
-  }
-  // Local development
-  else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    console.log('Local development detected - using localhost:5000');
-    return 'http://localhost:5000';
-  }
-  // Default to production for any other domains
-  else {
-    console.log('Unknown domain - defaulting to PRODUCTION API:', PRODUCTION_API_URL);
-    return PRODUCTION_API_URL;
-  }
+  // HARDCODED SERVER URL - No conditional logic at all
+  const PRODUCTION_API_URL = 'https://srv749600.hstgr.cloud';
+  console.log('Using FIXED production API URL in auth.js:', PRODUCTION_API_URL);
+  return PRODUCTION_API_URL;
 }
 
-// Log the current environment and API endpoint with more detail
-console.log('Current environment hostname:', window.location.hostname);
-console.log('Using API endpoint:', getApiBaseUrl());
-console.log('Window location origin:', window.location.origin);
+// Log the current environment and API endpoint
+console.log('Using API endpoint from auth.js:', getApiBaseUrl());
 console.log('Full current URL:', window.location.href);
 
 // Show loading state for Google button

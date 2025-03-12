@@ -174,10 +174,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
+// Ensure server listens on all network interfaces (important for VPS)
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  logMessage(`Server running on port ${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`Server accessible via: https://srv749600.hstgr.cloud`);
 });
 
 // Handle server shutdown gracefully

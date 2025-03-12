@@ -4,20 +4,26 @@
 const allowedOrigins = [
   'https://forexprox.com',
   'https://www.forexprox.com',
+  'http://forexprox.com',
+  'http://www.forexprox.com',
   'http://localhost:5000',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'null',
+  undefined
 ];
 
 module.exports = (req, res, next) => {
   const origin = req.headers.origin;
   
+  console.log('Received request with origin:', origin);
+  
   // Check if the request origin is in our allowed list
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    // For development/testing, you might want to allow all origins
-    // Comment this out in strict production environments
+    // Allow all origins for now until we debug
     res.setHeader('Access-Control-Allow-Origin', '*');
+    console.log('Setting CORS for unknown origin:', origin);
   }
   
   // Standard CORS headers
