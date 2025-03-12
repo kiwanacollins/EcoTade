@@ -235,9 +235,10 @@ const sendTokenResponse = (user, statusCode, res) => {
     httpOnly: true
   };
 
-  // Use secure cookies in production
+  // Use secure cookies in production and specify the domain
   if (process.env.NODE_ENV === 'production') {
     options.secure = true;
+    options.domain = 'forexprox.com';
   }
 
   res

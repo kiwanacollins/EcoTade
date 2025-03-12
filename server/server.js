@@ -57,11 +57,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-// CORS options with more permissive settings
+// Updated CORS options to set origin based on environment
 const corsOptions = {
-  origin: function(origin, callback) {
-    callback(null, true);
-  },
+  origin: process.env.NODE_ENV === 'production'
+    ? 'https://forexprox.com'
+    : function(origin, callback) { callback(null, true); },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

@@ -64,8 +64,10 @@ const ENV = {
   }
 };
 
-// Use getApiBaseUrl for determining the base API URL - Add a forced environment check
-const baseUrl = getApiBaseUrl();
+// Updated baseUrl: use the current hostname to choose the proper backend URL
+const baseUrl = window.location.hostname === 'localhost'
+	? 'http://localhost:5000'
+	: 'https://forexprox.com';
 
 // Force production URL check - this is a safeguard
 if (window.location.hostname === 'forexprox.com' || window.location.hostname.includes('forexprox.com')) {
