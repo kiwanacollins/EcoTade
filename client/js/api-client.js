@@ -4,10 +4,12 @@
 const ENV = {
   isDev: function() {
     // Check if running on localhost or development environment
-    return window.location.hostname === 'localhost' || 
-           window.location.hostname === '127.0.0.1' || 
-           window.location.hostname.includes('192.168.') || 
-           window.location.hostname.includes('.local');
+    const hostname = window.location.hostname;
+    // Simplified check that works better in production
+    return hostname === 'localhost' || 
+           hostname === '127.0.0.1' || 
+           hostname.includes('192.168.');
+    // Removed '.local' check as it might cause false positives
   },
   domain: 'forexprox.com',
   // Cache the result to avoid repeated checks
@@ -16,6 +18,8 @@ const ENV = {
     if (this._cachedIsDev === null) {
       this._cachedIsDev = this.isDev();
       console.log(`Environment detected as: ${this._cachedIsDev ? 'DEVELOPMENT' : 'PRODUCTION'}`);
+      // Log the hostname for debugging
+      console.log(`Current hostname: ${window.location.hostname}`);
     }
     return this._cachedIsDev;
   }
@@ -25,6 +29,9 @@ const ENV = {
 const API_URL = ENV.isDevEnvironment ? 
   'http://localhost:5000/api' : 
   `https://${ENV.domain}/api`;
+
+// Add explicit log of which API URL is being used
+console.log(`Using API URL: ${API_URL}`);
 
 // Main API request function
 async function apiRequest(endpoint, method = 'GET', data = null) {

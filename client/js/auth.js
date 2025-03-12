@@ -61,8 +61,15 @@ async function register(event) {
       document.getElementById('signup-error').textContent = 'Authentication error';
     }
   } catch (error) {
-    document.getElementById('signup-error').textContent = error.message || 'Registration failed';
     console.error('Registration error:', error);
+    
+    // Provide more user-friendly error messages for connection issues
+    if (error.message && error.message.includes('Failed to fetch')) {
+      document.getElementById('signup-error').textContent = 
+        'Unable to connect to the server. Please check your internet connection or try again later.';
+    } else {
+      document.getElementById('signup-error').textContent = error.message || 'Registration failed';
+    }
     
     // Reset button
     submitButton.textContent = originalText;
@@ -117,8 +124,15 @@ async function login(event) {
       document.getElementById('login-error').textContent = 'Authentication error';
     }
   } catch (error) {
-    document.getElementById('login-error').textContent = error.message || 'Login failed';
     console.error('Login error:', error);
+    
+    // Provide more user-friendly error messages for connection issues
+    if (error.message && error.message.includes('Failed to fetch')) {
+      document.getElementById('login-error').textContent = 
+        'Unable to connect to the server. Please check your internet connection or try again later.';
+    } else {
+      document.getElementById('login-error').textContent = error.message || 'Login failed';
+    }
     
     // Reset button
     submitButton.textContent = originalText;
@@ -205,7 +219,13 @@ async function handleGoogleAuth(response) {
     console.error('Google auth error:', error);
     const errorElem = document.getElementById('signup-error') || document.getElementById('login-error');
     if (errorElem) {
-      errorElem.textContent = error.message || 'Google authentication failed';
+      // Provide more user-friendly error messages for connection issues
+      if (error.message && error.message.includes('Failed to fetch')) {
+        errorElem.textContent = 
+          'Unable to connect to the authentication server. Please check your internet connection or try again later.';
+      } else {
+        errorElem.textContent = error.message || 'Google authentication failed';
+      }
       errorElem.style.display = 'block';
     }
     hideGoogleLoadingState();
