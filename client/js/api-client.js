@@ -65,27 +65,7 @@ const ENV = {
 };
 
 // Updated baseUrl: use the current hostname to choose the proper backend URL
-const baseUrl = window.location.hostname === 'localhost'
-	? 'http://localhost:5000'
-	: 'https://forexprox.com';
-
-// Force production URL check - this is a safeguard
-if (window.location.hostname === 'forexprox.com' || window.location.hostname.includes('forexprox.com')) {
-  console.log('Production hostname detected, ensuring production API URL is used');
-  if (!baseUrl.includes('forexprox.com')) {
-    console.warn('API URL mismatch detected in production! Forcing correct production URL.');
-    // Force the correct production URL
-    const correctedUrl = 'https://forexprox.com';
-    // Configure API URL by appending '/api' to the corrected URL
-    const API_URL = `${correctedUrl}/api`;
-  } else {
-    // Configure API URL by appending '/api' to the base URL
-    const API_URL = `${baseUrl}/api`;
-  }
-} else {
-  // Configure API URL by appending '/api' to the base URL
-  const API_URL = `${baseUrl}/api`;
-}
+const baseUrl = getApiBaseUrl();
 
 // Ensure API_URL is properly defined in global scope
 window.API_URL = `${baseUrl}/api`;
