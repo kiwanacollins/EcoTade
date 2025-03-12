@@ -13,6 +13,11 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 5000,
+       MONGO_HOST: 'localhost',
+      MONGO_PORT: '27018',  // Changed to match new port
+      MONGO_INITDB_ROOT_USERNAME: 'admin',
+      MONGO_INITDB_ROOT_PASSWORD: 'password',
+      MONGO_DB: 'forexproxdb',
       MONGODB_URI: 'mongodb://admin:password@localhost:27017/forexproxdb?authSource=admin',
       ALLOWED_ORIGINS: 'https://srv749600.hstgr.cloud,http://srv749600.hstgr.cloud'
     },
