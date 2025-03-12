@@ -1,5 +1,18 @@
 // API client for handling requests to the backend
 
+// Import getApiBaseUrl from auth.js or redefine it here
+function getApiBaseUrl() {
+  const hostname = window.location.hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:5000'; // Development
+  } else if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+    return 'https://forexprox.com'; // Production
+  } else {
+    // Fallback to current origin
+    return window.location.origin;
+  }
+}
+
 // Environment detection with additional debugging
 const ENV = {
   isDev: function() {
@@ -25,10 +38,10 @@ const ENV = {
   }
 };
 
-// Configure API URL based on environment
-const API_URL = ENV.isDevEnvironment ? 
-  'http://localhost:5000/api' : 
-  `https://${ENV.domain}/api`;
+// Use getApiBaseUrl for determining the base API URL
+const baseUrl = getApiBaseUrl();
+// Configure API URL by appending '/api' to the base URL
+const API_URL = `${baseUrl}/api`;
 
 // Add explicit log of which API URL is being used
 console.log(`Using API URL: ${API_URL}`);
@@ -130,8 +143,8 @@ async function checkServerStatus() {
   }
   
   try {
-    // Only run this code in development
-    const healthEndpoint = 'http://localhost:5000/health';
+    // Only run this code in development - use the proper base URL
+    const healthEndpoint = `${baseUrl}/health`;
     
     console.log('Checking server status in DEVELOPMENT mode...');
     

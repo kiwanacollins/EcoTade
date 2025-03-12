@@ -232,6 +232,23 @@ async function handleGoogleAuth(response) {
   }
 }
 
+// Get API base URL based on environment
+// function getApiBaseUrl() {
+//   const hostname = window.location.hostname;
+//   if (hostname === 'localhost' || hostname === '127.0.0.1') {
+//     return 'http://localhost:5000'; // Development
+//   } else if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+//     return 'https://forexprox.com'; // Production
+//   } else {
+//     // Fallback to current origin
+//     return window.location.origin;
+//   }
+// }
+
+// Log the current environment and API endpoint
+console.log('Current environment hostname:', window.location.hostname);
+console.log('Using API endpoint:', getApiBaseUrl());
+
 // Show loading state for Google button
 function showGoogleLoadingState() {
   const googleBtns = document.querySelectorAll('.btn-google');
