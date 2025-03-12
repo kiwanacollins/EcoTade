@@ -2,6 +2,12 @@
 
 // Get API base URL based on environment - improved detection
 function getApiBaseUrl() {
+  // If the FORCE_PROD_API flag is set (e.g., for testing production from localhost), return production URL.
+  if (window.FORCE_PROD_API) {
+    console.log('FORCE_PROD_API flag is set, using https://forexprox.com');
+    return 'https://forexprox.com';
+  }
+  
   const hostname = window.location.hostname;
   console.log('Current hostname for API endpoint detection:', hostname);
   
