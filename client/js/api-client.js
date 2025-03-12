@@ -64,10 +64,30 @@ const ENV = {
   }
 };
 
-// Use getApiBaseUrl for determining the base API URL
+// Use getApiBaseUrl for determining the base API URL - Add a forced environment check
 const baseUrl = getApiBaseUrl();
-// Configure API URL by appending '/api' to the base URL
-const API_URL = `${baseUrl}/api`;
+
+// Force production URL check - this is a safeguard
+if (window.location.hostname === 'forexprox.com' || window.location.hostname.includes('forexprox.com')) {
+  console.log('Production hostname detected, ensuring production API URL is used');
+  if (!baseUrl.includes('forexprox.com')) {
+    console.warn('API URL mismatch detected in production! Forcing correct production URL.');
+    // Force the correct production URL
+    const correctedUrl = 'https://forexprox.com';
+    // Configure API URL by appending '/api' to the corrected URL
+    const API_URL = `${correctedUrl}/api`;
+  } else {
+    // Configure API URL by appending '/api' to the base URL
+    const API_URL = `${baseUrl}/api`;
+  }
+} else {
+  // Configure API URL by appending '/api' to the base URL
+  const API_URL = `${baseUrl}/api`;
+}
+
+// Ensure API_URL is properly defined in global scope
+window.API_URL = `${baseUrl}/api`;
+const API_URL = window.API_URL;
 
 // Add explicit log of which API URL is being used
 console.log(`Using API URL: ${API_URL}`);
@@ -75,6 +95,14 @@ console.log(`Using API URL: ${API_URL}`);
 // Main API request function
 async function apiRequest(endpoint, method = 'GET', data = null) {
   try {
+    // Additional safeguard: check hostname again at request time
+    if (window.location.hostname === 'forexprox.com' || window.location.hostname.includes('forexprox.com')) {
+      if (!API_URL.includes('forexprox.com')) {
+        console.error('Critical error: Production API URL mismatch!');
+        throw new Error('Server configuration error. Please contact support.');
+      }
+    }
+    
     const url = `${API_URL}${endpoint}`;
     
     console.log(`Making ${method} request to ${url}`);
