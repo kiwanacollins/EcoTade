@@ -18,11 +18,14 @@ const ENV = {
   isDev: function() {
     // Check if running on localhost or development environment
     const hostname = window.location.hostname;
-    // Simplified check that works better in production
+    // Explicitly check for production domain first
+    if (hostname === 'forexprox.com' || hostname.includes('forexprox.com')) {
+      return false; // Always return false for production domain
+    }
+    // Only these specific hostnames are considered development
     return hostname === 'localhost' || 
            hostname === '127.0.0.1' || 
            hostname.includes('192.168.');
-    // Removed '.local' check as it might cause false positives
   },
   domain: 'forexprox.com',
   // Cache the result to avoid repeated checks
@@ -137,8 +140,10 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
 
 // Check if server is online - completely skip in production
 async function checkServerStatus() {
-  // Immediately return true in production - never even try to check
-  if (!ENV.isDevEnvironment) {
+  // Triple-check we're not in production to prevent localhost calls
+  const hostname = window.location.hostname;
+  if (hostname === 'forexprox.com' || hostname.includes('forexprox.com') || !ENV.isDevEnvironment) {
+    console.log('Production environment detected - skipping server status check');
     return true;
   }
   
@@ -185,11 +190,15 @@ const auth = {
   // Google Authentication
   googleAuth: async (idToken) => {
     try {
-      // Log environment mode
+      // Triple-check environment to ensure correct behavior
+      const hostname = window.location.hostname;
+      const isProduction = hostname === 'forexprox.com' || hostname.includes('forexprox.com');
+      
       console.log(`Running in ${ENV.isDevEnvironment ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
+      console.log(`Hostname: ${hostname}, Direct production check: ${isProduction}`);
       
       // In production, COMPLETELY bypass server checks and debug logs
-      if (!ENV.isDevEnvironment) {
+      if (isProduction || !ENV.isDevEnvironment) {
         console.log('Production mode: directly making Google auth API request');
         try {
           return await apiRequest('/auth/google', 'POST', { idToken });
