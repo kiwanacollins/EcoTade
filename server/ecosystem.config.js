@@ -5,8 +5,8 @@ module.exports = {
     watch: false,
     env: {
       NODE_ENV: "production",
-      // Update to use localhost instead of 'mongodb' container name
-      MONGODB_URI: "mongodb://admin:password@localhost:27017/forexproxdb?authSource=admin",
+      // Update port to 27018 which is the actual port being used
+      MONGODB_URI: "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin",
       PORT: "5000"
     },
     env_production: {
