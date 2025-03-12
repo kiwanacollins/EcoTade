@@ -5,8 +5,12 @@ const User = require('./models/user.model');
 // Load env vars
 dotenv.config();
 
+// Use Docker MongoDB connection
+const MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
+
 // Connect to DB
-mongoose.connect(process.env.MONGO_URI);
+console.log('Connecting to MongoDB for seeding...');
+mongoose.connect(MONGODB_URI);
 
 // Import into DB
 const importData = async () => {
@@ -45,11 +49,12 @@ const deleteData = async () => {
   }
 };
 
+// Check command line arguments
 if (process.argv[2] === '-i') {
   importData();
 } else if (process.argv[2] === '-d') {
   deleteData();
 } else {
-  console.log('Please provide proper argument: -i (import) or -d (delete)');
-  process.exit(1);
+  console.log('Please use -i to import or -d to delete data');
+  process.exit();
 }

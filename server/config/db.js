@@ -8,29 +8,25 @@ const RETRY_INTERVAL_BASE = 1000; // 1 second base, will increase with backoff
 
 const connectDB = async (retryAttempt = 1) => {
   try {
-    // Check for multiple possible environment variable names
-    const connectionString = process.env.MONGODB_URI || process.env.MONGO_URI;
+    // Always use the MONGODB_URI environment variable - should be set by server.js
+    const connectionString = process.env.MONGODB_URI;
     
-    if (!connectionString) {
-      throw new Error('MongoDB connection string not found. Please set MONGODB_URI in your environment variables.');
-    }
-    
-    console.log(`Attempting to connect to database (attempt ${retryAttempt}/${MAX_RETRY_ATTEMPTS})...`);
+    console.log(`Attempting to connect to MongoDB at attempt ${retryAttempt}/${MAX_RETRY_ATTEMPTS}`);
+    console.log(`Using connection string: ${connectionString.replace(/\/\/.*:.*@/, '//****:****@')}`); // Hide credentials
     
     const conn = await mongoose.connect(connectionString, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      // These options help maintain stable connections
-      serverSelectionTimeoutMS: 5000, // Timeout for selecting a server
-      socketTimeoutMS: 45000, // How long socket stays inactive before timing out
-      connectTimeoutMS: 10000, // How long to wait for initial connection
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
     });
-
+    
     if (!conn) {
       throw new Error('Database connection failed');
     }
     
-    console.log(`MongoDB connected: ${conn.connection.host}`);
+    console.log(`MongoDB connected: ${conn.connection.host}:${conn.connection.port}`);
     return conn;
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);

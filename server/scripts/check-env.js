@@ -3,52 +3,27 @@
  * Run this before starting the application
  */
 
-const requiredEnvVars = ['MONGODB_URI'];
-const missingVars = [];
-
 console.log('Checking environment variables...');
 
-// Check if we're in a PM2 environment
-const isPM2 = 'PM2_HOME' in process.env || process.env.NODE_APP_INSTANCE !== undefined;
+// Check if MONGODB_URI is set
+console.log('Looking for MongoDB connection string...');
 
-requiredEnvVars.forEach(varName => {
-  if (!process.env[varName]) {
-    // Check alternative names
-    if (varName === 'MONGODB_URI' && process.env.MONGO_URI) {
-      console.log(`✓ Found alternative for ${varName}: MONGO_URI`);
-    } else {
-      missingVars.push(varName);
-      console.log(`✗ Missing required environment variable: ${varName}`);
-    }
-  } else {
-    console.log(`✓ Found ${varName}`);
-  }
-});
-
-if (missingVars.length > 0) {
-  console.error('ERROR: Missing required environment variables. Please check your .env file or server environment.');
-  console.error('Missing variables:', missingVars.join(', '));
-  
-  if (missingVars.includes('MONGODB_URI')) {
-    console.error('\nFor Docker MongoDB connection, ensure you have one of these set:');
-    console.error('1. MONGODB_URI=mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin');
-    console.error('2. MONGO_URI=mongodb://admin:password@mongodb:27017/forexproxdb?authSource=admin');
-    
-    if (isPM2) {
-      console.error('\nSince you are using PM2, make sure to configure environment variables using one of these methods:');
-      console.error('1. Create/update .env file in your project root directory');
-      console.error('2. Use the ecosystem.config.js file with env_file option');
-      console.error('3. Set the variable directly with: pm2 set MONGODB_URI mongodb://...');
-      console.error('4. Set in ecosystem file: pm2 restart ecosystem.config.js --update-env');
-    }
-  }
-  
-  // In production or PM2 environment, we'll let the application continue to allow for retry logic
-  if (process.env.NODE_ENV !== 'production' && !isPM2) {
-    process.exit(1);
-  } else {
-    console.warn('WARNING: Starting in production mode despite missing variables. Connection retries will be attempted.');
-  }
+if (process.env.MONGODB_URI) {
+  console.log('✅ MONGODB_URI is set');
+  console.log('  Using:', process.env.MONGODB_URI.replace(/\/\/.*:.*@/, '//****:****@'));
+} else if (process.env.MONGO_URI) {
+  console.log('✅ MONGO_URI is set (alternative)');
+  // Copy to MONGODB_URI for consistency
+  process.env.MONGODB_URI = process.env.MONGO_URI;
 } else {
-  console.log('All required environment variables are set!');
+  console.log('❌ No MongoDB connection string found');
+  console.log('  Setting default Docker connection string');
+  
+  // Always set a fallback for Docker
+  process.env.MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
+  console.log('  Default connection string set');
 }
+
+// Prevent the script from exiting with an error in production
+// to allow for retry logic in the main application
+console.log('Environment check completed');

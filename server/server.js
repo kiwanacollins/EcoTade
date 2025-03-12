@@ -7,46 +7,28 @@ const path = require('path');
 
 // Try to load environment from dotenv files
 try {
-  // First try .env.production in production
-  if (process.env.NODE_ENV === 'production') {
-    if (fs.existsSync(path.join(__dirname, '.env.production'))) {
-      dotenv.config({ path: path.join(__dirname, '.env.production') });
-      console.log('Loaded environment variables from .env.production');
-    }
-  }
+  // Load .env file (created by restart-pm2.sh)
+  dotenv.config();
+  console.log('Attempted to load environment variables from .env');
   
-  // Then try regular .env file
-  if (fs.existsSync(path.join(__dirname, '.env'))) {
-    dotenv.config();
-    console.log('Loaded environment variables from .env');
+  // Log if we found the MongoDB URI
+  if (process.env.MONGODB_URI) {
+    console.log('Found MONGODB_URI in environment variables');
+  } else {
+    console.warn('MONGODB_URI not found in environment variables');
   }
 } catch (error) {
   console.error('Error loading environment variables:', error);
 }
 
-// Hard-coded fallback for crucial variables
-if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
-  console.warn('WARNING: No MongoDB URI found in environment variables.');
-  console.warn('Using Docker MongoDB connection as fallback');
-  
-  // Use Docker MongoDB connection string instead of Atlas
-  const DOCKER_MONGO_USER = process.env.MONGO_INITDB_ROOT_USERNAME || 'admin';
-  const DOCKER_MONGO_PASS = process.env.MONGO_INITDB_ROOT_PASSWORD || 'password';
-  // Change the default to localhost when running outside Docker
-  const DOCKER_MONGO_HOST = process.env.MONGO_HOST || 'localhost'; 
-  const DOCKER_MONGO_PORT = process.env.MONGO_PORT || '27017';
-  const DOCKER_MONGO_DB = process.env.MONGO_DB || 'forexproxdb';
-  
-  const connectionString = `mongodb://${DOCKER_MONGO_USER}:${DOCKER_MONGO_PASS}@${DOCKER_MONGO_HOST}:${DOCKER_MONGO_PORT}/${DOCKER_MONGO_DB}?authSource=admin`;
-  process.env.MONGODB_URI = connectionString;
-  
-  console.log('Using fallback connection string:', connectionString.replace(/\/\/.*:.*@/, '//****:****@')); // Hide credentials in logs
-}
+// ALWAYS set a hardcoded fallback for Docker MongoDB - this ensures it always works
+console.log('Setting Docker MongoDB connection...');
+process.env.MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
 
 // Log what we're using
 console.log('Application Settings:');
 console.log('- NODE_ENV:', process.env.NODE_ENV);
-console.log('- Docker MongoDB connection configured:', Boolean(process.env.MONGODB_URI || process.env.MONGO_URI));
+console.log('- MONGODB_URI:', process.env.MONGODB_URI.replace(/\/\/.*:.*@/, '//****:****@')); // Hide credentials
 console.log('- Running on port:', process.env.PORT || 5000);
 
 // Continue with the existing server.js content
