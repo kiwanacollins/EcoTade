@@ -14,8 +14,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'capacitor://localhost',
   'http://localhost',
-  'null',
-  undefined
+  'null'
+  // Removed 'undefined' from the list as it's not a valid origin
 ];
 
 module.exports = (req, res, next) => {
@@ -32,35 +32,64 @@ module.exports = (req, res, next) => {
   
   // Set CORS headers based on origin
   if (origin) {
-    // Either accept a known origin or just allow any origin for development/testing
-    // This is more permissive but necessary if you have users on various devices
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-      console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
+    // Either accept a known origin or check if it includes our domain
+    if (allowedOrigins.includes(origin) || 
+        origin.includes('forexprox.com') || 
+        origin.includes('srv749600.hstgr.cloud')) {
+      console.log(`Setting Access-Control-Allow-Origin to specific origin: ${origin}`);
       res.setHeader('Access-Control-Allow-Origin', origin);
+      // When using a specific origin, we can enable credentials
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
     } else {
+      // For unknown origins in production, we don't set credentials and use a restrictive approach
       console.log(`Origin not in allowed list: ${origin}`);
-      // For production, dynamically set the origin if it includes your domain
-      // This allows subdomains and various device browsers to connect
-      if (origin.includes('forexprox.com') || origin.includes('srv749600.hstgr.cloud')) {
-        console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
-        res.setHeader('Access-Control-Allow-Origin', origin);
-      } else {
-        // For other origins, use a default allowed origin
-        console.log('Using default Access-Control-Allow-Origin');
+      // In production, we don't allow unknown origins for security
+      if (process.env.NODE_ENV === 'production') {
+        console.log('Production environment - restricting unknown origin');
         res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
+      } else {
+        // For development, be more permissive
+        console.log('Development environment - allowing unknown origin');
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
       }
     }
     res.setHeader('Vary', 'Origin');
   } else {
     console.log('Request has no origin header');
-    // For requests with no origin (like mobile apps), be permissive
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    
+    // For requests with no origin (like mobile apps without explicit origin),
+    // we need to handle differently - can't use * with credentials
+    
+    // Check for mobile user-agent patterns
+    const userAgent = req.headers['user-agent'] || '';
+    const isMobileRequest = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    
+    if (isMobileRequest) {
+      console.log('Mobile client detected without origin - allowing with restricted credentials');
+      // For mobile clients, use the host as the allowed origin
+      const host = req.headers.host;
+      if (host) {
+        const protocol = req.secure ? 'https://' : 'http://';
+        const inferredOrigin = protocol + host;
+        res.setHeader('Access-Control-Allow-Origin', inferredOrigin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      } else {
+        // Fallback to the main domain when host is unavailable
+        res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+      }
+    } else {
+      // For non-mobile requests with no origin, we're more restrictive
+      // Don't use '*' with credentials, as browsers will reject this
+      res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
   }
   
   // Expanded set of allowed headers
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
   
   // Handle preflight requests with detailed logging

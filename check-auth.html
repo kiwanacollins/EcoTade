@@ -24,27 +24,22 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin: 10px 0;
-        }
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
+            margin: 10px 5px 10px 0;
         }
         #result {
             margin-top: 20px;
         }
-        .device-info {
+        .info-box {
             background: #f0f8ff;
             padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-size: 0.9em;
+            border-left: 4px solid #0066cc;
+            margin: 15px 0;
         }
-        .warning {
-            color: #cc3300;
-            font-weight: bold;
+        .error {
+            color: #cc0000;
+        }
+        .success {
+            color: #006600;
         }
     </style>
 </head>
@@ -52,16 +47,21 @@
     <h1>Authentication Check</h1>
     <p>This page helps verify if authentication is working correctly across devices.</p>
     
-    <div class="device-info" id="device-info">
-        Loading device information...
+    <div class="info-box" id="device-info">
+        <h3>Device Information:</h3>
+        <p id="user-agent">User Agent: </p>
+        <p id="online-status">Online: </p>
+        <p id="platform">Platform: </p>
+        <p id="screen">Screen: </p>
+        <p id="origin">Origin: </p>
+        <p id="token-status">Token in storage: </p>
     </div>
     
-    <div class="button-group">
-        <button id="check-auth">Check Authentication</button>
-        <button id="check-cors">Test CORS Setup</button>
-        <button id="auth-no-credentials">Auth Without Credentials</button>
-        <button id="clear-storage">Clear Local Storage</button>
-    </div>
+    <button id="check-auth">Check Authentication</button>
+    <button id="check-cors">Test CORS Setup</button>
+    <button id="auth-no-creds">Auth Without Credentials</button>
+    <button id="manual-auth">Try Manual Auth</button>
+    <button id="clear-storage">Clear Local Storage</button>
     
     <div id="result">
         <h3>Results will appear here</h3>
@@ -74,21 +74,22 @@
         
         // Display device information
         function updateDeviceInfo() {
-            const info = document.getElementById('device-info');
-            info.innerHTML = `
-                <strong>Device Information:</strong><br>
-                User Agent: ${navigator.userAgent}<br>
-                Online: ${navigator.onLine}<br>
-                Platform: ${navigator.platform}<br>
-                Screen: ${window.screen.width}x${window.screen.height}<br>
-                Origin: ${window.location.origin}<br>
-                <span ${localStorage.getItem('token') ? '' : 'class="warning"'}>
-                    Token in storage: ${localStorage.getItem('token') ? '✓ Present' : '✗ Missing'}
-                </span>
-            `;
+            document.getElementById('user-agent').textContent = 'User Agent: ' + navigator.userAgent;
+            document.getElementById('online-status').textContent = 'Online: ' + navigator.onLine;
+            document.getElementById('platform').textContent = 'Platform: ' + navigator.platform;
+            document.getElementById('screen').textContent = 'Screen: ' + window.innerWidth + 'x' + window.innerHeight;
+            document.getElementById('origin').textContent = 'Origin: ' + window.location.origin;
+            
+            const token = localStorage.getItem('token');
+            document.getElementById('token-status').textContent = 'Token in storage: ' + (token ? '✓ Present' : '✗ Missing');
+            if (token) {
+                const tokenElem = document.createElement('p');
+                tokenElem.textContent = 'Token starts with: ' + token.substring(0, 15) + '...';
+                document.getElementById('device-info').appendChild(tokenElem);
+            }
         }
         
-        // Update device info on page load
+        // Initial update
         updateDeviceInfo();
         
         document.getElementById('check-auth').addEventListener('click', async () => {
@@ -114,74 +115,24 @@
                     credentials: 'include'
                 });
                 
-                // Show response headers for debugging
-                const headerInfo = {};
+                // Capture response headers
+                const headers = {};
                 response.headers.forEach((value, name) => {
-                    headerInfo[name] = value;
+                    headers[name] = value;
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    output.textContent = 'Authentication successful!\n\n' + 
-                        JSON.stringify(data, null, 2) + 
-                        '\n\nResponse Headers:\n' + 
-                        JSON.stringify(headerInfo, null, 2);
+                    output.textContent = 'Authentication successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'success';
                 } else {
-                    output.textContent = 'Authentication failed:\n\n' + 
-                        JSON.stringify(data, null, 2) + 
-                        '\n\nResponse Headers:\n' + 
-                        JSON.stringify(headerInfo, null, 2);
+                    output.textContent = 'Authentication failed:\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'error';
                 }
             } catch (error) {
                 output.textContent = `Error: ${error.message}`;
-            }
-        });
-        
-        // New function: Auth without credentials mode
-        document.getElementById('auth-no-credentials').addEventListener('click', async () => {
-            const output = document.getElementById('output');
-            output.textContent = 'Trying authentication without credentials mode...';
-            
-            try {
-                // Get token from local storage
-                const token = localStorage.getItem('token');
-                
-                if (!token) {
-                    output.textContent = 'No token found in local storage. You are not logged in.';
-                    return;
-                }
-                
-                // Try to fetch user data WITHOUT credentials: 'include'
-                const response = await fetch(`${apiBaseUrl}/auth/me`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                    // No credentials option here
-                });
-                
-                const headerInfo = {};
-                response.headers.forEach((value, name) => {
-                    headerInfo[name] = value;
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    output.textContent = 'Auth without credentials succeeded!\n\n' + 
-                        JSON.stringify(data, null, 2) + 
-                        '\n\nResponse Headers:\n' + 
-                        JSON.stringify(headerInfo, null, 2);
-                } else {
-                    output.textContent = 'Auth without credentials failed:\n\n' + 
-                        JSON.stringify(data, null, 2) + 
-                        '\n\nResponse Headers:\n' + 
-                        JSON.stringify(headerInfo, null, 2);
-                }
-            } catch (error) {
-                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
             }
         });
         
@@ -199,31 +150,120 @@
                     }
                 });
                 
-                // Show response headers for debugging
-                const headerInfo = {};
+                // Capture response headers
+                const headers = {};
                 response.headers.forEach((value, name) => {
-                    headerInfo[name] = value;
+                    headers[name] = value;
                 });
                 
                 if (response.ok) {
-                    const data = await response.text();
-                    output.textContent = 'CORS test successful!\n\n' + data + 
-                        '\n\nResponse Headers:\n' + 
-                        JSON.stringify(headerInfo, null, 2);
+                    const data = await response.json();
+                    output.textContent = 'CORS test successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'success';
                 } else {
-                    output.textContent = `CORS test failed with status: ${response.status}` +
-                        '\n\nResponse Headers:\n' + 
-                        JSON.stringify(headerInfo, null, 2);
+                    output.textContent = `CORS test failed with status: ${response.status}\n\nResponse Headers:\n${JSON.stringify(headers, null, 2)}`;
+                    output.className = 'error';
                 }
             } catch (error) {
                 output.textContent = `CORS Error: ${error.message}`;
+                output.className = 'error';
+            }
+        });
+        
+        document.getElementById('auth-no-creds').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing auth without credentials...';
+            
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    output.textContent = 'No token found in local storage. You are not logged in.';
+                    return;
+                }
+                
+                const response = await fetch(`${apiBaseUrl}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    credentials: 'omit' // Explicitly omit credentials
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, name) => {
+                    headers[name] = value;
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    output.textContent = 'Auth without credentials successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'success';
+                } else {
+                    output.textContent = 'Auth without credentials failed:\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'error';
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
+            }
+        });
+        
+        document.getElementById('manual-auth').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            
+            // Prompt user for token
+            const manualToken = prompt("Enter your authentication token (or leave empty to use stored token):");
+            const token = manualToken || localStorage.getItem('token');
+            
+            if (!token) {
+                output.textContent = 'No token provided or found in storage.';
+                return;
+            }
+            
+            if (manualToken && !localStorage.getItem('token')) {
+                if (confirm("Save this token to local storage?")) {
+                    localStorage.setItem('token', manualToken);
+                    updateDeviceInfo();
+                }
+            }
+            
+            output.textContent = 'Testing manual authentication...';
+            
+            try {
+                const response = await fetch(`${apiBaseUrl}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, name) => {
+                    headers[name] = value;
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    output.textContent = 'Manual authentication successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'success';
+                } else {
+                    output.textContent = 'Manual authentication failed:\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.className = 'error';
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+                output.className = 'error';
             }
         });
         
         document.getElementById('clear-storage').addEventListener('click', () => {
             localStorage.clear();
             document.getElementById('output').textContent = 'Local storage cleared.';
-            updateDeviceInfo(); // Update device info after clearing storage
+            updateDeviceInfo();
         });
     </script>
 </body>
