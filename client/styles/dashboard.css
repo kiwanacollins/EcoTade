@@ -1253,12 +1253,14 @@ body {
     
     .content-panels {
         padding: 15px;
+        width: 105vw;
     }
 }
 
 @media (min-width: 1200px) {
     .content-panels {
         padding: 30px 40px;
+       
     }
     
     .stats-cards {
