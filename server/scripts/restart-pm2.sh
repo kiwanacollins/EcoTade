@@ -26,13 +26,17 @@ pm2 set MONGODB_URI $MONGODB_URI
 # Export the variable to the current environment as well
 export MONGODB_URI=$MONGODB_URI
 
+# Properly formatted allowed origins with all required domains
+ALLOWED_ORIGINS="https://forexprox.com,https://www.forexprox.com,http://forexprox.com,http://www.forexprox.com,https://srv749600.hstgr.cloud,http://localhost:5000,http://localhost:3000"
+
 # First, directly create a .env file to ensure variables are properly set
 echo "Creating/updating .env file..."
 cat > ../.env <<EOL
 MONGODB_URI=$MONGODB_URI
 NODE_ENV=production
 PORT=5000
-ALLOWED_ORIGINS=*
+ALLOWED_ORIGINS=$ALLOWED_ORIGINS
+JWT_COOKIE_EXPIRE=30
 EOL
 
 echo "Environment file created:"
@@ -50,7 +54,8 @@ else
       --env-var "MONGODB_URI=$MONGODB_URI" \
       --env-var "NODE_ENV=production" \
       --env-var "PORT=5000" \
-      --env-var "ALLOWED_ORIGINS=*" \
+      --env-var "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" \
+      --env-var "JWT_COOKIE_EXPIRE=30" \
       --update-env
 fi
 
