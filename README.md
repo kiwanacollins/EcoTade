@@ -26,3 +26,12 @@ This application uses MongoDB in a Docker container.
 - For local development without Docker, copy .env.production to .env and modify as needed
 
 
+
+
+
+
+
+
+
+
+                                                         

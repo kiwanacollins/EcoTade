@@ -1,7 +1,8 @@
 // API client for handling requests to the backend now
 
 // HARDCODED SERVER URL - No conditional logic at all
-const PRODUCTION_API_URL = 'https://srv749600.hstgr.cloud';
+// Change from HTTPS to HTTP to avoid certificate issues
+const PRODUCTION_API_URL = 'http://srv749600.hstgr.cloud';
 
 // Debugging function to track URL usage
 function trackURLUsage(functionName, url) {
