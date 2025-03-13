@@ -20,16 +20,20 @@ module.exports = (req, res, next) => {
   console.log(`CORS middleware handling ${req.method} request from origin: ${origin}`);
   console.log('Request path:', req.path);
   
-  // Even if origin is not in our list, we need to respond with the actual origin
-  // for credentials mode to work properly
+  // Clear any existing CORS headers to prevent duplicates
+  res.removeHeader('Access-Control-Allow-Origin');
+  res.removeHeader('Access-Control-Allow-Methods');
+  res.removeHeader('Access-Control-Allow-Headers');
+  res.removeHeader('Access-Control-Allow-Credentials');
+  
+  // Set CORS headers based on origin
   if (origin) {
     console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   } else {
     console.log('Request has no origin header');
-    // For requests without an origin, we could set it to null, but this can cause issues
-    // We'll just not set the header in this case
+    // Do not set any Access-Control-Allow-Origin for requests without origin
   }
   
   // Expanded set of allowed headers

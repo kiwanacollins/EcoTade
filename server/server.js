@@ -82,16 +82,14 @@ process.on('unhandledRejection', (reason, promise) => {
 const app = express();
 
 // IMPORTANT: Apply our custom CORS middleware BEFORE any other middleware
-// Remove the built-in cors() middleware if it exists and use our custom implementation
 const corsMiddleware = require('./middleware/cors');
 app.use(corsMiddleware);
 
-// DO NOT use the express.cors() middleware since we have our custom implementation
-// app.use(cors());  <-- Comment out or remove this line if it exists
-
-// Enable preflight for all routes
-// REMOVE THE FOLLOWING LINE - it's conflicting with our custom CORS middleware
-// app.options('*', cors(corsOptions));
+// IMPORTANT: Make sure NO other CORS-related middleware is used!
+// Remove or comment out ALL other CORS configurations:
+// - app.use(cors())
+// - app.options('*', cors(corsOptions))
+// - Any other cors() usages
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
