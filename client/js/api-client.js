@@ -2,7 +2,7 @@
 
 // HARDCODED SERVER URL - No conditional logic at all
 // Change from HTTP to HTTPS to fix mixed content issues
-const PRODUCTION_API_URL = 'https://srv749600.hstgr.cloud';
+const PRODUCTION_API_URL = 'https://forexprox.com';
 
 // Debugging function to track URL usage
 function trackURLUsage(functionName, url) {
