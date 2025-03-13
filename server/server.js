@@ -90,7 +90,8 @@ app.use(corsMiddleware);
 // app.use(cors());  <-- Comment out or remove this line if it exists
 
 // Enable preflight for all routes
-app.options('*', cors(corsOptions));
+// REMOVE THE FOLLOWING LINE - it's conflicting with our custom CORS middleware
+// app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

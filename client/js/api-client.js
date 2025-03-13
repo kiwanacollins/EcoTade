@@ -264,7 +264,48 @@ const auth = {
         console.log('Production mode: directly making Google auth API request');
         console.log('Using API endpoint:', API_URL);
         try {
-          return await apiRequest('/auth/google', 'POST', { idToken });
+          // Special handling for Google auth to avoid CORS issues
+          // For Google auth specifically, we'll use 'same-origin' credentials mode
+          // to prevent the "credentials: 'include'" with wildcard origin error
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          };
+          
+          const token = localStorage.getItem('token');
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+          
+          console.log('Making direct fetch request for Google auth with modified options');
+          
+          const response = await fetch(`${API_URL}/auth/google`, {
+            method: 'POST',
+            headers,
+            mode: 'cors',
+            cache: 'no-cache',
+            // Use omit instead of include to avoid CORS issues
+            credentials: 'omit',
+            body: JSON.stringify({ idToken })
+          });
+          
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const responseData = await response.json();
+            
+            if (!response.ok) {
+              const errorMsg = responseData.message || `Error ${response.status}: ${response.statusText}`;
+              console.error(`Google Auth API Error: ${errorMsg}`);
+              throw new Error(errorMsg);
+            }
+            
+            return responseData;
+          } else {
+            if (!response.ok) {
+              throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            return { success: true };
+          }
         } catch (apiError) {
           if (apiError.message && (
               apiError.message.includes('Content Security Policy') || 

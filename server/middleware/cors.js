@@ -17,31 +17,31 @@ const allowedOrigins = [
 module.exports = (req, res, next) => {
   const origin = req.headers.origin;
   
-  console.log('Received request with origin:', origin);
+  console.log(`CORS middleware handling ${req.method} request from origin: ${origin}`);
+  console.log('Request path:', req.path);
   
-  // Check if the request origin is in our allowed list
-  if (allowedOrigins.includes(origin)) {
+  // Even if origin is not in our list, we need to respond with the actual origin
+  // for credentials mode to work properly
+  if (origin) {
+    console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
     res.setHeader('Access-Control-Allow-Origin', origin);
-    // When allowing specific origins with credentials, you must set the Vary header
     res.setHeader('Vary', 'Origin');
   } else {
-    // Do not use wildcard for requests with credentials
-    // Only allow the specific request origin if needed
-    console.log('Origin not in allowed list:', origin);
-    
-    // Instead of setting wildcard, we need to decide if this origin should be allowed
-    // For security, we'll only accept origins in our allowed list
-    res.setHeader('Access-Control-Allow-Origin', origin || '');
-    res.setHeader('Vary', 'Origin');
+    console.log('Request has no origin header');
+    // For requests without an origin, we could set it to null, but this can cause issues
+    // We'll just not set the header in this case
   }
   
-  // Standard CORS headers
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Expanded set of allowed headers
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
   
-  // Handle preflight requests
+  // Handle preflight requests with detailed logging
   if (req.method === 'OPTIONS') {
+    console.log('Responding to OPTIONS preflight request');
+    console.log('Request headers:', req.headers);
     return res.status(200).end();
   }
   
