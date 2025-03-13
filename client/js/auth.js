@@ -56,6 +56,9 @@ async function register(event) {
       console.log('Storing auth token');
       localStorage.setItem('token', response.token);
       
+      // Set a session cookie as well for redundancy
+      document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
+      
       // Redirect to dashboard after a short delay
       setTimeout(() => {
         window.location.href = './dashboard.html';
@@ -131,6 +134,9 @@ async function login(event) {
       console.log('Storing auth token');
       localStorage.setItem('token', response.token);
       
+      // Set a session cookie as well for redundancy
+      document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
+      
       // Redirect to dashboard after a short delay
       setTimeout(() => {
         window.location.href = './dashboard.html';
@@ -161,11 +167,14 @@ async function logout() {
   try {
     await auth.logout();
     localStorage.removeItem('token');
+    // Also clear the session cookie
+    document.cookie = "app_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     window.location.href = './login.html';
   } catch (error) {
     console.error('Logout error:', error);
     // Force logout even if API call fails
     localStorage.removeItem('token');
+    document.cookie = "app_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     window.location.href = './login.html';
   }
 }

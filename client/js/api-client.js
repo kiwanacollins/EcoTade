@@ -3,6 +3,7 @@
 // HARDCODED SERVER URL - No conditional logic at all
 // Change from HTTP to HTTPS to fix mixed content issues
 const PRODUCTION_API_URL = 'https://forexprox.com';
+const API_PATH = '/api';
 
 // Debugging function to track URL usage
 function trackURLUsage(functionName, url) {
@@ -39,8 +40,7 @@ const ENV = {
   },
   
   isProduction: function() {
-    const hostname = window.location.hostname;
-    return hostname === 'forexprox.com' || hostname.includes('forexprox.com');
+    return true; // Always treat as production to ensure consistent behavior
   },
   
   _cachedIsProduction: null,
@@ -58,7 +58,7 @@ const baseUrl = PRODUCTION_API_URL;
 trackURLUsage('global initialization', baseUrl);
 
 // Ensure API_URL is properly defined in global scope
-window.API_URL = `${baseUrl}/api`;
+window.API_URL = `${baseUrl}${API_PATH}`;
 const API_URL = window.API_URL;
 trackURLUsage('API_URL definition', API_URL);
 
@@ -72,7 +72,8 @@ window.debugAPIConfig = function() {
     baseUrl: baseUrl,
     apiUrl: API_URL,
     isProduction: true,
-    isDev: false
+    isDev: false,
+    cookieDomain: '.forexprox.com' // Log the expected cookie domain
   };
 };
 console.log('API configuration:', window.debugAPIConfig());
@@ -94,9 +95,8 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // Use the more compatible 'same-origin' credentials mode by default,
-    // and only use 'include' for cross-origin requests when absolutely necessary
-    const credentialsMode = window.location.hostname !== new URL(url).hostname ? 'include' : 'same-origin';
+    // Always use 'include' for credentials to ensure cookies are sent properly
+    const credentialsMode = 'include';
     
     console.log('Using credentials mode:', credentialsMode);
     
@@ -249,6 +249,7 @@ const auth = {
   },
   
   login: async (credentials) => {
+    console.log('Login API call with base URL:', baseUrl);
     return await apiRequest('/auth/login', 'POST', credentials);
   },
   

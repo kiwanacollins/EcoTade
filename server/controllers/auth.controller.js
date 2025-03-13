@@ -249,14 +249,27 @@ const sendTokenResponse = (user, statusCode, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
-    httpOnly: true
+    httpOnly: true,
+    path: '/', // Ensure cookie is available on all paths
+    sameSite: 'lax' // Less restrictive SameSite policy
   };
 
-  // Use secure cookies in production and specify the domain
+  // Use secure cookies in production
   if (process.env.NODE_ENV === 'production') {
     options.secure = true;
-    options.domain = 'forexprox.com';
+    
+    // Don't set specific domain to allow the browser to use the current domain
+    // Instead of using domain: 'forexprox.com' which can cause issues
+    // The browser will automatically use the appropriate domain
   }
+
+  console.log('Setting auth cookie with options:', {
+    httpOnly: options.httpOnly,
+    secure: options.secure,
+    sameSite: options.sameSite,
+    path: options.path,
+    expires: options.expires
+  });
 
   res
     .status(statusCode)
