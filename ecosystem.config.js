@@ -19,6 +19,9 @@ module.exports = {
       MONGO_INITDB_ROOT_PASSWORD: 'password',
       MONGO_DB: 'forexproxdb',
       MONGODB_URI: 'mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin',
+      JWT_SECRET: 'ecotradesecurekey2024',  // Add secure JWT secret key
+      JWT_EXPIRE: '30d',                    // JWT expiration time
+      JWT_COOKIE_EXPIRE: '30',              // Cookie expiration in days
       // Remove ALLOWED_ORIGINS from here to avoid conflicts with the middleware
       // Let the CORS middleware handle this entirely
     },

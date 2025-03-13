@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const path = require('path');
 const { checkConfigOnStartup } = require('./utils/config-validator');
+// Add JWT configuration check
+const { isJwtConfigured } = require('./scripts/check-jwt');
 
 // Try to load environment from dotenv files
 try {
@@ -25,6 +27,14 @@ try {
 // ALWAYS set a hardcoded fallback for Docker MongoDB - this ensures it always works
 console.log('Setting Docker MongoDB connection...');
 process.env.MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
+
+// Add JWT secret fallback for development only
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'production') {
+  console.warn('JWT_SECRET not found, setting development fallback');
+  process.env.JWT_SECRET = "ecotradesecurekey2024";
+} else if (!process.env.JWT_SECRET) {
+  console.error('JWT_SECRET not set in production environment! Authentication will fail!');
+}
 
 // Log what we're using
 console.log('Application Settings:');

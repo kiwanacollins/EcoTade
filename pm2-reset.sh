@@ -17,7 +17,7 @@ cat > ./server/.env <<EOL
 MONGODB_URI=mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin
 NODE_ENV=production
 PORT=5000
-JWT_SECRET=your_secret_key
+JWT_SECRET=ecotradesecurekey2024
 JWT_EXPIRE=30d
 ALLOWED_ORIGINS=*
 EOL
@@ -27,7 +27,7 @@ cat > ./.env <<EOL
 MONGODB_URI=mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin
 NODE_ENV=production
 PORT=5000
-JWT_SECRET=your_secret_key
+JWT_SECRET=ecotradesecurekey2024
 JWT_EXPIRE=30d
 ALLOWED_ORIGINS=*
 EOL
@@ -47,6 +47,9 @@ pm2 start server.js --name forexprox \
   --env-var "NODE_ENV=production" \
   --env-var "PORT=5000" \
   --env-var "ALLOWED_ORIGINS=*" \
+  --env-var "JWT_SECRET=ecotradesecurekey2024" \
+  --env-var "JWT_EXPIRE=30d" \
+  --env-var "JWT_COOKIE_EXPIRE=30" \
   --update-env
 
 # Save PM2 settings
