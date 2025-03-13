@@ -95,7 +95,7 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // Always use 'include' for credentials to ensure cookies are sent properly
+    // ALWAYS use 'include' for credentials - helps with mobile browsers
     const credentialsMode = 'include';
     
     console.log('Using credentials mode:', credentialsMode);
@@ -177,6 +177,18 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
     }
   } catch (error) {
     console.error('API request failed:', error, 'to endpoint:', endpoint);
+    
+    // Special handling for mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      console.log('Mobile device detected, checking for specific mobile errors');
+      // On mobile, provide more specific error messages
+      if (error.message && error.message.includes('Failed to fetch')) {
+        console.error('Mobile connection issue detected');
+        throw new Error('Connection issue detected. Please ensure you have a stable internet connection and try again.');
+      }
+    }
+    
     throw error;
   }
 }
@@ -257,6 +269,12 @@ const auth = {
     try {
       const isProduction = ENV.isProductionEnvironment;
       console.log('Google Auth - production mode?', isProduction);
+      
+      // Detect if we're on a mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        console.log('Mobile device detected - using optimized Google auth flow');
+      }
       
       if (localStorage.getItem('use_popup_auth') === 'true') {
         console.log('Using popup authentication flow due to detected CSP restrictions');
