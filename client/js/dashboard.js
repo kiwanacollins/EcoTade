@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', async function() {
+    // Add viewport adjustment function to automatically scale content correctly
+    adjustViewport();
+    
     // Check if user is authenticated
     try {
         // Check if token exists in localStorage
@@ -49,6 +52,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.location.href = './login.html';
     }
 });
+
+// Function to adjust viewport scaling for better mobile viewing
+function adjustViewport() {
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    const screenWidth = window.innerWidth;
+    
+    // For smaller screens, set an appropriate initial scale to fit all content
+    if (screenWidth <= 768) {
+        // Use a slightly smaller initial scale for mobile devices
+        const initialScale = Math.min(screenWidth / 400, 0.9);
+        viewportMeta.setAttribute('content', `width=device-width, initial-scale=${initialScale}, maximum-scale=1.0, user-scalable=yes`);
+        
+        console.log(`Viewport adjusted for mobile: scale=${initialScale}`);
+        
+        // Add additional body class for mobile optimization
+        document.body.classList.add('mobile-optimized');
+    } else {
+        // Ensure desktop view is properly set
+        viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+    }
+}
 
 // Fetch dashboard data from API
 async function fetchDashboardData() {
@@ -1461,11 +1485,6 @@ function processDeposit() {
             
             // Re-initialize event listeners
             setupDepositModalListeners();
-            
-            // Reset form state
-            document.getElementById('modal-deposit-amount').value = '';
-            document.getElementById('payment-method').value = 'bitcoin';
-            updatePaymentMethod('bitcoin');
         });
         
         document.getElementById('view-transactions').addEventListener('click', function() {
@@ -2058,7 +2077,7 @@ const motivationalMessages = [
     },
     {
         title: "Diversify Your Portfolio",
-        message: "Spread your investments across different assets to minimize risk and maximize potential returns.",
+        message:"Spread your investments across different assets to minimize risk and maximize potential returns.",
         icon: "chart-pie"
     },
     {
