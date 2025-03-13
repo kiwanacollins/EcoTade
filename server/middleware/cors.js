@@ -14,90 +14,123 @@ const allowedOrigins = [
   'http://localhost:3000',
   'capacitor://localhost',
   'http://localhost',
+  // Add explicit entries for accessing from mobile devices
+  'http://192.168.1.1:5000',
+  'http://192.168.0.1:5000',
+  'http://10.0.0.1:5000',
+  // Include null for file:// origins
   'null'
-  // Removed 'undefined' from the list as it's not a valid origin
 ];
 
 module.exports = (req, res, next) => {
+  // Store the original end method to intercept it and log the final headers
+  const originalEnd = res.end;
+  
+  // Override res.end to log the final CORS headers before sending the response
+  res.end = function() {
+    console.log('Final CORS headers being sent:');
+    console.log('- Access-Control-Allow-Origin:', res.getHeader('Access-Control-Allow-Origin') || 'not set');
+    console.log('- Access-Control-Allow-Credentials:', res.getHeader('Access-Control-Allow-Credentials') || 'not set');
+    console.log('- Access-Control-Allow-Methods:', res.getHeader('Access-Control-Allow-Methods') || 'not set');
+    console.log('- Access-Control-Allow-Headers:', res.getHeader('Access-Control-Allow-Headers') || 'not set');
+    
+    // Call the original end method
+    return originalEnd.apply(this, arguments);
+  };
+
   const origin = req.headers.origin;
+  const method = req.method;
+  const path = req.path;
   
-  console.log(`CORS middleware handling ${req.method} request from origin: ${origin}`);
-  console.log('Request path:', req.path);
+  console.log(`CORS middleware processing ${method} request to ${path} from origin: ${origin || 'no origin'}`);
   
-  // Clear any existing CORS headers to prevent duplicates
+  // CRITICAL: Remove any existing CORS headers to prevent conflicts
   res.removeHeader('Access-Control-Allow-Origin');
   res.removeHeader('Access-Control-Allow-Methods');
   res.removeHeader('Access-Control-Allow-Headers');
   res.removeHeader('Access-Control-Allow-Credentials');
+  res.removeHeader('Access-Control-Max-Age');
   
-  // Set CORS headers based on origin
+  // Set up Vary header to indicate that responses vary based on Origin
+  res.setHeader('Vary', 'Origin');
+  
+  // Handle the Origin header presence
   if (origin) {
-    // Either accept a known origin or check if it includes our domain
-    if (allowedOrigins.includes(origin) || 
-        origin.includes('forexprox.com') || 
-        origin.includes('srv749600.hstgr.cloud')) {
-      console.log(`Setting Access-Control-Allow-Origin to specific origin: ${origin}`);
+    // Check if the origin is in our allowed list or matches our domain pattern
+    const isAllowed = allowedOrigins.includes(origin) || 
+                      origin.includes('forexprox.com') || 
+                      origin.includes('srv749600.hstgr.cloud');
+    
+    if (isAllowed) {
+      // For allowed origins, send back the specific origin with credentials
+      console.log(`✓ Origin ${origin} is allowed - setting specific origin`);
       res.setHeader('Access-Control-Allow-Origin', origin);
-      // When using a specific origin, we can enable credentials
       res.setHeader('Access-Control-Allow-Credentials', 'true');
     } else {
-      // For unknown origins in production, we don't set credentials and use a restrictive approach
-      console.log(`Origin not in allowed list: ${origin}`);
-      // In production, we don't allow unknown origins for security
-      if (process.env.NODE_ENV === 'production') {
-        console.log('Production environment - restricting unknown origin');
-        res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
-      } else {
-        // For development, be more permissive
-        console.log('Development environment - allowing unknown origin');
+      // For non-allowed origins
+      console.log(`✗ Origin ${origin} is not in allowed list`);
+      
+      // In development, be more permissive
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Development mode - allowing unknown origin:', origin);
         res.setHeader('Access-Control-Allow-Origin', origin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
+      } else {
+        // In production, reject unknown origins for security
+        console.log('Production mode - rejecting unknown origin');
+        // Instead of sending a wildcard, set a default origin
+        res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
+        // Don't set credentials flag for security
       }
     }
-    res.setHeader('Vary', 'Origin');
   } else {
-    console.log('Request has no origin header');
+    // Handle requests with no Origin header (like API clients and curl)
+    console.log('No origin header in the request');
     
-    // For requests with no origin (like mobile apps without explicit origin),
-    // we need to handle differently - can't use * with credentials
-    
-    // Check for mobile user-agent patterns
+    // For requests with no origin header, we need a special approach
+    // We can detect mobile devices through user agent
     const userAgent = req.headers['user-agent'] || '';
-    const isMobileRequest = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
     
-    if (isMobileRequest) {
-      console.log('Mobile client detected without origin - allowing with restricted credentials');
-      // For mobile clients, use the host as the allowed origin
+    if (isMobile) {
+      console.log('Mobile device detected without origin header');
+      
+      // For mobile devices, use the host as the allowed origin if available
       const host = req.headers.host;
       if (host) {
-        const protocol = req.secure ? 'https://' : 'http://';
+        const protocol = req.secure || req.headers['x-forwarded-proto'] === 'https' ? 'https://' : 'http://';
         const inferredOrigin = protocol + host;
+        console.log('Using inferred origin from host:', inferredOrigin);
         res.setHeader('Access-Control-Allow-Origin', inferredOrigin);
         res.setHeader('Access-Control-Allow-Credentials', 'true');
       } else {
-        // Fallback to the main domain when host is unavailable
+        // Fallback to main site origin
+        console.log('No host header available, using default origin');
         res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
         res.setHeader('Access-Control-Allow-Credentials', 'true');
       }
     } else {
-      // For non-mobile requests with no origin, we're more restrictive
-      // Don't use '*' with credentials, as browsers will reject this
+      // For API calls without origin (like from Node.js client)
+      // IMPORTANT FIX: We CANNOT use * with credentials, so set a specific origin
+      console.log('Non-mobile request without origin header - using default origin');
       res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      // Don't set credentials for these types of requests
     }
   }
   
-  // Expanded set of allowed headers
+  // Set standard headers for all responses
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  
+  // Set max age to cache preflight requests
   res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
   
-  // Handle preflight requests with detailed logging
-  if (req.method === 'OPTIONS') {
+  // Handle preflight OPTIONS requests
+  if (method === 'OPTIONS') {
     console.log('Responding to OPTIONS preflight request');
-    console.log('Request headers:', req.headers);
-    return res.status(200).end();
+    return res.status(204).end(); // No content needed for OPTIONS
   }
   
+  // Continue with request
   next();
 };

@@ -41,6 +41,13 @@
         .success {
             color: #006600;
         }
+        .warning {
+            color: #cc6600;
+            background: #fff8f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -57,10 +64,17 @@
         <p id="token-status">Token in storage: </p>
     </div>
     
+    <div class="warning" id="cors-notice">
+        <strong>Important CORS Information:</strong>
+        <p>The server may refuse connections if your origin does not match the allowed origins.</p>
+        <p>Current page origin: <span id="page-origin"></span></p>
+        <p>Try accessing this page directly from: <a href="https://forexprox.com/check-auth.html">https://forexprox.com/check-auth.html</a></p>
+    </div>
+    
     <button id="check-auth">Check Authentication</button>
     <button id="check-cors">Test CORS Setup</button>
     <button id="auth-no-creds">Auth Without Credentials</button>
-    <button id="manual-auth">Try Manual Auth</button>
+    <button id="direct-access">Direct API Access</button>
     <button id="clear-storage">Clear Local Storage</button>
     
     <div id="result">
@@ -69,8 +83,32 @@
     </div>
     
     <script>
-        // Get base API URL
-        const apiBaseUrl = 'https://forexprox.com/api';
+        // Multiple API URL options to try
+        const apiUrls = [
+            'https://forexprox.com/api',  // Primary domain
+            'https://srv749600.hstgr.cloud/api',  // Server hostname
+            window.location.origin + '/api'  // Current origin
+        ];
+        
+        // Try each API URL until one works
+        async function tryApiEndpoints(path, options) {
+            let lastError = null;
+            
+            for (const baseUrl of apiUrls) {
+                try {
+                    console.log(`Trying API endpoint: ${baseUrl}${path}`);
+                    const response = await fetch(`${baseUrl}${path}`, options);
+                    console.log(`Success with endpoint: ${baseUrl}`);
+                    return { response, baseUrl };
+                } catch (error) {
+                    console.log(`Failed with endpoint ${baseUrl}: ${error.message}`);
+                    lastError = error;
+                }
+            }
+            
+            // If we get here, all endpoints failed
+            throw lastError || new Error('All API endpoints failed');
+        }
         
         // Display device information
         function updateDeviceInfo() {
@@ -79,6 +117,7 @@
             document.getElementById('platform').textContent = 'Platform: ' + navigator.platform;
             document.getElementById('screen').textContent = 'Screen: ' + window.innerWidth + 'x' + window.innerHeight;
             document.getElementById('origin').textContent = 'Origin: ' + window.location.origin;
+            document.getElementById('page-origin').textContent = window.location.origin;
             
             const token = localStorage.getItem('token');
             document.getElementById('token-status').textContent = 'Token in storage: ' + (token ? '✓ Present' : '✗ Missing');
@@ -105,15 +144,16 @@
                     return;
                 }
                 
-                // Try to fetch user data
-                const response = await fetch(`${apiBaseUrl}/auth/me`, {
+                const options = {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     credentials: 'include'
-                });
+                };
+                
+                const { response, baseUrl } = await tryApiEndpoints('/auth/me', options);
                 
                 // Capture response headers
                 const headers = {};
@@ -124,10 +164,16 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    output.textContent = 'Authentication successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.textContent = `Authentication successful using ${baseUrl}!\n\n` + 
+                                        JSON.stringify(data, null, 2) + 
+                                        '\n\nResponse Headers:\n' + 
+                                        JSON.stringify(headers, null, 2);
                     output.className = 'success';
                 } else {
-                    output.textContent = 'Authentication failed:\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.textContent = `Authentication failed using ${baseUrl}:\n\n` + 
+                                        JSON.stringify(data, null, 2) + 
+                                        '\n\nResponse Headers:\n' + 
+                                        JSON.stringify(headers, null, 2);
                     output.className = 'error';
                 }
             } catch (error) {
@@ -141,14 +187,15 @@
             output.textContent = 'Testing CORS setup...';
             
             try {
-                // Simple OPTIONS request to test CORS
-                const response = await fetch(`${apiBaseUrl}/health`, {
+                const options = {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json'
                     }
-                });
+                };
+                
+                const { response, baseUrl } = await tryApiEndpoints('/health', options);
                 
                 // Capture response headers
                 const headers = {};
@@ -158,7 +205,10 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    output.textContent = 'CORS test successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.textContent = `CORS test successful with ${baseUrl}!\n\n` + 
+                                        JSON.stringify(data, null, 2) + 
+                                        '\n\nResponse Headers:\n' + 
+                                        JSON.stringify(headers, null, 2);
                     output.className = 'success';
                 } else {
                     output.textContent = `CORS test failed with status: ${response.status}\n\nResponse Headers:\n${JSON.stringify(headers, null, 2)}`;
@@ -182,14 +232,16 @@
                     return;
                 }
                 
-                const response = await fetch(`${apiBaseUrl}/auth/me`, {
+                const options = {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     credentials: 'omit' // Explicitly omit credentials
-                });
+                };
+                
+                const { response, baseUrl } = await tryApiEndpoints('/auth/me', options);
                 
                 const headers = {};
                 response.headers.forEach((value, name) => {
@@ -199,10 +251,16 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    output.textContent = 'Auth without credentials successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.textContent = `Auth without credentials successful using ${baseUrl}!\n\n` + 
+                                        JSON.stringify(data, null, 2) + 
+                                        '\n\nResponse Headers:\n' + 
+                                        JSON.stringify(headers, null, 2);
                     output.className = 'success';
                 } else {
-                    output.textContent = 'Auth without credentials failed:\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    output.textContent = `Auth without credentials failed using ${baseUrl}:\n\n` + 
+                                        JSON.stringify(data, null, 2) + 
+                                        '\n\nResponse Headers:\n' + 
+                                        JSON.stringify(headers, null, 2);
                     output.className = 'error';
                 }
             } catch (error) {
@@ -211,49 +269,38 @@
             }
         });
         
-        document.getElementById('manual-auth').addEventListener('click', async () => {
+        document.getElementById('direct-access').addEventListener('click', async () => {
             const output = document.getElementById('output');
-            
-            // Prompt user for token
-            const manualToken = prompt("Enter your authentication token (or leave empty to use stored token):");
-            const token = manualToken || localStorage.getItem('token');
-            
-            if (!token) {
-                output.textContent = 'No token provided or found in storage.';
-                return;
-            }
-            
-            if (manualToken && !localStorage.getItem('token')) {
-                if (confirm("Save this token to local storage?")) {
-                    localStorage.setItem('token', manualToken);
-                    updateDeviceInfo();
-                }
-            }
-            
-            output.textContent = 'Testing manual authentication...';
+            output.textContent = 'Testing direct API access (without CORS)...';
             
             try {
-                const response = await fetch(`${apiBaseUrl}/auth/me`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                // Create a script tag to bypass CORS
+                const script = document.createElement('script');
+                const callbackName = 'jsonpCallback' + Date.now();
                 
-                const headers = {};
-                response.headers.forEach((value, name) => {
-                    headers[name] = value;
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    output.textContent = 'Manual authentication successful!\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                // Create global callback
+                window[callbackName] = function(data) {
+                    output.textContent = 'Direct API access successful!\n\n' + JSON.stringify(data, null, 2);
                     output.className = 'success';
-                } else {
-                    output.textContent = 'Manual authentication failed:\n\n' + JSON.stringify(data, null, 2) + '\n\nResponse Headers:\n' + JSON.stringify(headers, null, 2);
+                    // Clean up
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                };
+                
+                // Set source with JSONP pattern
+                script.src = `https://forexprox.com/api/health?callback=${callbackName}`;
+                
+                // Handle errors
+                script.onerror = function() {
+                    output.textContent = 'Direct API access failed. The API may not support JSONP.';
                     output.className = 'error';
-                }
+                    // Clean up
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                };
+                
+                // Add to document to initiate request
+                document.body.appendChild(script);
             } catch (error) {
                 output.textContent = `Error: ${error.message}`;
                 output.className = 'error';
