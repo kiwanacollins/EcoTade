@@ -250,16 +250,17 @@ const sendTokenResponse = (user, statusCode, res) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-    path: '/',
-    sameSite: 'none' // Changed from 'lax' to 'none' for better mobile support
+    path: '/', // Ensure cookie is available on all paths
+    sameSite: 'none' // Allow cross-site cookie usage for mobile devices
   };
 
   // Use secure cookies in production
   if (process.env.NODE_ENV === 'production') {
     options.secure = true;
-    
-    // Do NOT set domain so browser uses current domain automatically
-    // This works better across both mobile and desktop
+    // Do NOT set domain to allow browser to use current domain
+  } else {
+    // For development, be more permissive
+    options.sameSite = 'lax';
   }
 
   console.log('Setting auth cookie with options:', {

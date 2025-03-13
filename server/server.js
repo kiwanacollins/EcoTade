@@ -107,7 +107,34 @@ app.use(corsMiddleware);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Enhanced cookie parser setup
 app.use(cookieParser());
+
+// Add explicit cookie settings middleware
+app.use((req, res, next) => {
+  // Set secure cookie settings before handling routes
+  res.cookie = function(originalCookie) {
+    return function(name, value, options) {
+      // Ensure all cookies have these base settings
+      const secureOptions = {
+        ...options,
+        path: options.path || '/',
+        sameSite: options.sameSite || (process.env.NODE_ENV === 'production' ? 'none' : 'lax')
+      };
+      
+      // Force secure in production
+      if (process.env.NODE_ENV === 'production' && !options.secure) {
+        secureOptions.secure = true;
+      }
+      
+      // Call the original cookie function with enhanced options
+      return originalCookie.call(this, name, value, secureOptions);
+    };
+  }(res.cookie);
+  
+  next();
+});
 
 // Setup database connection with retry logic
 let dbConnected = false;

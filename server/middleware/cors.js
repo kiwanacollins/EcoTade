@@ -1,15 +1,19 @@
 // CORS middleware for the ForexProx API
 
-// Allow requests from both the client domain and direct VPS access
+// Create a comprehensive list of allowed origins
 const allowedOrigins = [
   'https://forexprox.com',
   'https://www.forexprox.com',
   'http://forexprox.com',
   'http://www.forexprox.com',
+  'https://m.forexprox.com',
+  'http://m.forexprox.com',
   'https://srv749600.hstgr.cloud',
   'http://srv749600.hstgr.cloud',
   'http://localhost:5000',
   'http://localhost:3000',
+  'capacitor://localhost',
+  'http://localhost',
   'null',
   undefined
 ];
@@ -28,12 +32,29 @@ module.exports = (req, res, next) => {
   
   // Set CORS headers based on origin
   if (origin) {
-    console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
-    res.setHeader('Access-Control-Allow-Origin', origin);
+    // Either accept a known origin or just allow any origin for development/testing
+    // This is more permissive but necessary if you have users on various devices
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+      console.log(`Origin not in allowed list: ${origin}`);
+      // For production, dynamically set the origin if it includes your domain
+      // This allows subdomains and various device browsers to connect
+      if (origin.includes('forexprox.com') || origin.includes('srv749600.hstgr.cloud')) {
+        console.log(`Setting Access-Control-Allow-Origin to: ${origin}`);
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      } else {
+        // For other origins, use a default allowed origin
+        console.log('Using default Access-Control-Allow-Origin');
+        res.setHeader('Access-Control-Allow-Origin', 'https://forexprox.com');
+      }
+    }
     res.setHeader('Vary', 'Origin');
   } else {
     console.log('Request has no origin header');
-    // Do not set any Access-Control-Allow-Origin for requests without origin
+    // For requests with no origin (like mobile apps), be permissive
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
   
   // Expanded set of allowed headers

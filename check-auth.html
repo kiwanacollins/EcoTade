@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 15px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authentication Check</h1>
+    <p>This page helps verify if authentication is working correctly across devices.</p>
+    
+    <button id="check-auth">Check Authentication</button>
+    <button id="check-cors">Test CORS Setup</button>
+    <button id="clear-storage">Clear Local Storage</button>
+    
+    <div id="result">
+        <h3>Results will appear here</h3>
+        <pre id="output">Not checked yet</pre>
+    </div>
+    
+    <script>
+        // Get base API URL
+        const apiBaseUrl = 'https://forexprox.com/api';
+        
+        document.getElementById('check-auth').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            output.textContent = 'Checking authentication...';
+            
+            try {
+                // Get token from local storage
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    output.textContent = 'No token found in local storage. You are not logged in.';
+                    return;
+                }
+                
+                // Try to fetch user data
+                const response = await fetch(`${apiBaseUrl}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    output.textContent = 'Authentication successful!\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    output.textContent = 'Authentication failed:\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        });
+        
+        document.getElementById('check-cors').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing CORS setup...';
+            
+            try {
+                // Simple OPTIONS request to test CORS
+                const response = await fetch(`${apiBaseUrl}/health`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    output.textContent = 'CORS test successful!\n\n' + data;
+                } else {
+                    output.textContent = `CORS test failed with status: ${response.status}`;
+                }
+            } catch (error) {
+                output.textContent = `CORS Error: ${error.message}`;
+            }
+        });
+        
+        document.getElementById('clear-storage').addEventListener('click', () => {
+            localStorage.clear();
+            document.getElementById('output').textContent = 'Local storage cleared.';
+        });
+    </script>
+</body>
+</html>

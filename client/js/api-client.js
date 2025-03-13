@@ -95,18 +95,17 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // ALWAYS use 'include' for credentials - helps with mobile browsers
-    const credentialsMode = 'include';
-    
-    console.log('Using credentials mode:', credentialsMode);
-    
+    // ALWAYS use 'include' mode to ensure cookies are sent with cross-origin requests
+    // This is essential for mobile devices to work properly
     const options = {
       method,
       headers,
       mode: 'cors',
       cache: 'no-cache',
-      credentials: credentialsMode,
+      credentials: 'include',
     };
+    
+    console.log('Using credentials mode: include');
     
     if (data) {
       options.body = JSON.stringify(data);
