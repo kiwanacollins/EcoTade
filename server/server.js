@@ -81,19 +81,13 @@ process.on('unhandledRejection', (reason, promise) => {
 // Initialize the Express app
 const app = express();
 
-// Middleware
-// Updated CORS options to set origin based on environment
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production'
-    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*')
-    : function(origin, callback) { callback(null, true); },
-  credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
-};
+// IMPORTANT: Apply our custom CORS middleware BEFORE any other middleware
+// Remove the built-in cors() middleware if it exists and use our custom implementation
+const corsMiddleware = require('./middleware/cors');
+app.use(corsMiddleware);
 
-app.use(cors(corsOptions));
+// DO NOT use the express.cors() middleware since we have our custom implementation
+// app.use(cors());  <-- Comment out or remove this line if it exists
 
 // Enable preflight for all routes
 app.options('*', cors(corsOptions));

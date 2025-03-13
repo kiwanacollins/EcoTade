@@ -93,12 +93,18 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
+    // Use the more compatible 'same-origin' credentials mode by default,
+    // and only use 'include' for cross-origin requests when absolutely necessary
+    const credentialsMode = window.location.hostname !== new URL(url).hostname ? 'include' : 'same-origin';
+    
+    console.log('Using credentials mode:', credentialsMode);
+    
     const options = {
       method,
       headers,
       mode: 'cors',
       cache: 'no-cache',
-      credentials: 'include',
+      credentials: credentialsMode,
     };
     
     if (data) {
@@ -109,7 +115,11 @@ async function apiRequest(endpoint, method = 'GET', data = null) {
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     options.signal = controller.signal;
     
-    console.log('Making fetch request to:', url, 'with options:', JSON.stringify(options));
+    console.log('Making fetch request to:', url, 'with options:', JSON.stringify({
+      ...options,
+      headers: { ...headers },
+      body: data ? '[DATA]' : undefined
+    }));
     
     try {
       const response = await fetch(url, options);
