@@ -1253,7 +1253,9 @@ body {
     
     .content-panels {
         padding: 15px;
-        width: 105vw;
+        /* Removed width: 105vw which was causing horizontal overflow */
+        max-width: 100%;
+        overflow-x: hidden;
     }
 }
 
@@ -1268,6 +1270,18 @@ body {
         gap: 25px;
         margin-bottom: 30px;
     }
+}
+
+/* Add general overflow controls to prevent horizontal scrolling */
+body, .dashboard-main {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+/* Make tables responsive on mobile */
+.transactions-table {
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 /* Notification System */
@@ -1832,8 +1846,6 @@ body {
 
 .payment-method-name {
     font-size: 14px;
-    font-weight: 600;
-    color: var(--text-dark);
 }
 
 /* Step Navigation UI */
