@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const path = require('path');
+const { checkConfigOnStartup } = require('./utils/config-validator');
 
 // Try to load environment from dotenv files
 try {
@@ -30,6 +31,9 @@ console.log('Application Settings:');
 console.log('- NODE_ENV:', process.env.NODE_ENV);
 console.log('- MONGODB_URI:', process.env.MONGODB_URI.replace(/\/\/.*:.*@/, '//****:****@')); // Hide credentials
 console.log('- Running on port:', process.env.PORT || 5000);
+
+// Check environment variables before starting the server
+checkConfigOnStartup();
 
 // Continue with the existing server.js content
 const connectDB = require('./config/db');

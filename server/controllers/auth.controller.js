@@ -1,8 +1,16 @@
 const User = require('../models/user.model');
 const { OAuth2Client } = require('google-auth-library');
 
-// Create a new OAuth2 client
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// Create a new OAuth2 client with error handling for missing client ID
+const getGoogleClient = () => {
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    console.error('GOOGLE_CLIENT_ID environment variable is not set');
+    return null;
+  }
+  return new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+};
+
+const client = getGoogleClient();
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -89,12 +97,21 @@ exports.googleAuth = async (req, res, next) => {
       });
     }
     
-    // Make sure the GOOGLE_CLIENT_ID is set in environment
+    // Validate Google client configuration
     if (!process.env.GOOGLE_CLIENT_ID) {
-      console.error('Server misconfiguration: GOOGLE_CLIENT_ID not set in environment');
+      console.error('Google Auth Error: Missing GOOGLE_CLIENT_ID environment variable');
       return res.status(500).json({
         success: false,
-        message: 'Server authentication configuration error'
+        message: 'Server authentication configuration error: Missing Google client configuration',
+        details: process.env.NODE_ENV === 'development' ? 'GOOGLE_CLIENT_ID environment variable is not set' : undefined
+      });
+    }
+    
+    if (!client) {
+      console.error('Google Auth Error: Google OAuth client not initialized');
+      return res.status(500).json({
+        success: false,
+        message: 'Server authentication configuration error: OAuth client initialization failed'
       });
     }
     
@@ -102,7 +119,6 @@ exports.googleAuth = async (req, res, next) => {
     
     try {
       // Verify the token
-      console.log('Attempting to verify ID token:', idToken); // Log the ID token
       const ticket = await client.verifyIdToken({
         idToken,
         audience: process.env.GOOGLE_CLIENT_ID
@@ -145,17 +161,18 @@ exports.googleAuth = async (req, res, next) => {
       sendTokenResponse(user, 200, res);
     } catch (verificationError) {
       console.error('Google token verification failed:', verificationError);
-      console.error('Verification error details:', verificationError); // Log the error details
       return res.status(401).json({
         success: false,
-        message: 'Google authentication failed: Invalid token'
+        message: 'Google authentication failed: Invalid token',
+        details: process.env.NODE_ENV === 'development' ? verificationError.message : undefined
       });
     }
   } catch (error) {
     console.error('Google auth unexpected error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Google authentication failed: ' + (error.message || 'Unknown error')
+      message: 'Google authentication failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
