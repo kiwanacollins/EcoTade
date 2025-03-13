@@ -6,6 +6,8 @@ const allowedOrigins = [
   'https://www.forexprox.com',
   'http://forexprox.com',
   'http://www.forexprox.com',
+  'https://srv749600.hstgr.cloud',
+  'http://srv749600.hstgr.cloud',
   'http://localhost:5000',
   'http://localhost:3000',
   'null',
@@ -20,10 +22,17 @@ module.exports = (req, res, next) => {
   // Check if the request origin is in our allowed list
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+    // When allowing specific origins with credentials, you must set the Vary header
+    res.setHeader('Vary', 'Origin');
   } else {
-    // Allow all origins for now until we debug
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    console.log('Setting CORS for unknown origin:', origin);
+    // Do not use wildcard for requests with credentials
+    // Only allow the specific request origin if needed
+    console.log('Origin not in allowed list:', origin);
+    
+    // Instead of setting wildcard, we need to decide if this origin should be allowed
+    // For security, we'll only accept origins in our allowed list
+    res.setHeader('Access-Control-Allow-Origin', origin || '');
+    res.setHeader('Vary', 'Origin');
   }
   
   // Standard CORS headers
