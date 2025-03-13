@@ -26,8 +26,25 @@
             cursor: pointer;
             margin: 10px 0;
         }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
         #result {
             margin-top: 20px;
+        }
+        .device-info {
+            background: #f0f8ff;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        .warning {
+            color: #cc3300;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -35,9 +52,16 @@
     <h1>Authentication Check</h1>
     <p>This page helps verify if authentication is working correctly across devices.</p>
     
-    <button id="check-auth">Check Authentication</button>
-    <button id="check-cors">Test CORS Setup</button>
-    <button id="clear-storage">Clear Local Storage</button>
+    <div class="device-info" id="device-info">
+        Loading device information...
+    </div>
+    
+    <div class="button-group">
+        <button id="check-auth">Check Authentication</button>
+        <button id="check-cors">Test CORS Setup</button>
+        <button id="auth-no-credentials">Auth Without Credentials</button>
+        <button id="clear-storage">Clear Local Storage</button>
+    </div>
     
     <div id="result">
         <h3>Results will appear here</h3>
@@ -47,6 +71,25 @@
     <script>
         // Get base API URL
         const apiBaseUrl = 'https://forexprox.com/api';
+        
+        // Display device information
+        function updateDeviceInfo() {
+            const info = document.getElementById('device-info');
+            info.innerHTML = `
+                <strong>Device Information:</strong><br>
+                User Agent: ${navigator.userAgent}<br>
+                Online: ${navigator.onLine}<br>
+                Platform: ${navigator.platform}<br>
+                Screen: ${window.screen.width}x${window.screen.height}<br>
+                Origin: ${window.location.origin}<br>
+                <span ${localStorage.getItem('token') ? '' : 'class="warning"'}>
+                    Token in storage: ${localStorage.getItem('token') ? '✓ Present' : '✗ Missing'}
+                </span>
+            `;
+        }
+        
+        // Update device info on page load
+        updateDeviceInfo();
         
         document.getElementById('check-auth').addEventListener('click', async () => {
             const output = document.getElementById('output');
@@ -71,12 +114,71 @@
                     credentials: 'include'
                 });
                 
+                // Show response headers for debugging
+                const headerInfo = {};
+                response.headers.forEach((value, name) => {
+                    headerInfo[name] = value;
+                });
+                
                 const data = await response.json();
                 
                 if (response.ok) {
-                    output.textContent = 'Authentication successful!\n\n' + JSON.stringify(data, null, 2);
+                    output.textContent = 'Authentication successful!\n\n' + 
+                        JSON.stringify(data, null, 2) + 
+                        '\n\nResponse Headers:\n' + 
+                        JSON.stringify(headerInfo, null, 2);
                 } else {
-                    output.textContent = 'Authentication failed:\n\n' + JSON.stringify(data, null, 2);
+                    output.textContent = 'Authentication failed:\n\n' + 
+                        JSON.stringify(data, null, 2) + 
+                        '\n\nResponse Headers:\n' + 
+                        JSON.stringify(headerInfo, null, 2);
+                }
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        });
+        
+        // New function: Auth without credentials mode
+        document.getElementById('auth-no-credentials').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            output.textContent = 'Trying authentication without credentials mode...';
+            
+            try {
+                // Get token from local storage
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    output.textContent = 'No token found in local storage. You are not logged in.';
+                    return;
+                }
+                
+                // Try to fetch user data WITHOUT credentials: 'include'
+                const response = await fetch(`${apiBaseUrl}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                    // No credentials option here
+                });
+                
+                const headerInfo = {};
+                response.headers.forEach((value, name) => {
+                    headerInfo[name] = value;
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    output.textContent = 'Auth without credentials succeeded!\n\n' + 
+                        JSON.stringify(data, null, 2) + 
+                        '\n\nResponse Headers:\n' + 
+                        JSON.stringify(headerInfo, null, 2);
+                } else {
+                    output.textContent = 'Auth without credentials failed:\n\n' + 
+                        JSON.stringify(data, null, 2) + 
+                        '\n\nResponse Headers:\n' + 
+                        JSON.stringify(headerInfo, null, 2);
                 }
             } catch (error) {
                 output.textContent = `Error: ${error.message}`;
@@ -97,11 +199,21 @@
                     }
                 });
                 
+                // Show response headers for debugging
+                const headerInfo = {};
+                response.headers.forEach((value, name) => {
+                    headerInfo[name] = value;
+                });
+                
                 if (response.ok) {
                     const data = await response.text();
-                    output.textContent = 'CORS test successful!\n\n' + data;
+                    output.textContent = 'CORS test successful!\n\n' + data + 
+                        '\n\nResponse Headers:\n' + 
+                        JSON.stringify(headerInfo, null, 2);
                 } else {
-                    output.textContent = `CORS test failed with status: ${response.status}`;
+                    output.textContent = `CORS test failed with status: ${response.status}` +
+                        '\n\nResponse Headers:\n' + 
+                        JSON.stringify(headerInfo, null, 2);
                 }
             } catch (error) {
                 output.textContent = `CORS Error: ${error.message}`;
@@ -111,6 +223,7 @@
         document.getElementById('clear-storage').addEventListener('click', () => {
             localStorage.clear();
             document.getElementById('output').textContent = 'Local storage cleared.';
+            updateDeviceInfo(); // Update device info after clearing storage
         });
     </script>
 </body>
