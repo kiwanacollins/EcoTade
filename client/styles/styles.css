@@ -1684,7 +1684,7 @@ body {
 
 /* Registration Form Styles */
 .registration-section {
-    padding: 70px 20px 10px; /* Further reduced padding */
+    padding: 60px 15px 10px; /* Reduced from 70px 20px 10px */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1696,7 +1696,7 @@ body {
     background-color: #fff;
     border-radius: 12px; /* Slightly reduced */
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Reduced shadow */
-    padding: 15px; /* Further reduced padding */
+    padding: 12px; /* Reduced from 15px */
     margin: 0 auto;
 }
 
@@ -1707,7 +1707,7 @@ body {
 
 .registration-header h1 {
     font-family: var(--font-heading);
-    font-size: 22px; /* Further reduced font size */
+    font-size: 28px; /* Further reduced font size */
     font-weight: 700;
     color: #333;
     margin-bottom: 0px; /* Further reduced margin */
@@ -1727,7 +1727,7 @@ body {
 }
 
 .form-group {
-    margin-bottom: 5px; /* Further reduced from 8px */
+    margin-bottom: 8px; /* Increased from 5px for better separation between fields */
     position: relative;
     width: 100%;
     clear: both; /* Prevent floating issues */
@@ -1739,13 +1739,13 @@ body {
     font-size: 13px; /* Further reduced from 14px */
     font-weight: 500;
     color: #333;
-    margin-bottom: 2px; /* Further reduced margin */
+    margin-bottom: 4px; /* Increased from 2px for better spacing */
 }
 
 .input-container {
     position: relative;
     width: 100%;
-    margin-bottom: 3px; /* Further reduced from 5px */
+    margin-bottom: 5px; /* Increased from 2px for better breathing room */
     display: block;
 }
 
@@ -1762,7 +1762,7 @@ body {
 
 .input-container .password-toggle {
     position: absolute;
-    right: 15px;
+    right: 10px; /* Moved slightly more to the right */
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
@@ -1774,6 +1774,7 @@ body {
     width: 100%;
     height: 38px; /* Further reduced from 42px */
     padding: 5px 36px; /* Reduced horizontal padding */
+    padding-right: 65px; /* Increased to make room for error messages */
     border: 1px solid #ddd;
     border-radius: 50px;
     font-family: var(--font-primary);
@@ -1799,14 +1800,21 @@ body {
 }
 
 .error-message {
-    font-family: var(--font-primary);
-    font-size: 10px; /* Further reduced from 11px */
+    position: absolute;
+    right: 40px; /* Position to the right, but leave space for password toggle */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
     color: #ff3b30;
-    margin-top: 1px; /* Further reduced from 3px */
-    padding-left: 15px;
-    min-height: 12px; /* Further reduced from 14px */
-    display: block;
-    clear: both;
+    padding: 0;
+    margin: 0;
+    max-width: 60%; /* Limit width so it doesn't overlap with the icon */
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    z-index: 2;
+    pointer-events: none; /* Don't block interaction with the input */
 }
 
 .password-strength {
@@ -1839,9 +1847,9 @@ body {
 
 .checkbox-container {
     display: flex;
-    align-items: center;
-    gap: 8px; /* Reduced from 10px */
-    margin: 3px 0; /* Further reduced from 5px 0 */
+    align-items: flex-start; /* Changed from center for better alignment */
+    gap: 8px;
+    margin: 10px 0 5px; /* Increased from 3px 0 for better spacing */
 }
 
 .checkbox-container input[type="checkbox"] {
@@ -1868,9 +1876,9 @@ body {
 
 .btn-full {
     width: 100%;
-    padding: 6px !important; /* Further reduced from 8px */
-    margin-top: 6px !important; /* Further reduced from 8px */
-    font-size: 15px !important; /* Further reduced from 16px */
+    padding: 8px !important; /* Increased from 6px for better appearance */
+    margin-top: 10px !important; /* Increased from 6px */
+    font-size: 15px !important;
 }
 
 .social-signup {
@@ -2056,7 +2064,11 @@ body {
     }
     
     .form-group {
-        margin-bottom: 3px;
+        margin-bottom: 6px; /* Reduced spacing for smaller screens, but still adequate */
+    }
+    
+    .form-group label {
+        margin-bottom: 3px; /* Adjusted for smaller screens */
     }
     
     .btn-registration.btn-full {
@@ -2080,6 +2092,10 @@ body {
     
     .registration-header h1 {
         font-size: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 5px; /* Minimal spacing for very small screens */
     }
     
     .btn-full {
@@ -2121,7 +2137,6 @@ body {
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
-
 
 #navbarLogo > span{
     color: rgb(29, 29, 29);
@@ -2228,11 +2243,11 @@ body {
 
 /* Login Form Specific Styles - Keep original spacing */
 #login-form .form-group {
-    margin-bottom: 15px; /* Restore original spacing */
+    margin-bottom: 16px; /* Slightly increased for better spacing */
 }
 
 #login-form .input-container {
-    margin-bottom: 8px; /* Restore original spacing */
+    margin-bottom: 6px; /* Increased slightly */
 }
 
 #login-form .input-container input {
@@ -2243,7 +2258,7 @@ body {
 
 #login-form label {
     font-size: 14px; /* Restore original font size */
-    margin-bottom: 4px; /* Restore original spacing */
+    margin-bottom: 6px; /* Increased for better visual separation */
 }
 
 #login-form .checkbox-container {
@@ -2306,14 +2321,85 @@ body {
     margin-bottom: 0; /* Restore original margin */
 }
 
-/* Responsive adjustments specifically for login */
-@media (max-width: 768px) {
-    #login-form .input-container {
-        margin-bottom: 10px;
+/* Target auth errors specifically to keep them visible */
+#login-error, #signup-error {
+    position: static;
+    display: block;
+    transform: none;
+    margin: 5px 0;
+    max-width: 100%;
+    text-align: center;
+    white-space: normal;
+}
+
+/* Maintain login form styling with inline error messages */
+#login-form .input-container.error input {
+    border-color: #ff3b30;
+    background-color: rgba(255, 59, 48, 0.05);
+}
+
+#login-form .error-message {
+    /* Same positioning as signup form */
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Remove the standalone error message space */
+.form-group .error-message {
+    min-height: 0; /* Remove the space reserved for error messages */
+    display: none; /* Hide the original error container */
+}
+
+/* Keep checkbox error visible since it needs to be below */
+.checkbox-container + .error-message {
+    position: static;
+    display: block;
+    transform: none;
+    max-width: 100%;
+    font-size: 10px;
+    padding-left: 15px;
+    margin-top: 1px;
+    text-align: left;
+    white-space: normal;
+}
+
+/* Additional responsiveness optimization */
+@media (max-height: 700px) {
+    /* ...existing code... */
+    
+    .form-group {
+        margin-bottom: 6px; /* Reduced spacing for smaller screens, but still adequate */
     }
     
-    #login-form-container.registration-container {
-        padding: 20px;
+    .form-group label {
+        margin-bottom: 3px; /* Adjusted for smaller screens */
+    }
+}
+
+@media (max-height: 600px) {
+    /* ...existing code... */
+    
+    .form-group {
+        margin-bottom: 5px; /* Minimal spacing for very small screens */
+    }
+}
+
+/* Fix for some mobile displays */
+@media (max-width: 380px) {
+    .registration-container {
+        padding: 10px 8px; /* Reduced horizontal padding slightly */
+    }
+    
+    .input-container input {
+        font-size: 12px; /* Slightly smaller font on very small screens */
+        padding: 5px 30px 5px 30px; /* Reduced horizontal padding */
+    }
+    
+    .error-message {
+        font-size: 9px; /* Smaller error text on tiny screens */
+        right: 30px; /* Positioned closer to edge */
     }
 }
 

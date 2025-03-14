@@ -534,3 +534,356 @@ function setupPasswordResetValidation(form) {
     // Similar pattern to other form validations
     // Implementation depends on form fields
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup input fields with validation
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        const inputs = form.querySelectorAll('input');
+        
+        inputs.forEach(input => {
+            // Skip checkboxes for inline error messages
+            if (input.type === 'checkbox') return;
+            
+            const container = input.parentElement;
+            const errorMsgId = input.id + '-error';
+            const errorElement = document.getElementById(errorMsgId);
+            
+            if (errorElement) {
+                // Create an inline error element
+                const inlineError = document.createElement('span');
+                inlineError.className = 'inline-error error-message';
+                inlineError.id = 'inline-' + errorMsgId;
+                container.appendChild(inlineError);
+                
+                // Add validation events
+                input.addEventListener('input', function() {
+                    validateInput(this, inlineError, container);
+                });
+                
+                input.addEventListener('blur', function() {
+                    validateInput(this, inlineError, container);
+                });
+            }
+        });
+        
+        // Handle form submission
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    // Handle checkbox validation separately
+                    const errorElement = document.getElementById(input.id + '-error');
+                    if (input.required && !input.checked) {
+                        errorElement.textContent = 'You must agree to continue';
+                        errorElement.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        errorElement.textContent = '';
+                        errorElement.style.display = 'none';
+                    }
+                } else {
+                    // Handle text inputs with inline validation
+                    const container = input.parentElement;
+                    const inlineError = container.querySelector('.inline-error');
+                    if (inlineError && !validateInput(input, inlineError, container)) {
+                        isValid = false;
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // Password toggle functionality
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const passwordInput = this.previousElementSibling;
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                this.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                this.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    });
+    
+    // Password strength indicator logic if present
+    const passwordInput = document.getElementById('password');
+    const strengthIndicator = document.getElementById('strength-indicator');
+    const strengthText = document.getElementById('strength-text');
+    
+    if (passwordInput && strengthIndicator && strengthText) {
+        passwordInput.addEventListener('input', function() {
+            updatePasswordStrength(this.value);
+        });
+    }
+    
+    // Functions
+    function validateInput(input, errorElement, container) {
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Basic validation based on input type
+        if (input.required && !input.value.trim()) {
+            errorMessage = 'Required';
+            isValid = false;
+        } else if (input.type === 'email' && input.value && !isValidEmail(input.value)) {
+            errorMessage = 'Invalid email';
+            isValid = false;
+        } else if (input.id === 'password' && input.value && !isValidPassword(input.value)) {
+            errorMessage = 'Too weak';
+            isValid = false;
+        } else if (input.id === 'confirm-password') {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput && input.value !== passwordInput.value) {
+                errorMessage = 'Passwords don\'t match';
+                isValid = false;
+            }
+        }
+        
+        // Update error display
+        if (isValid) {
+            container.classList.remove('error');
+            errorElement.textContent = '';
+            if (input.value) container.classList.add('valid');
+        } else {
+            container.classList.add('error');
+            container.classList.remove('valid');
+            errorElement.textContent = errorMessage;
+        }
+        
+        return isValid;
+    }
+    
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+    
+    function isValidPassword(password) {
+        // Basic password validation - at least 6 chars
+        return password.length >= 6;
+    }
+    
+    function updatePasswordStrength(password) {
+        if (!password) {
+            strengthIndicator.style.width = '0';
+            strengthIndicator.className = 'strength-indicator';
+            strengthText.textContent = 'Password strength';
+            return;
+        }
+        
+        // Calculate password strength (simplified version)
+        let strength = 0;
+        if (password.length >= 6) strength += 1;
+        if (password.length >= 8) strength += 1;
+        if (/[A-Z]/.test(password)) strength += 1;
+        if (/[0-9]/.test(password)) strength += 1;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+        
+        // Update UI
+        if (strength <= 2) {
+            strengthIndicator.className = 'strength-indicator strength-weak';
+            strengthText.textContent = 'Weak';
+        } else if (strength <= 4) {
+            strengthIndicator.className = 'strength-indicator strength-medium';
+            strengthText.textContent = 'Medium';
+        } else {
+            strengthIndicator.className = 'strength-indicator strength-strong';
+            strengthText.textContent = 'Strong';
+        }
+        
+        strengthIndicator.style.width = ((strength / 5) * 100) + '%';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup validation for all forms
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        const inputs = form.querySelectorAll('input:not([type="checkbox"])');
+        
+        // Add inline error elements if they don't exist
+        inputs.forEach(input => {
+            const container = input.parentElement;
+            const errorId = input.id + '-error';
+            let errorElement = document.getElementById(errorId);
+            
+            // Create an inline error element inside the input container
+            const inlineError = document.createElement('div');
+            inlineError.className = 'error-message inline-error';
+            inlineError.id = 'inline-' + errorId;
+            container.appendChild(inlineError);
+            
+            // Add event listeners for validation
+            input.addEventListener('input', function() {
+                validateInput(this, inlineError, container);
+            });
+            
+            input.addEventListener('blur', function() {
+                validateInput(this, inlineError, container);
+            });
+        });
+        
+        // Handle checkbox validation separately
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const errorId = this.id + '-error';
+                const errorElement = document.getElementById(errorId);
+                
+                if(this.required && !this.checked) {
+                    errorElement.textContent = 'You must agree to continue';
+                    errorElement.style.display = 'block';
+                } else {
+                    errorElement.textContent = '';
+                    errorElement.style.display = 'none';
+                }
+            });
+        });
+        
+        // Form submission validation
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            
+            // Validate all text inputs
+            inputs.forEach(input => {
+                const container = input.parentElement;
+                const errorId = 'inline-' + input.id + '-error';
+                const inlineError = document.getElementById(errorId);
+                
+                if (!validateInput(input, inlineError, container)) {
+                    isValid = false;
+                }
+            });
+            
+            // Validate checkboxes
+            checkboxes.forEach(checkbox => {
+                if (checkbox.required && !checkbox.checked) {
+                    const errorId = checkbox.id + '-error';
+                    const errorElement = document.getElementById(errorId);
+                    errorElement.textContent = 'You must agree to continue';
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    });
+    
+    // Toggle password visibility
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    });
+    
+    // Password strength indicator
+    const passwordInput = document.getElementById('password');
+    const strengthIndicator = document.getElementById('strength-indicator');
+    const strengthText = document.getElementById('strength-text');
+    
+    if (passwordInput && strengthIndicator && strengthText) {
+        passwordInput.addEventListener('input', function() {
+            updatePasswordStrength(this.value);
+        });
+    }
+    
+    function validateInput(input, errorElement, container) {
+        if (!errorElement) return true; // Skip if no error element found
+        
+        let isValid = true;
+        let errorMessage = '';
+        
+        if (input.required && !input.value.trim()) {
+            errorMessage = 'Required';
+            isValid = false;
+        } else if (input.type === 'email' && input.value && !isValidEmail(input.value)) {
+            errorMessage = 'Invalid email';
+            isValid = false;
+        } else if (input.id === 'password' && input.value && !isStrongPassword(input.value)) {
+            errorMessage = 'Too weak';
+            isValid = false;
+        } else if (input.id === 'confirm-password') {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput && input.value !== passwordInput.value) {
+                errorMessage = 'Doesn\'t match';
+                isValid = false;
+            }
+        }
+        
+        if (isValid) {
+            container.classList.remove('error');
+            errorElement.textContent = '';
+            if (input.value.trim()) {
+                container.classList.add('valid');
+            } else {
+                container.classList.remove('valid');
+            }
+        } else {
+            container.classList.add('error');
+            container.classList.remove('valid');
+            errorElement.textContent = errorMessage;
+        }
+        
+        return isValid;
+    }
+    
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+    
+    function isStrongPassword(password) {
+        // Simple validation - at least 6 characters
+        return password.length >= 6;
+    }
+    
+    function updatePasswordStrength(password) {
+        if (!strengthIndicator || !strengthText) return;
+        
+        if (!password) {
+            strengthIndicator.style.width = '0';
+            strengthIndicator.className = 'strength-indicator';
+            strengthText.textContent = 'Password strength';
+            return;
+        }
+        
+        // Calculate password strength
+        let strength = 0;
+        if (password.length >= 6) strength += 1;
+        if (password.length >= 8) strength += 1;
+        if (/[A-Z]/.test(password)) strength += 1;
+        if (/[0-9]/.test(password)) strength += 1;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+        
+        // Update UI
+        strengthIndicator.style.width = ((strength / 5) * 100) + '%';
+        
+        if (strength <= 2) {
+            strengthIndicator.className = 'strength-indicator strength-weak';
+            strengthText.textContent = 'Weak';
+        } else if (strength <= 4) {
+            strengthIndicator.className = 'strength-indicator strength-medium';
+            strengthText.textContent = 'Medium';
+        } else {
+            strengthIndicator.className = 'strength-indicator strength-strong';
+            strengthText.textContent = 'Strong';
+        }
+    }
+});
