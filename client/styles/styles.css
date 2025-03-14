@@ -2226,3 +2226,94 @@ body {
     }
 }
 
+/* Login Form Specific Styles - Keep original spacing */
+#login-form .form-group {
+    margin-bottom: 15px; /* Restore original spacing */
+}
+
+#login-form .input-container {
+    margin-bottom: 8px; /* Restore original spacing */
+}
+
+#login-form .input-container input {
+    height: 45px; /* Restore original height */
+    padding: 8px 40px; /* Restore original padding */
+    font-size: 14px; /* Restore original font size */
+}
+
+#login-form label {
+    font-size: 14px; /* Restore original font size */
+    margin-bottom: 4px; /* Restore original spacing */
+}
+
+#login-form .checkbox-container {
+    margin: 10px 0; /* Restore original spacing */
+}
+
+#login-form .checkbox-container input[type="checkbox"] {
+    width: 16px; /* Restore original size */
+    height: 16px; /* Restore original size */
+}
+
+#login-form .checkbox-container label {
+    font-size: 13px; /* Restore original font size */
+    line-height: 1.4; /* Restore original line height */
+}
+
+#login-form .btn-full {
+    padding: 10px !important; /* Restore original padding */
+    margin-top: 15px !important; /* Restore original margin */
+    font-size: 16px !important; /* Restore original font size */
+}
+
+#login-form .social-signup {
+    margin: 20px 0; /* Restore original spacing */
+}
+
+#login-form .social-buttons {
+    margin-top: 15px; /* Restore original spacing */
+}
+
+#login-form .login-link {
+    margin-top: 15px; /* Restore original spacing */
+    font-size: 14px; /* Restore original font size */
+}
+
+/* Modifications for the login form container spacing */
+#login-form-container.registration-container {
+    padding: 25px; /* Restore original padding */
+}
+
+#login-form-container .registration-header {
+    margin-bottom: 20px; /* Restore original margin */
+}
+
+#login-form-container #navbarLogo {
+    margin-bottom: 10px; /* Restore original margin */
+}
+
+#login-form-container #navbarLogo img {
+    height: 60px; /* Restore original height */
+}
+
+#login-form-container .registration-header h1 {
+    font-size: 28px; /* Restore original font size */
+    margin-bottom: 5px; /* Restore original margin */
+}
+
+#login-form-container .registration-header p {
+    font-size: 14px; /* Restore original font size */
+    margin-bottom: 0; /* Restore original margin */
+}
+
+/* Responsive adjustments specifically for login */
+@media (max-width: 768px) {
+    #login-form .input-container {
+        margin-bottom: 10px;
+    }
+    
+    #login-form-container.registration-container {
+        padding: 20px;
+    }
+}
+
