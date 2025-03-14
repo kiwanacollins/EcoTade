@@ -1085,6 +1085,27 @@ body {
         position: relative;
         z-index: 1;
     }
+    
+    /* Improved checkbox visibility for mobile */
+    .checkbox-container {
+        margin: 15px 0;
+        padding: 5px 0;
+    }
+    
+    .checkbox-container input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        margin-right: 8px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .checkbox-container label {
+        font-size: 14px;
+        line-height: 1.4;
+        flex: 1;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1168,7 +1189,7 @@ body {
     }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) {
     .hero-content h1 {
         font-size: 26px;
     }
@@ -1189,6 +1210,48 @@ body {
     .market-items img {
         width: 40px;
         height: 40px;
+    }
+    
+    /* Enhanced mobile checkbox visibility */
+    .checkbox-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .checkbox-container input[type="checkbox"] {
+        margin-top: 3px;
+        border: 1px solid #08c;
+        appearance: none;
+        -webkit-appearance: none;
+        background-color: white;
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        border-radius: 4px;
+        display: inline-block;
+        position: relative;
+    }
+    
+    .checkbox-container input[type="checkbox"]:checked {
+        background-color: #08c;
+    }
+    
+    .checkbox-container input[type="checkbox"]:checked::after {
+        content: '✓';
+        font-size: 16px;
+        position: absolute;
+        top: 0px;
+        left: 5px;
+        color: white;
+    }
+    
+    .checkbox-container label {
+        font-size: 14px;
+        display: inline-block;
+        width: auto;
+        max-width: calc(100% - 32px);
     }
 }
 
@@ -1941,6 +2004,27 @@ body {
     .registration-container {
         padding: 20px 15px;
         max-width: 100%;
+    }
+    
+    /* Improved checkbox visibility for mobile */
+    .checkbox-container {
+        margin: 15px 0;
+        padding: 5px 0;
+    }
+    
+    .checkbox-container input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        margin-right: 8px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .checkbox-container label {
+        font-size: 14px;
+        line-height: 1.4;
+        flex: 1;
     }
 }
 
