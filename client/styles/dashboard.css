@@ -480,8 +480,8 @@ body {
     white-space: nowrap;
     background-color: #0cb00c;
     margin-bottom: -14px;
-        height: 46.5px;
-    
+    height: 46.5px;
+    max-width: 100%; /* Ensure button doesn't overflow on mobile */
 }
 
 /* Modal Styles */
@@ -1217,6 +1217,23 @@ body {
         align-items: stretch;
     }
     
+    /* Fix deposit button on mobile */
+    #quick-deposit-btn {
+        margin-bottom: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+    
+    .banner-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .banner-actions .btn {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    
     .chart-container {
         height: 200px;
     }
@@ -1249,6 +1266,13 @@ body {
     
     .welcome-banner h3 {
         font-size: 20px;
+    }
+    
+    /* Ensure buttons are properly sized on small screens */
+    .btn-trader, #quick-deposit-btn {
+        min-width: initial;
+        width: 100%;
+        margin-bottom: 10px;
     }
     
     .content-panels {
