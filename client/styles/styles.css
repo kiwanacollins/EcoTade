@@ -2297,7 +2297,7 @@ body {
 /* Modifications for the login form container spacing */
 #login-form-container.registration-container {
     padding: 25px; /* Restore original padding */
-    margin-top: -30px;
+    margin-top: -60px;
 }
 
 #login-form-container .registration-header {
