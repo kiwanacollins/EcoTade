@@ -35,7 +35,7 @@ async function register(event) {
   
   try {
     // Show loading state
-    submitButton.textContent = 'Creating Account...';
+    submitButton.classList.add('btn-loading');
     submitButton.disabled = true;
     
     // Log environment info before making API call
@@ -59,13 +59,18 @@ async function register(event) {
       // Set a session cookie as well for redundancy
       document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
       
-      // Redirect to dashboard after a short delay
+      // Redirect to dashboard after a short delay - keep spinner active
       setTimeout(() => {
         window.location.href = './dashboard.html';
       }, 500);
     } else {
       console.error('No token received after registration');
       document.getElementById('signup-error').textContent = 'Authentication error';
+      
+      // Reset button
+      submitButton.classList.remove('btn-loading');
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
     }
   } catch (error) {
     console.error('Registration error:', error);
@@ -87,8 +92,9 @@ async function register(event) {
     }
     
     // Reset button
-    submitButton.textContent = originalText;
+    submitButton.classList.remove('btn-loading');
     submitButton.disabled = false;
+    submitButton.textContent = originalText;
   }
 }
 
@@ -114,7 +120,7 @@ async function login(event) {
   
   try {
     // Show loading state
-    submitButton.textContent = 'Logging In...';
+    submitButton.classList.add('btn-loading');
     submitButton.disabled = true;
     
     // Log environment info before making API call
@@ -137,13 +143,18 @@ async function login(event) {
       // Set a session cookie as well for redundancy
       document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
       
-      // Redirect to dashboard after a short delay
+      // Redirect to dashboard after a short delay - keep spinner active
       setTimeout(() => {
         window.location.href = './dashboard.html';
       }, 500);
     } else {
       console.error('No token received after login');
       document.getElementById('login-error').textContent = 'Authentication error';
+      
+      // Reset button
+      submitButton.classList.remove('btn-loading');
+      submitButton.disabled = false;
+      submitButton.textContent = originalText;
     }
   } catch (error) {
     console.error('Login error:', error);
@@ -157,8 +168,9 @@ async function login(event) {
     }
     
     // Reset button
-    submitButton.textContent = originalText;
+    submitButton.classList.remove('btn-loading');
     submitButton.disabled = false;
+    submitButton.textContent = originalText;
   }
 }
 
