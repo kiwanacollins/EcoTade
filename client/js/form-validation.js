@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 isConfirmPasswordValid && isTermsAccepted) {
                 
                 // Here you would typically send the form data to your server
-                alert('Registration successful! Welcome to Forexprox.');
+                // alert('Registration successful! Welcome to Forexprox.');
                 form.reset();
             }
         });
