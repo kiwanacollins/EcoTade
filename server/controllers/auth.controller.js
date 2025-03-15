@@ -242,46 +242,40 @@ exports.getDashboard = async (req, res, next) => {
 
 // Helper function to get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
-  // Create token
-  const token = user.getSignedJwtToken();
-
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    path: '/', // Ensure cookie is available on all paths
-    sameSite: 'none' // Allow cross-site cookie usage for mobile devices
-  };
-
-  // Use secure cookies in production
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-    // Do NOT set domain to allow browser to use current domain
-  } else {
-    // For development, be more permissive
-    options.sameSite = 'lax';
-  }
-
-  console.log('Setting auth cookie with options:', {
-    httpOnly: options.httpOnly,
-    secure: options.secure,
-    sameSite: options.sameSite,
-    path: options.path,
-    expires: options.expires
-  });
-
-  res
-    .status(statusCode)
-    .cookie('token', token, options)
-    .json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+  try {
+    // Create token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRE
     });
+
+    const options = {
+      expires: new Date(
+        Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+      ),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    };
+
+    res
+      .status(statusCode)
+      .cookie('token', token, options)
+      .json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }
+      });
+  } catch (error) {
+    console.error('Token generation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating authentication token'
+    });
+  }
 };

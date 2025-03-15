@@ -6,21 +6,25 @@
 const mongoose = require('mongoose');
 const UserSchema = require('./User');
 
-// Function to get or create model to prevent duplicate registration
-const getModel = (name, schema) => {
-  try {
-    // Try to get existing model first
-    return mongoose.model(name);
-  } catch (e) {
-    // If model doesn't exist, create it
-    return mongoose.model(name, schema);
-  }
+// Function to add methods to schema before model creation
+const enhanceSchema = (schema) => {
+    // Add any additional methods or configurations here
+    return schema;
 };
 
-// Register models
+// Get model function that ensures methods are added
+const getModel = (name, schema) => {
+    try {
+        return mongoose.model(name);
+    } catch {
+        const enhancedSchema = enhanceSchema(schema);
+        return mongoose.model(name, enhancedSchema);
+    }
+};
+
+// Create User model with enhanced schema
 const User = getModel('User', UserSchema);
 
-// Export models
 module.exports = {
-  User
+    User
 };
