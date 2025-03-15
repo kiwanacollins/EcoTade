@@ -37,29 +37,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         setupEventListeners();
         initTraderDetailButtons();
         
-        // Load any stored data while we fetch from API
-        loadDataFromLocalStorage();
+        // Set up the data sync mechanism first
+        setupDataSyncMechanism();
         
-        // Try to fetch fresh data in background
-        console.log('Fetching fresh data from API in background');
-        fetchDashboardData()
-            .then(userData => {
-                if (userData) {
-                    console.log('Successfully loaded dashboard data');
-                    updateDashboardUI(userData);
-                    
-                    // Save data for offline use
-                    localStorage.setItem('dashboardData', JSON.stringify(userData));
-                }
-            })
-            .catch(error => {
-                console.warn('Error fetching dashboard data:', error);
-                showNotification('warning', 'Could not fetch the latest data. Using cached data instead.');
-                
-                // No redirect on error - just show warning
-            });
+        // Load stored data while we fetch from API (temporary display)
+        const loadedFromLocalStorage = loadDataFromLocalStorage();
+        console.log('Loaded from localStorage:', loadedFromLocalStorage);
         
-        setupDataSyncMechanism(); // Add this line before trying to fetch data
+        // IMPORTANT: Always fetch fresh data from server with skipCache=true
+        // This ensures we're getting the latest data from MongoDB
+        console.log('Fetching fresh data from MongoDB...');
+        const freshData = await fetchDashboardData(true);
+        
+        if (freshData) {
+            console.log('Successfully loaded fresh data from MongoDB');
+            // UI should already be updated in fetchDashboardData
+        } else {
+            console.warn('Failed to fetch fresh data from MongoDB');
+        }
     } catch (error) {
         console.error('Dashboard initialization error:', error);
         
@@ -123,8 +118,22 @@ function loadDataFromLocalStorage() {
         const savedData = localStorage.getItem('dashboardData');
         if (savedData) {
             const data = JSON.parse(savedData);
-            console.log('Loaded saved data from localStorage');
+            console.log('Loaded initial data from localStorage (will be replaced with server data)');
+            
+            // Only update UI as a quick initial load
             updateDashboardUI(data);
+            
+            // Note: We will replace this with server data soon
+            console.log('Temporary data loaded from localStorage. Waiting for server data...');
+            
+            // Show "loading from server" indication to the user
+            const syncStatusElem = document.querySelector('.sync-status');
+            if (syncStatusElem) {
+                syncStatusElem.textContent = 'Loading fresh data...';
+                syncStatusElem.className = 'sync-status';
+                syncStatusElem.style.display = 'inline-block';
+            }
+            
             return true;
         }
     } catch (e) {
@@ -180,6 +189,9 @@ async function fetchDashboardData(skipCache = false) {
                         }
                     }
                     
+                    // Log the selected trader data from the server
+                    console.log('Selected trader from server:', financialData.data.selectedTrader);
+                    
                     // Combine user profile with financial data
                     const dashboardData = {
                         user: userData,
@@ -203,6 +215,20 @@ async function fetchDashboardData(skipCache = false) {
                     // Also update selectedTrader in localStorage for backup
                     if (dashboardData.selectedTrader) {
                         localStorage.setItem('selectedTrader', JSON.stringify(dashboardData.selectedTrader));
+                    }
+                    
+                    // IMMEDIATELY update UI with the server data
+                    updateDashboardUI(dashboardData);
+                    
+                    // If there's a selectedTrader, also update the top traders section
+                    if (dashboardData.selectedTrader) {
+                        updateTopTraders(dashboardData.selectedTrader);
+                        
+                        // Update active traders count in UI
+                        const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+                        if (activeTradersStat) {
+                            activeTradersStat.textContent = dashboardData.accountSummary.activeTraders.toString();
+                        }
                     }
                     
                     return dashboardData;
@@ -2217,16 +2243,22 @@ function updateTopTraders(trader) {
     const traderElement = document.createElement('div');
     traderElement.className = 'top-trader-item';
     
+    // Make sure we display proper values even if the format differs slightly
+    const traderName = trader.name;
+    const traderSpec = trader.spec || trader.specialty;
+    const traderImg = trader.img || trader.image || 'https://randomuser.me/api/portraits/men/32.jpg';
+    const traderPerformance = trader.performance || '+0.0%';
+    
     traderElement.innerHTML = `
         <div class="trader-item-header">
             <div class="trader-item-avatar">
-                <img src="${trader.img}" alt="${trader.name}">
+                <img src="${traderImg}" alt="${traderName}">
                 <span class="trader-status online"></span>
             </div>
             <div class="trader-item-info">
-                <div class="trader-item-name">${trader.name}</div>
-                <div class="trader-item-spec">${trader.spec}</div>
-                <div class="trader-item-performance" style="color: #4CD964">${trader.performance}</div>
+                <div class="trader-item-name">${traderName}</div>
+                <div class="trader-item-spec">${traderSpec}</div>
+                <div class="trader-item-performance" style="color: #4CD964">${traderPerformance}</div>
             </div>
         </div>
         <div class="trader-item-actions">
@@ -2587,16 +2619,9 @@ function setupDataSyncMechanism() {
                 // Fetch latest data without using cache
                 const latestData = await fetchDashboardData(true);
                 if (latestData) {
-                    // Update UI with fresh data
-                    updateDashboardUI(latestData);
+                    console.log('Background sync completed successfully with data:', latestData);
                     
-                    // Update localStorage with the freshest data
-                    localStorage.setItem('dashboardData', JSON.stringify(latestData));
-                    
-                    // Update last sync timestamp
-                    localStorage.setItem('lastDataSync', new Date().toISOString());
-                    
-                    console.log('Background sync completed successfully');
+                    // These update steps are already handled in fetchDashboardData now
                 }
             }
         } catch (error) {

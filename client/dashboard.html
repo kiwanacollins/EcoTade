@@ -1205,14 +1205,14 @@
                             window.traderChart = null;
                         }
                         
-                        // Now fetch fresh data
+                        // Now fetch fresh data - ALWAYS use skipCache=true to get MongoDB data
                         fetchDashboardData(true)
                             .then(data => {
                                 if (data) {
-                                    updateDashboardUI(data);
-                                    showNotification('success', 'Dashboard data refreshed from server');
+                                    // Show clear indication of refresh success
+                                    showNotification('success', 'Dashboard data refreshed from database');
                                 } else {
-                                    showNotification('error', 'Could not refresh data');
+                                    showNotification('error', 'Could not refresh data from database');
                                 }
                             })
                             .catch(err => {
