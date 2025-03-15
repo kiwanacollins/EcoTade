@@ -19,6 +19,47 @@
     <script src="./js/token-manager.js"></script>
     <!-- Existing dashboard.js should be loaded after token-manager.js -->
     <script src="./js/dashboard.js" defer></script>
+    <style>
+        .sync-status {
+            font-size: 0.8rem;
+            margin-left: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(0, 200, 0, 0.1);
+            color: #00a000;
+            transition: opacity 0.5s ease;
+            display: inline-block;
+        }
+        
+        .sync-status.cached {
+            background: rgba(255, 165, 0, 0.1);
+            color: #ff9900;
+        }
+        
+        .sync-status.error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff0000;
+        }
+        
+        .sync-status.hiding {
+            opacity: 0;
+        }
+        
+        /* Add a manual refresh button for mobile devices */
+        .manual-refresh {
+            margin-left: 8px;
+            cursor: pointer;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .sync-status {
+                font-size: 0.7rem;
+                padding: 1px 6px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -73,6 +114,7 @@
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2>Dashboard</h2>
+                    <div class="sync-status" style="display: none;">Data synced</div>
                 </div>
                 <div class="header-right">
                     <div class="notification-icon">
@@ -1137,5 +1179,46 @@
             </div>
         </div>
     </div>
+    <script>
+        // Add a manual refresh function for mobile users
+        function addRefreshButton() {
+            const headerLeft = document.querySelector('.header-left h2');
+            if (headerLeft) {
+                const refreshButton = document.createElement('i');
+                refreshButton.className = 'fas fa-sync manual-refresh';
+                refreshButton.title = 'Refresh data from server';
+                refreshButton.addEventListener('click', function() {
+                    this.classList.add('fa-spin');
+                    fetchDashboardData(true)
+                        .then(data => {
+                            if (data) {
+                                updateDashboardUI(data);
+                                showNotification('success', 'Dashboard data refreshed from server');
+                            } else {
+                                showNotification('error', 'Could not refresh data');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Manual refresh failed:', err);
+                            showNotification('error', 'Could not refresh data: ' + err.message);
+                        })
+                        .finally(() => {
+                            setTimeout(() => {
+                                this.classList.remove('fa-spin');
+                            }, 500);
+                        });
+                });
+                headerLeft.parentNode.insertBefore(refreshButton, headerLeft.nextSibling);
+            }
+        }
+
+        // Call this function after DOM content is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're on a mobile device
+            if (/Mobi|Android/i.test(navigator.userAgent)) {
+                addRefreshButton();
+            }
+        });
+    </script>
 </body>
 </html>

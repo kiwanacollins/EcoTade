@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
                 // No redirect on error - just show warning
             });
+        
+        setupDataSyncMechanism(); // Add this line before trying to fetch data
     } catch (error) {
         console.error('Dashboard initialization error:', error);
         
@@ -132,8 +134,8 @@ function loadDataFromLocalStorage() {
 }
 
 // Improved fetchDashboardData function to ensure user data is properly retrieved
-async function fetchDashboardData() {
-    console.log('Fetching dashboard data...');
+async function fetchDashboardData(skipCache = false) {
+    console.log('Fetching dashboard data...', skipCache ? '(Skip Cache)' : '');
     try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -142,11 +144,15 @@ async function fetchDashboardData() {
             return;
         }
 
+        // Add anti-cache query parameter if skipCache is true
+        const cacheParam = skipCache ? `?nocache=${Date.now()}` : '';
+
         // First try the dedicated user profile endpoint
         try {
-            const userResponse = await fetch('/api/users/profile', {
+            const userResponse = await fetch(`/api/users/profile${cacheParam}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
                 }
             });
             
@@ -158,10 +164,11 @@ async function fetchDashboardData() {
                     // Store username in localStorage as backup
                     localStorage.setItem('username', userData.data.name);
                     
-                    // Now fetch financial data
-                    const financialResponse = await fetch('/api/financial/dashboard', {
+                    // Now fetch financial data with anti-cache parameter if needed
+                    const financialResponse = await fetch(`/api/financial/dashboard${cacheParam}`, {
                         headers: {
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': `Bearer ${token}`,
+                            'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
                         }
                     });
                     
@@ -190,8 +197,13 @@ async function fetchDashboardData() {
                                 financialData?.data?.investments || []
                         };
                         
+                        // Add a sync timestamp to the data
+                        dashboardData.syncTimestamp = new Date().toISOString();
+                        dashboardData.syncSource = 'server';
+                        
                         // Cache the dashboard data
                         localStorage.setItem('dashboardData', JSON.stringify(dashboardData));
+                        localStorage.setItem('lastDataSync', new Date().toISOString());
                         
                         return dashboardData;
                     }
@@ -199,12 +211,14 @@ async function fetchDashboardData() {
             }
         } catch (error) {
             console.error('Error fetching user profile:', error);
+            showConnectionErrorNotification();
         }
         
         // Fallback to legacy endpoint if the first attempt fails
-        const response = await fetch('/api/auth/dashboard', {
+        const response = await fetch(`/api/auth/dashboard${cacheParam}`, {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
             }
         });
         
@@ -220,9 +234,10 @@ async function fetchDashboardData() {
         }
         
         // If we get here, try another endpoint as a last resort
-        const fallbackResponse = await fetch('/api/user/financial-data', {
+        const fallbackResponse = await fetch(`/api/user/financial-data${cacheParam}`, {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
             }
         });
         
@@ -246,15 +261,27 @@ async function fetchDashboardData() {
             return dashboardData;
         }
         
-        throw new Error('Failed to fetch dashboard data from any endpoint');
+        // Add diagnostic information to error message
+        throw new Error('Failed to fetch dashboard data. Network Status: ' + 
+                        (navigator.onLine ? 'Online' : 'Offline') + 
+                        ', Last Sync: ' + (localStorage.getItem('lastDataSync') || 'Never'));
     } catch (error) {
         console.error('Error in fetchDashboardData:', error);
         
-        // Attempt to use cached data
+        // Show more detailed error notification with recovery info
+        showNotification('error', 'Could not fetch the latest data. Using cached data instead. Try refreshing the page or checking your internet connection.');
+        
+        // Attempt to use cached data with clear marking that it's cached
         const cachedData = localStorage.getItem('dashboardData');
         if (cachedData) {
-            console.log('Using cached dashboard data');
-            return JSON.parse(cachedData);
+            console.log('Using cached dashboard data from localStorage');
+            const data = JSON.parse(cachedData);
+            
+            // Mark data as coming from cache for UI display
+            data.syncSource = 'cache';
+            data.usingCachedData = true;
+            
+            return data;
         }
         
         // Last resort fallback
@@ -343,6 +370,23 @@ function updateDashboardUI(dashboardData) {
     
     // Update investments list
     updateInvestmentsList(dashboardData.investments || []);
+    
+    // Add sync status indicator if applicable
+    const syncStatusElem = document.querySelector('.sync-status');
+    if (syncStatusElem) {
+        if (dashboardData.usingCachedData) {
+            syncStatusElem.textContent = 'Using cached data';
+            syncStatusElem.className = 'sync-status cached';
+        } else {
+            syncStatusElem.textContent = 'Data synced';
+            syncStatusElem.className = 'sync-status synced';
+            
+            // Hide after a few seconds
+            setTimeout(() => {
+                syncStatusElem.classList.add('hiding');
+            }, 3000);
+        }
+    }
 }
 
 // Function to handle payment method dropdown change
@@ -1925,117 +1969,171 @@ async function saveSelectedTrader(trader) {
         
         console.log('Saving selected trader:', trader);
         
-        // First try the financial data endpoint
-        const response = await fetch('/api/financial/dashboard', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                selectedTrader: trader
-            })
-        });
-        
-        if (!response.ok) {
-            // If first endpoint fails, try the fallback endpoint
-            console.warn('Primary endpoint failed, trying fallback');
-            const fallbackResponse = await fetch('/api/user/financial-data', {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    selectedTrader: trader
-                })
-            });
-            
-            if (!fallbackResponse.ok) {
-                throw new Error('All endpoints failed to save trader selection');
-            }
-        }
-        
-        console.log('Trader selection saved successfully');
-        return true;
-    } catch (error) {
-        console.error('Error saving selected trader:', error);
-        showNotification('error', 'Failed to save your trader selection. Please try again.');
-        return false;
-    }
-}
-
-// Improved function to update active trader count
-async function updateActiveTraderCount(count) {
-    // Update UI immediately
-    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
-    if (activeTradersStat) {
-        activeTradersStat.textContent = count.toString();
-    }
-    
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No token found, cannot update active trader count');
-            return false;
-        }
-        
-        console.log('Updating active trader count to:', count);
-        
-        // Try both endpoints to ensure the data is updated
+        // Try both endpoints simultaneously to maximize chances of success
         const promises = [
             fetch('/api/financial/dashboard', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Device-ID': getDeviceIdentifier() // Add device ID for better tracking
                 },
                 body: JSON.stringify({
-                    activeTraders: count
+                    selectedTrader: trader
                 })
             }),
             fetch('/api/user/financial-data', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Device-ID': getDeviceIdentifier() // Add device ID for better tracking
                 },
                 body: JSON.stringify({
-                    activeTraders: count
+                    selectedTrader: trader
                 })
             })
         ];
         
-        // Wait for both to complete - even if one fails
+        // Wait for both requests to complete - even if one fails
         const results = await Promise.allSettled(promises);
         
         // Check if at least one succeeded
-        const anySuccess = results.some(result => result.status === 'fulfilled' && result.value.ok);
+        const anySuccess = results.some(result => 
+            result.status === 'fulfilled' && result.value.ok);
         
         if (!anySuccess) {
-            console.error('Failed to update active trader count on server');
-            return false;
+            const errors = results
+                .filter(r => r.status === 'rejected')
+                .map(r => r.reason.message)
+                .join(', ');
+                
+            console.error('All endpoints failed to save trader selection:', errors);
+            
+            // Save timestamp of failed sync attempt
+            localStorage.setItem('lastFailedSync', new Date().toISOString());
+            
+            throw new Error(`Server update failed: ${errors}`);
         }
         
-        console.log('Active trader count updated successfully');
+        console.log('Trader selection saved successfully to server');
+        
+        // Update the sync timestamp
+        localStorage.setItem('lastDataSync', new Date().toISOString());
+        
+        // Update in-memory cache with the selected trader
+        try {
+            const cachedDataStr = localStorage.getItem('dashboardData');
+            if (cachedDataStr) {
+                const cachedData = JSON.parse(cachedDataStr);
+                cachedData.selectedTrader = trader;
+                cachedData.syncTimestamp = new Date().toISOString();
+                cachedData.syncSource = 'server';
+                localStorage.setItem('dashboardData', JSON.stringify(cachedData));
+            }
+        } catch (e) {
+            console.warn('Failed to update cached data with new trader selection:', e);
+        }
+        
         return true;
     } catch (error) {
-        console.error('Error updating active traders count:', error);
+        console.error('Error saving selected trader:', error);
+        
+        // Show warning notification with explanation about cross-device sync
+        showNotification('warning', 
+            'Your trader selection was saved locally, but might not sync to other devices. Check your internet connection.',
+            5000);
+            
         return false;
     }
 }
 
-// Helper function to get trader performance
-function getTraderPerformance(traderId) {
-    const trader = traderDetails[traderId];
-    if (!trader || !trader.performance) {
-        return 'N/A';
+// Generate a persistent device identifier
+function getDeviceIdentifier() {
+    let deviceId = localStorage.getItem('device_id');
+    
+    if (!deviceId) {
+        // Generate a new device ID
+        deviceId = 'device_' + Math.random().toString(36).substring(2, 15) + 
+                   Math.random().toString(36).substring(2, 15);
+        localStorage.setItem('device_id', deviceId);
     }
-    // Return monthly performance as it's the most prominently displayed metric
-    return trader.performance.monthly;
+    
+    return deviceId;
 }
 
-// Modified selectTrader function to ensure both the selection and count update work
+// Update the UI based on data sync status
+function updateDashboardUI(dashboardData) {
+    // Update user name and role
+    const userName = document.querySelector('.user-name');
+    const userFullName = document.querySelector('.user-fullname');
+    const userRole = document.querySelector('.user-role');
+    
+    if (userName) userName.textContent = dashboardData.user.name;
+    if (userFullName) userFullName.textContent = dashboardData.user.name;
+    if (userRole) userRole.textContent = dashboardData.user.role;
+    
+    // Update account summary
+    const balanceAmount = document.querySelector('.balance-amount');
+    const profitAmount = document.querySelector('.profit-amount');
+    const activeTrades = document.querySelector('.active-trades');
+    
+    if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toFixed(2)}`;
+    if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toFixed(2)}`;
+    if (activeTrades) activeTrades.textContent = dashboardData.accountSummary.activeTrades;
+    
+    // Populate settings form if on settings panel
+    const settingsFullname = document.getElementById('settings-fullname');
+    const settingsEmail = document.getElementById('settings-email');
+    
+    if (settingsFullname) settingsFullname.value = dashboardData.user.name;
+    if (settingsEmail) settingsEmail.value = dashboardData.user.email;
+    
+    // Initialize payment methods dropdown
+    const paymentMethodSelect = document.getElementById('payment-method-select');
+    if (paymentMethodSelect) {
+        // Add change event listener if it doesn't exist
+        if (!paymentMethodSelect.dataset.initialized) {
+            paymentMethodSelect.addEventListener('change', function() {
+                updatePaymentDetails(this.value);
+            });
+            paymentMethodSelect.dataset.initialized = 'true';
+        }
+    }
+
+    // Initialize charts after updating UI data
+    initializeCharts(dashboardData);
+    
+    // Update activity feed
+    updateActivityFeed(dashboardData.recentActivities || []);
+    
+    // Update transactions table
+    updateTransactionsTable(dashboardData.transactions || []);
+    
+    // Update investments list
+    updateInvestmentsList(dashboardData.investments || []);
+    
+    // Add sync status indicator if applicable
+    const syncStatusElem = document.querySelector('.sync-status');
+    if (syncStatusElem) {
+        if (dashboardData.usingCachedData) {
+            syncStatusElem.textContent = 'Using cached data';
+            syncStatusElem.className = 'sync-status cached';
+        } else {
+            syncStatusElem.textContent = 'Data synced';
+            syncStatusElem.className = 'sync-status synced';
+            
+            // Hide after a few seconds
+            setTimeout(() => {
+                syncStatusElem.classList.add('hiding');
+            }, 3000);
+        }
+    }
+    
+    // ...rest of existing code...
+}
+
+// Modified selectTrader function to improve cross-device sync
 function selectTrader(traderId) {
     console.log(`Selected trader with ID: ${traderId}`);
     
@@ -2051,8 +2149,9 @@ function selectTrader(traderId) {
     const traderSpec = traderCard.querySelector('.trader-spec').textContent;
     const traderImg = traderCard.querySelector('.trader-avatar img').src;
     
-    // Show confirmation modal or notification
-    showNotification('success', `You have selected ${traderName} as your trader. They will now manage your investments.`);
+    // Show a more informative notification that mentions syncing across devices
+    showNotification('success', 
+        `You have selected ${traderName} as your trader. This selection will sync to your other devices when they're online.`);
     
     // Prepare selected trader data
     const selectedTrader = {
@@ -2067,16 +2166,27 @@ function selectTrader(traderId) {
     // Save selection to localStorage as backup
     localStorage.setItem('selectedTrader', JSON.stringify(selectedTrader));
     
-    // Use Promise to ensure both operations complete properly
-    Promise.all([
+    // Use Promise.allSettled instead of Promise.all to better handle partial success
+    Promise.allSettled([
         saveSelectedTrader(selectedTrader),
         updateActiveTraderCount(1)
     ])
-    .then(([selectionSaved, countUpdated]) => {
+    .then(results => {
+        const selectionSaved = results[0].status === 'fulfilled' && results[0].value;
+        const countUpdated = results[1].status === 'fulfilled' && results[1].value;
+        
         if (selectionSaved && countUpdated) {
             console.log('Trader selection and count saved successfully');
         } else {
-            console.warn('Some operations failed when selecting trader');
+            console.warn('Some operations failed when selecting trader:', 
+                         selectionSaved ? '' : 'Failed to save selection',
+                         countUpdated ? '' : 'Failed to update count');
+                         
+            // Show warning only if server update failed
+            if (!selectionSaved) {
+                showNotification('warning', 
+                    'Trader selected locally, but changes may not appear on other devices until your connection improves.');
+            }
         }
         
         // After a short delay, navigate back to overview
@@ -2094,13 +2204,17 @@ function selectTrader(traderId) {
             // Update the top traders section in the overview
             updateTopTraders(selectedTrader);
             
-            // Force refresh dashboard data to ensure changes are reflected
-            fetchDashboardData().then(updateDashboardUI);
+            // Force refresh dashboard data to ensure changes are reflected, but don't use cache
+            fetchDashboardData(true).then(updateDashboardUI)
+                .catch(err => console.warn('Failed to refresh data after trader selection:', err));
         }, 1500);
     })
     .catch(error => {
         console.error('Error in trader selection process:', error);
-        showNotification('warning', 'Trader selected, but there was an issue saving your preference.');
+        
+        // More specific error message
+        showNotification('warning', 
+            'Trader selected locally, but there was an issue saving your preference to the server. Your selection may not sync across devices.');
     });
 }
 
@@ -2469,4 +2583,141 @@ function initTraderDetailButtons() {
     }
     
     console.log('Trader detail buttons initialized');
+}
+
+// Add this function near the top of the file, after DOMContentLoaded
+// This will periodically check for updates from the server
+function setupDataSyncMechanism() {
+    console.log('Setting up data synchronization mechanism');
+    
+    // Check for updates every 30 seconds
+    const syncInterval = setInterval(async () => {
+        try {
+            // Only perform sync if we're on the dashboard
+            if (document.visibilityState === 'visible') {
+                console.log('Running background data sync');
+                
+                // Fetch latest data without using cache
+                const latestData = await fetchDashboardData(true);
+                if (latestData) {
+                    // Update UI with fresh data
+                    updateDashboardUI(latestData);
+                    
+                    // Update localStorage with the freshest data
+                    localStorage.setItem('dashboardData', JSON.stringify(latestData));
+                    
+                    // Update last sync timestamp
+                    localStorage.setItem('lastDataSync', new Date().toISOString());
+                    
+                    console.log('Background sync completed successfully');
+                }
+            }
+        } catch (error) {
+            console.warn('Background sync failed:', error);
+            // Don't show notification for background sync failure
+        }
+    }, 30000);
+    
+    // Clear interval when page is unloaded
+    window.addEventListener('beforeunload', () => {
+        clearInterval(syncInterval);
+    });
+    
+    // Force sync when tab becomes visible again
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            console.log('Tab became visible, forcing sync');
+            fetchDashboardData(true)
+                .then(data => {
+                    if (data) {
+                        updateDashboardUI(data);
+                        localStorage.setItem('dashboardData', JSON.stringify(data));
+                        localStorage.setItem('lastDataSync', new Date().toISOString());
+                    }
+                })
+                .catch(err => console.warn('Visibility change sync failed:', err));
+        }
+    });
+}
+
+// Show a connection error notification with more diagnostic info
+function showConnectionErrorNotification() {
+    const connectionInfo = navigator.connection ? 
+        `Type: ${navigator.connection.effectiveType}, Downlink: ${navigator.connection.downlink} Mbps` :
+        'Connection info not available';
+    
+    console.warn(`Connection issue detected. ${connectionInfo}`);
+    showNotification('warning', 
+        'Having trouble connecting to the server. Your changes may not be saved across devices.', 
+        8000); // Show for longer time
+}
+
+// Improved function to update active trader count
+async function updateActiveTraderCount(count) {
+    // Update UI immediately
+    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    if (activeTradersStat) {
+        activeTradersStat.textContent = count.toString();
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found, cannot update active trader count');
+            return false;
+        }
+        
+        console.log('Updating active trader count to:', count);
+        
+        // Try both endpoints to ensure the data is updated
+        const promises = [
+            fetch('/api/financial/dashboard', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    activeTraders: count
+                })
+            }),
+            fetch('/api/user/financial-data', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    activeTraders: count
+                })
+            })
+        ];
+        
+        // Wait for both to complete - even if one fails
+        const results = await Promise.allSettled(promises);
+        
+        // Check if at least one succeeded
+        const anySuccess = results.some(result => result.status === 'fulfilled' && result.value.ok);
+        
+        if (!anySuccess) {
+            console.error('Failed to update active trader count on server');
+            return false;
+        }
+        
+        console.log('Active trader count updated successfully');
+        return true;
+    } catch (error) {
+        console.error('Error updating active traders count:', error);
+        return false;
+    }
+}
+
+// Helper function to get trader performance
+function getTraderPerformance(traderId) {
+    const trader = traderDetails[traderId];
+    if (!trader || !trader.performance) {
+        return 'N/A';
+    }
+    // Return monthly performance as it's the most prominently displayed metric
+    return trader.performance.monthly;
 }
