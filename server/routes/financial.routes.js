@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const { User } = require('../models'); // Import from models index
 const auth = require('../middleware/auth');
 
 /**
