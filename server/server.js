@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose'); // Add this import at the top
 const { checkConfigOnStartup } = require('./utils/config-validator');
 // Add JWT configuration check with fix attempt
 const { isJwtConfigured, attemptJwtFix } = require('./scripts/check-jwt');
@@ -196,13 +197,21 @@ try {
   console.log('Checking for model conflicts...');
   
   // Force clear the mongoose model cache to prevent conflicts
-  Object.keys(mongoose.models).forEach(modelName => {
-    console.log(`- Cleaning up model: ${modelName}`);
-    delete mongoose.models[modelName];
-    delete mongoose.modelSchemas[modelName];
-  });
-  
-  console.log('Model cache cleared successfully');
+  if (mongoose && mongoose.models) {
+    Object.keys(mongoose.models).forEach(modelName => {
+      console.log(`- Cleaning up model: ${modelName}`);
+      delete mongoose.models[modelName];
+      
+      // Only delete modelSchemas if it exists
+      if (mongoose.modelSchemas) {
+        delete mongoose.modelSchemas[modelName];
+      }
+    });
+    
+    console.log('Model cache cleared successfully');
+  } else {
+    console.log('No models found in mongoose cache');
+  }
 } catch (error) {
   console.error('Error clearing model cache:', error);
 }
