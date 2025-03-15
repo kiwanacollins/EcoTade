@@ -231,6 +231,11 @@ try {
   console.error('Error clearing model cache:', error);
 }
 
+// Import routes
+const authRoutes = require('./routes/auth.routes');
+const userRoutes = require('./routes/user.routes');
+const financialRoutes = require('./routes/financial.routes'); // Add this line
+
 // Routes with try-catch blocks
 try {
   // Add health check routes
@@ -248,7 +253,7 @@ try {
       });
     }
     next();
-  }, require('./routes/auth.routes'));
+  }, authRoutes);
   
   // User routes with profile endpoint
   app.use('/api/users', (req, res, next) => {
@@ -260,7 +265,7 @@ try {
       });
     }
     next();
-  }, require('./routes/user.routes'));
+  }, userRoutes);
   
   // Added route mapping to ensure /api/user/profile works (singular "user")
   app.use('/api/user', (req, res, next) => {
@@ -285,7 +290,7 @@ try {
       });
     }
     next();
-  }, require('./routes/financial.routes'));
+  }, financialRoutes);
 
   // For backward compatibility - map old endpoint patterns to new ones
   app.use('/api/user/financial-data', (req, res, next) => {
