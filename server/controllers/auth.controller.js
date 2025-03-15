@@ -19,6 +19,14 @@ exports.register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields'
+      });
+    }
+
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -28,15 +36,24 @@ exports.register = async (req, res, next) => {
       });
     }
 
-    // Create user
+    // Create user with validated data
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      financialData: {
+        totalBalance: 0,
+        profit: 0,
+        activeTrades: 0,
+        activeTraders: 0,
+        transactions: [],
+        investments: []
+      }
     });
 
     sendTokenResponse(user, 201, res);
   } catch (error) {
+    console.error('Registration error:', error);
     next(error);
   }
 };

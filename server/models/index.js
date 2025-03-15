@@ -4,27 +4,29 @@
  */
 
 const mongoose = require('mongoose');
+
+// Delete the model if it exists (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  if (mongoose.models.User) {
+    delete mongoose.models.User;
+    delete mongoose.modelSchemas.User;
+  }
+}
+
 const UserSchema = require('./User');
 
-// Function to add methods to schema before model creation
-const enhanceSchema = (schema) => {
-    // Add any additional methods or configurations here
-    return schema;
+// Get or create model function
+const getOrCreateModel = (name, schema) => {
+  try {
+    return mongoose.model(name);
+  } catch (error) {
+    return mongoose.model(name, schema);
+  }
 };
 
-// Get model function that ensures methods are added
-const getModel = (name, schema) => {
-    try {
-        return mongoose.model(name);
-    } catch {
-        const enhancedSchema = enhanceSchema(schema);
-        return mongoose.model(name, enhancedSchema);
-    }
-};
-
-// Create User model with enhanced schema
-const User = getModel('User', UserSchema);
+// Register models
+const User = getOrCreateModel('User', UserSchema);
 
 module.exports = {
-    User
+  User
 };
