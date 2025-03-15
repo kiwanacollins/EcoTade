@@ -131,65 +131,107 @@ function loadDataFromLocalStorage() {
     return false;
 }
 
-// IMPROVED: Enhanced fetch function with better error handling and fallbacks
+// Improved fetchDashboardData function to ensure user data is properly retrieved
 async function fetchDashboardData() {
+    console.log('Fetching dashboard data...');
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            throw new Error('No authentication token found');
+            console.error('No token found, cannot fetch dashboard data');
+            window.location.href = '/login.html';
+            return;
         }
 
-        console.log('Creating fetch request with auth headers');
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        };
-
-        // Try multiple API endpoints with fallbacks
-        const endpoints = [
-            { url: '/api/financial/dashboard', method: 'GET' },
-            { url: '/api/user/financial-data', method: 'GET' },
-            { url: '/api/auth/dashboard', method: 'GET' },
-            // ADDED: New endpoint that might be more reliable
-            { url: '/api/health/auth-check', method: 'GET' }
-        ];
-        
-        let data = null;
-        let error = null;
-        
-        // Try each endpoint until one succeeds
-        for (const endpoint of endpoints) {
-            try {
-                console.log(`Trying endpoint: ${endpoint.url}`);
-                // Add credentials to ensure cookies are sent
-                const response = await fetch(endpoint.url, { 
-                    method: endpoint.method,
-                    headers: headers,
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log(`Successful response from ${endpoint.url}`);
-                    
-                    // Extract the data from the response
-                    data = responseData.data || responseData;
-                    break; // Exit the loop on success
-                } else {
-                    console.warn(`Endpoint ${endpoint.url} failed with status: ${response.status}`);
-                    // Continue to the next endpoint
+        // First try the dedicated user profile endpoint
+        try {
+            const userResponse = await fetch('/api/users/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-            } catch (endpointError) {
-                console.warn(`Error calling ${endpoint.url}:`, endpointError.message);
-                error = endpointError;
-                // Continue to the next endpoint
+            });
+            
+            if (userResponse.ok) {
+                const userData = await userResponse.json();
+                console.log('User profile data fetched:', userData);
+                
+                if (userData && userData.success && userData.data) {
+                    // Store username in localStorage as backup
+                    localStorage.setItem('username', userData.data.name);
+                    
+                    // Now fetch financial data
+                    const financialResponse = await fetch('/api/financial/dashboard', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (financialResponse.ok) {
+                        const financialData = await financialResponse.json();
+                        console.log('Financial data fetched:', financialData);
+                        
+                        // Combine user and financial data
+                        const dashboardData = {
+                            user: userData.data,
+                            accountSummary: {
+                                totalBalance: 
+                                    financialData?.data?.totalBalance || 0,
+                                profit: 
+                                    financialData?.data?.profit || 0,
+                                activeTrades: 
+                                    financialData?.data?.activeTrades || 0,
+                                activeTraders: 
+                                    financialData?.data?.activeTraders || 0
+                            },
+                            selectedTrader: 
+                                financialData?.data?.selectedTrader || null,
+                            transactions: 
+                                financialData?.data?.transactions || [],
+                            investments: 
+                                financialData?.data?.investments || []
+                        };
+                        
+                        // Cache the dashboard data
+                        localStorage.setItem('dashboardData', JSON.stringify(dashboardData));
+                        
+                        return dashboardData;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+        }
+        
+        // Fallback to legacy endpoint if the first attempt fails
+        const response = await fetch('/api/auth/dashboard', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Dashboard data from legacy endpoint:', data);
+            
+            if (data && data.data) {
+                // Cache the response
+                localStorage.setItem('dashboardData', JSON.stringify(data.data));
+                return data.data;
             }
         }
         
-        if (data) {
-            // Construct a standard dashboard data object
-            return {
-                user: data.user || { name: localStorage.getItem('username') || 'User' },
+        // If we get here, try another endpoint as a last resort
+        const fallbackResponse = await fetch('/api/user/financial-data', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (fallbackResponse.ok) {
+            const data = await fallbackResponse.json();
+            const username = localStorage.getItem('username');
+            
+            const dashboardData = {
+                user: { name: username || 'User' },
                 accountSummary: {
                     totalBalance: data.totalBalance || 0,
                     profit: data.profit || 0,
@@ -200,25 +242,22 @@ async function fetchDashboardData() {
                 transactions: data.transactions || [],
                 investments: data.investments || []
             };
+            
+            return dashboardData;
         }
         
-        // If all endpoints fail, use cached data
+        throw new Error('Failed to fetch dashboard data from any endpoint');
+    } catch (error) {
+        console.error('Error in fetchDashboardData:', error);
+        
+        // Attempt to use cached data
         const cachedData = localStorage.getItem('dashboardData');
         if (cachedData) {
-            console.log('Using cached dashboard data after API failures');
+            console.log('Using cached dashboard data');
             return JSON.parse(cachedData);
         }
         
         // Last resort fallback
-        if (error) {
-            throw error;
-        } else {
-            throw new Error('All API endpoints failed to return data');
-        }
-    } catch (error) {
-        console.error('Error in fetchDashboardData:', error);
-        
-        // Instead of throwing, return mock data
         return {
             user: { name: localStorage.getItem('username') || 'User' },
             accountSummary: {
@@ -1874,12 +1913,130 @@ function switchPanel(panelId) {
     }
 }
 
-// Handle trader selection and save to server
+// Improved trader selection function with better error handling
+async function saveSelectedTrader(trader) {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found, cannot save trader selection');
+            showNotification('error', 'Authentication error. Please log in again.');
+            return false;
+        }
+        
+        console.log('Saving selected trader:', trader);
+        
+        // First try the financial data endpoint
+        const response = await fetch('/api/financial/dashboard', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                selectedTrader: trader
+            })
+        });
+        
+        if (!response.ok) {
+            // If first endpoint fails, try the fallback endpoint
+            console.warn('Primary endpoint failed, trying fallback');
+            const fallbackResponse = await fetch('/api/user/financial-data', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    selectedTrader: trader
+                })
+            });
+            
+            if (!fallbackResponse.ok) {
+                throw new Error('All endpoints failed to save trader selection');
+            }
+        }
+        
+        console.log('Trader selection saved successfully');
+        return true;
+    } catch (error) {
+        console.error('Error saving selected trader:', error);
+        showNotification('error', 'Failed to save your trader selection. Please try again.');
+        return false;
+    }
+}
+
+// Improved function to update active trader count
+async function updateActiveTraderCount(count) {
+    // Update UI immediately
+    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    if (activeTradersStat) {
+        activeTradersStat.textContent = count.toString();
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found, cannot update active trader count');
+            return false;
+        }
+        
+        console.log('Updating active trader count to:', count);
+        
+        // Try both endpoints to ensure the data is updated
+        const promises = [
+            fetch('/api/financial/dashboard', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    activeTraders: count
+                })
+            }),
+            fetch('/api/user/financial-data', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    activeTraders: count
+                })
+            })
+        ];
+        
+        // Wait for both to complete - even if one fails
+        const results = await Promise.allSettled(promises);
+        
+        // Check if at least one succeeded
+        const anySuccess = results.some(result => result.status === 'fulfilled' && result.value.ok);
+        
+        if (!anySuccess) {
+            console.error('Failed to update active trader count on server');
+            return false;
+        }
+        
+        console.log('Active trader count updated successfully');
+        return true;
+    } catch (error) {
+        console.error('Error updating active traders count:', error);
+        return false;
+    }
+}
+
+// Modified selectTrader function to ensure both the selection and count update work
 function selectTrader(traderId) {
     console.log(`Selected trader with ID: ${traderId}`);
     
     // Find the trader card based on the trader ID
     const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
+    if (!traderCard) {
+        console.error('Trader card not found for ID:', traderId);
+        showNotification('error', 'Error selecting trader. Please try again.');
+        return;
+    }
+    
     const traderName = traderCard.querySelector('h4').textContent;
     const traderSpec = traderCard.querySelector('.trader-spec').textContent;
     const traderImg = traderCard.querySelector('.trader-avatar img').src;
@@ -1893,78 +2050,48 @@ function selectTrader(traderId) {
         name: traderName,
         spec: traderSpec,
         img: traderImg,
-        performance: getTraderPerformance(traderId)
+        performance: getTraderPerformance(traderId),
+        selected: new Date().toISOString()  // Add timestamp for tracking
     };
     
-    // Save to server instead of local storage
-    saveSelectedTrader(selectedTrader);
+    // Save selection to localStorage as backup
+    localStorage.setItem('selectedTrader', JSON.stringify(selectedTrader));
     
-    // After a short delay, navigate back to overview
-    setTimeout(() => {
-        switchPanel('overview');
+    // Use Promise to ensure both operations complete properly
+    Promise.all([
+        saveSelectedTrader(selectedTrader),
+        updateActiveTraderCount(1)
+    ])
+    .then(([selectionSaved, countUpdated]) => {
+        if (selectionSaved && countUpdated) {
+            console.log('Trader selection and count saved successfully');
+        } else {
+            console.warn('Some operations failed when selecting trader');
+        }
         
-        // Update navigation item active state
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-panel') === 'overview') {
-                item.classList.add('active');
-            }
-        });
-        
-        // Update the top traders section in the overview
-        updateTopTraders(selectedTrader);
-        
-        // Update active traders count
-        updateActiveTraderCount(1);
-    }, 1500);
-}
-
-// Save selected trader to server
-async function saveSelectedTrader(trader) {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        await fetch('/api/user/financial-data', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                selectedTrader: trader
-            })
-        });
-    } catch (error) {
-        console.error('Error saving selected trader:', error);
-        showNotification('error', 'Failed to save your trader selection. Please try again.');
-    }
-}
-
-// Update active traders count in the stats card
-async function updateActiveTraderCount(count) {
-    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
-    if (activeTradersStat) {
-        activeTradersStat.textContent = count.toString();
-    }
-    
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        await fetch('/api/user/financial-data', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                activeTraders: count
-            })
-        });
-    } catch (error) {
-        console.error('Error updating active traders count:', error);
-    }
+        // After a short delay, navigate back to overview
+        setTimeout(() => {
+            switchPanel('overview');
+            
+            // Update navigation item active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-panel') === 'overview') {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Update the top traders section in the overview
+            updateTopTraders(selectedTrader);
+            
+            // Force refresh dashboard data to ensure changes are reflected
+            fetchDashboardData().then(updateDashboardUI);
+        }, 1500);
+    })
+    .catch(error => {
+        console.error('Error in trader selection process:', error);
+        showNotification('warning', 'Trader selected, but there was an issue saving your preference.');
+    });
 }
 
 // Update the top traders section in overview with enhanced styling

@@ -37,16 +37,31 @@ if (!process.env.JWT_SECRET) {
   }
 }
 
-// ALWAYS set a hardcoded fallback for Docker MongoDB - this ensures it always works
+// Fix MongoDB connection string
 console.log('Setting Docker MongoDB connection...');
-process.env.MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
+const mongoPort = 27018; // Always use 27018 consistently
+process.env.MONGODB_URI = `mongodb://admin:password@localhost:${mongoPort}/forexproxdb?authSource=admin`;
 
 // Log what we're using
 console.log('Application Settings:');
 console.log('- NODE_ENV:', process.env.NODE_ENV);
 console.log('- MONGODB_URI:', process.env.MONGODB_URI.replace(/\/\/.*:.*@/, '//****:****@')); // Hide credentials
+console.log(`- MongoDB port: ${mongoPort}`);
 console.log('- JWT_SECRET:', process.env.JWT_SECRET ? '****' + process.env.JWT_SECRET.substr(-4) : 'NOT SET');
 console.log('- Running on port:', process.env.PORT || 5000);
+
+// Add explicit error handlers for MongoDB connection issues
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB connected successfully');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('MongoDB disconnected');
+});
 
 // Check environment variables before starting the server
 checkConfigOnStartup();

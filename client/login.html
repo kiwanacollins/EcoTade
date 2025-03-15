@@ -31,6 +31,46 @@
             // Add a custom event to notify our application
             document.dispatchEvent(new Event('googleApiFailedToLoad'));
         }
+
+        // Debug function for MongoDB connection - helps troubleshoot server connection issues
+        function debugConnection() {
+            console.log('Attempting to debug API connection...');
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn('No authentication token found in local storage');
+                return;
+            }
+            
+            // Make a test request to check the connection
+            fetch('/api/health/mongodb', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('MongoDB connection status:', data);
+            })
+            .catch(err => {
+                console.error('MongoDB connection check failed:', err);
+            });
+        }
+
+        // Add this listener to ensure token is properly saved after login
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    // The existing handler will continue to process the form
+                    // This is just adding extra debug info
+                    console.log('Login form submitted - will verify token storage');
+                    
+                    // Check token after a slight delay (after auth.js has processed)
+                    setTimeout(function() {
+                        const token = localStorage.getItem('token');
+                        console.log('Token after login attempt:', token ? 'Present' : 'Missing');
+                    }, 2000);
+                });
+            }
+        });
     </script>
     
     <!-- Add token manager script -->

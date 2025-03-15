@@ -55,11 +55,14 @@ const UserSchema = new mongoose.Schema({
       default: 0
     },
     selectedTrader: {
-      type: Object,
+      type: mongoose.Schema.Types.Mixed, // Use Mixed type to allow more flexible trader object
       default: null
     },
     transactions: [{
-      date: Date,
+      date: {
+        type: Date,
+        default: Date.now
+      },
       type: String,
       description: String,
       amount: Number,
@@ -68,7 +71,10 @@ const UserSchema = new mongoose.Schema({
     investments: [{
       name: String,
       amount: Number,
-      startDate: Date,
+      startDate: {
+        type: Date,
+        default: Date.now
+      },
       returnRate: Number,
       progress: Number
     }]
@@ -91,7 +97,6 @@ UserSchema.pre('save', async function(next) {
   }
 });
 
-// Match user entered password to hashed password in database
 // Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
