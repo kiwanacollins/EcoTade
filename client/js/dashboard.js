@@ -2721,6 +2721,81 @@ function getTraderPerformance(traderId) {
     return trader.performance.monthly;
 }
 
+// Function to populate recent transactions with endless scrolling effect
+function populateRecentTransactions() {
+    const transactions = [
+        { date: '11-03-2025', name: 'Shawna Hill', type: 'Deposit', amount: '$5,018' },
+        { date: '11-03-2025', name: 'Gilmar Chinedum', type: 'Deposit', amount: '$1,771' },
+        { date: '11-03-2025', name: 'K retok Pereira', type: 'Deposit', amount: '$1,487' },
+        { date: '11-03-2025', name: 'Jifina Phạm', type: 'Deposit', amount: '$27,735' },
+        { date: '11-03-2025', name: 'Furuta Onwuemelie', type: 'Withdrawal', amount: '$3,242' },
+        { date: '11-02-2025', name: 'Chelsea نقولا', type: 'Withdrawal', amount: '$6,850' },
+        { date: '11-02-2025', name: 'August Norris', type: 'Withdrawal', amount: '$1,473' },
+        { date: '11-02-2025', name: 'Trúc Iloabuchi', type: 'Withdrawal', amount: '$3,664' },
+        { date: '11-02-2025', name: 'Emmanuel Sankt', type: 'Withdrawal', amount: '$17,849' },
+        { date: '11-01-2025', name: 'Charli Arnoldsson', type: 'Withdrawal', amount: '$26,589' },
+        { date: '11-01-2025', name: 'Noriaki Bosanac', type: 'Withdrawal', amount: '$12,549' },
+        { date: '11-01-2025', name: 'Maria Gonzalez', type: 'Deposit', amount: '$8,320' },
+        { date: '11-01-2025', name: 'Rajiv Patel', type: 'Deposit', amount: '$5,740' },
+        { date: '10-31-2025', name: 'Yuki Tanaka', type: 'Withdrawal', amount: '$2,650' },
+        { date: '10-31-2025', name: 'Sofia Rodriguez', type: 'Deposit', amount: '$9,100' },
+        { date: '10-30-2025', name: 'Lars Andersen', type: 'Withdrawal', amount: '$4,725' },
+        { date: '10-30-2025', name: 'Aisha Mbeki', type: 'Deposit', amount: '$3,890' },
+        { date: '10-29-2025', name: 'Chen Wei', type: 'Deposit', amount: '$12,450' },
+        { date: '10-29-2025', name: 'Isabella Rossi', type: 'Withdrawal', amount: '$7,300' },
+        { date: '10-28-2025', name: 'Aleksandr Petrov', type: 'Deposit', amount: '$15,200' }
+    ];
+
+    const tbody = document.getElementById('scrolling-transactions');
+    if (!tbody) return;
+    
+    // Clear existing content
+    tbody.innerHTML = '';
+    
+    // Create twice the number of rows for smooth infinite scrolling
+    const allTransactions = [...transactions, ...transactions];
+    
+    allTransactions.forEach(transaction => {
+        const tr = document.createElement('tr');
+        
+        const amountClass = transaction.type === 'Deposit' ? 'deposit-amount' : 'withdrawal-amount';
+        
+        tr.innerHTML = `
+            <td>${transaction.date}</td>
+            <td>${transaction.name}</td>
+            <td data-type="${transaction.type}">${transaction.type}</td>
+            <td class="${amountClass}">${transaction.amount}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    // Adjust animation duration based on number of rows
+    const scrollContent = document.querySelector('.transactions-scroll-content');
+    if (scrollContent) {
+        const totalRows = allTransactions.length;
+        // Approximately 2 seconds per row for a nice pace
+        const duration = totalRows * 2;
+        scrollContent.style.animationDuration = `${duration}s`;
+    }
+}
+
+// Enhance the existing DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+    
+    // Initialize the endless scrolling transactions
+    populateRecentTransactions();
+    
+    // Add event listener to reset animation when it completes
+    const scrollContent = document.querySelector('.transactions-scroll-content');
+    if (scrollContent) {
+        scrollContent.addEventListener('animationiteration', () => {
+            // This creates a smoother loop by avoiding any jumps
+            console.log('Animation iteration completed');
+        });
+    }
+});
+
 // Function to populate recent transactions
 function populateRecentTransactions() {
     const transactions = [

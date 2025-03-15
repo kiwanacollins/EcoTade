@@ -2352,8 +2352,75 @@ body, .dashboard-main {
     background-color: #f5f7f9;
     font-weight: 600;
     color: var(--text-medium);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .transactions-table tr:hover {
     background-color: #fafbfd;
+}
+
+/* Endless Scrolling Transactions */
+.transactions-scroll-container {
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+    background: white;
+}
+
+.transactions-scroll-container:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0));
+    pointer-events: none;
+    z-index: 5;
+}
+
+.transactions-scroll-content {
+    animation: scrollTransactions 45s linear infinite;
+}
+
+.transactions-scroll-container:hover .transactions-scroll-content {
+    animation-play-state: paused;
+}
+
+@keyframes scrollTransactions {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+/* Transaction row styling */
+#scrolling-transactions tr {
+    transition: background-color 0.2s ease;
+}
+
+#scrolling-transactions tr td:nth-child(2) {
+    font-weight: 500;
+}
+
+#scrolling-transactions tr td:nth-child(3) {
+    font-weight: 500;
+}
+
+#scrolling-transactions tr td:nth-child(4) {
+    font-weight: 600;
+    text-align: right;
+}
+
+#scrolling-transactions tr td[data-type="Deposit"] {
+    color: var(--success-color);
+}
+
+#scrolling-transactions tr td[data-type="Withdrawal"] {
+    color: var(--primary-color);
 }

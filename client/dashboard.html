@@ -254,87 +254,22 @@
                     <div class="dashboard-col">
                         <div class="dashboard-card">
                             <h3>Recent Transactions</h3>
-                            <div class="transactions-list">
-                                <table class="transactions-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Sample transaction rows -->
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Shawna Hill</td>
-                                            <td>Deposit</td>
-                                            <td>$5018</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Gilmar Chinedum</td>
-                                            <td>Deposit</td>
-                                            <td>$1771</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>K retok Pereira</td>
-                                            <td>Deposit</td>
-                                            <td>$1487</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Jifina Phạm</td>
-                                            <td>Deposit</td>
-                                            <td>$27735</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Furuta Onwuemelie</td>
-                                            <td>Withdrawal</td>
-                                            <td>$3242</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Chelsea نقولا</td>
-                                            <td>Withdrawal</td>
-                                            <td>$6850</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>August Norris</td>
-                                            <td>Withdrawal</td>
-                                            <td>$1473</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Trúc Iloabuchi</td>
-                                            <td>Withdrawal</td>
-                                            <td>$3664</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Emmanuel Sankt</td>
-                                            <td>Withdrawal</td>
-                                            <td>$17849</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Charli Arnoldsson</td>
-                                            <td>Withdrawal</td>
-                                            <td>$26589</td>
-                                        </tr>
-                                        <tr>
-                                            <td>11-03-2025</td>
-                                            <td>Noriaki Bosanac</td>
-                                            <td>Withdrawal</td>
-                                            <td>$12549</td>
-                                        </tr>
-                                        <!-- Add more rows as needed -->
-                                    </tbody>
-                                </table>
+                            <div class="transactions-scroll-container">
+                                <div class="transactions-scroll-content">
+                                    <table class="transactions-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Name</th>
+                                                <th>Type</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="scrolling-transactions">
+                                            <!-- Transaction rows will be populated by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
