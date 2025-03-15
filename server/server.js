@@ -12,6 +12,7 @@ const { isJwtConfigured } = require('./scripts/check-jwt');
 try {
   // Load .env file (created by restart-pm2.sh)
   dotenv.config();
+  require('dotenv').config();
   console.log('Attempted to load environment variables from .env');
   
   // Log if we found the MongoDB URI
