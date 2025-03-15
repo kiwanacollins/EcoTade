@@ -2703,7 +2703,7 @@ async function updateActiveTraderCount(count) {
             throw new Error(result.message || 'Failed to update active trader count');
         }
         
-        console.log('Active trader count updated successfully in database');
+        console.log('Active trader count updated successfully in database.');
         return true;
     } catch (error) {
         console.error('Error updating active traders count in database:', error);
