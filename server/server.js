@@ -235,6 +235,7 @@ try {
     next();
   }, require('./routes/auth.routes'));
   
+  // User routes with profile endpoint
   app.use('/api/users', (req, res, next) => {
     if (!dbConnected) {
       return res.status(503).json({ 
@@ -245,6 +246,19 @@ try {
     }
     next();
   }, require('./routes/user.routes'));
+  
+  // Added route mapping to ensure /api/user/profile works (singular "user")
+  app.use('/api/user', (req, res, next) => {
+    if (!dbConnected) {
+      return res.status(503).json({ 
+        message: 'Database connection not available',
+        status: 'maintenance',
+        retry: true
+      });
+    }
+    // Map to the same user.routes.js file
+    require('./routes/user.routes')(req, res, next);
+  });
   
   // Add financial routes
   app.use('/api/financial', (req, res, next) => {

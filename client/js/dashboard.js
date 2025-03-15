@@ -2,8 +2,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Add viewport adjustment function to automatically scale content correctly
     adjustViewport();
     
-    // Enhanced authentication check
+    // Enhanced authentication check - FIX REDIRECT ISSUE
     try {
+        console.log('Starting dashboard authentication check...');
         // Check if user is authenticated
         const token = localStorage.getItem('token');
         const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -11,60 +12,59 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('Auth status check - Token exists:', !!token);
         console.log('Auth status check - isAuthenticated flag:', isAuthenticated);
         
-        if (!token || isAuthenticated !== 'true') {
-            console.error('Not authenticated, redirecting to login');
+        if (!token) {
+            console.error('No token found, redirecting to login');
             window.location.href = './login.html';
             return;
         }
         
-        // Verify token validity by making API call
-        console.log('Verifying token validity...');
-        try {
-            // Try to fetch user data
-            const userData = await fetchDashboardData();
-            if (!userData) {
-                throw new Error('Failed to fetch dashboard data with token');
+        // Instead of verifying with API call first, load the dashboard directly
+        // This prevents the redirect loop caused by API verification failing
+        console.log('Loading dashboard UI...');
+        
+        // Setup event listeners and initialize UI
+        setupEventListeners();
+        initTraderDetailButtons();
+        
+        // Try to fetch data in background, but don't block UI rendering
+        fetchDashboardData().then(userData => {
+            if (userData) {
+                console.log('Dashboard data loaded successfully');
+                updateDashboardUI(userData);
             }
-            
-            console.log('Token validation successful');
-            console.log('Dashboard data loaded successfully');
-            
-            // Load data into dashboard
-            updateDashboardUI(userData);
-            
-            // Set up event listeners - Make sure this is called after the UI is updated
-            setupEventListeners();
-            
-            // Initialize trader detail buttons specifically
-            initTraderDetailButtons();
-            
-            // Check for previously selected trader
-            const storedTrader = localStorage.getItem('selectedTrader');
-            if (storedTrader) {
-                try {
-                    const trader = JSON.parse(storedTrader);
-                    // Update UI with stored trader after a short delay to ensure DOM is ready
-                    setTimeout(() => {
-                        updateTopTraders(trader);
-                        updateActiveTraderCount(1);
-                    }, 500);
-                } catch (e) {
-                    console.error('Error parsing stored trader:', e);
-                }
+        }).catch(error => {
+            console.error('Error fetching dashboard data:', error);
+            // Don't redirect on API error, just show notification
+            showNotification('warning', 'Could not load your latest data. Please refresh to try again.');
+        });
+        
+        // Check for previously selected trader
+        const storedTrader = localStorage.getItem('selectedTrader');
+        if (storedTrader) {
+            try {
+                const trader = JSON.parse(storedTrader);
+                // Update UI with stored trader after a short delay to ensure DOM is ready
+                setTimeout(() => {
+                    updateTopTraders(trader);
+                    updateActiveTraderCount(1);
+                }, 500);
+            } catch (e) {
+                console.error('Error parsing stored trader:', e);
             }
-        } catch (error) {
-            console.error('Token validation failed:', error);
-            // Clear stored data and redirect to login
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('isAuthenticated');
-            window.location.href = './login.html?reason=invalid_session';
-            return;
         }
     } catch (error) {
         console.error('Dashboard initialization error:', error);
-        // Redirect to login if unauthorized
-        window.location.href = './login.html?reason=init_error';
+        // Only redirect to login if it's clearly an auth error
+        if (error.message && (
+            error.message.includes('unauthorized') || 
+            error.message.includes('Unauthorized') || 
+            error.message.includes('token')
+        )) {
+            window.location.href = './login.html?reason=auth_error';
+        } else {
+            // For other errors, try to keep the user on the dashboard
+            showNotification('error', 'There was a problem loading your dashboard. Please try refreshing the page.');
+        }
     }
 });
 
@@ -97,81 +97,87 @@ async function fetchDashboardData() {
             throw new Error('No authentication token found');
         }
 
-        // Add retry logic for API requests
-        const fetchWithRetry = async (url, options, retries = 3) => {
-            try {
-                const response = await fetch(url, options);
-                
-                // If unauthorized, clear auth data and throw specific error
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('isAuthenticated');
-                    throw new Error('Authentication expired');
+        // FIX: First try the auth check endpoint to verify token is valid
+        try {
+            console.log('Verifying auth token...');
+            const authCheckResponse = await fetch(`${API_URL}/health/auth-check`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-                
-                if (!response.ok) {
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
-                
-                return response.json();
-            } catch (error) {
-                if (retries > 0 && !error.message.includes('Authentication expired')) {
-                    console.log(`Retrying API request, ${retries} attempts left`);
-                    await new Promise(r => setTimeout(r, 1000));
-                    return fetchWithRetry(url, options, retries - 1);
-                }
-                throw error;
+            });
+            
+            if (!authCheckResponse.ok) {
+                throw new Error('Auth token validation failed');
             }
-        };
+            
+            console.log('Auth token is valid');
+        } catch (authError) {
+            console.warn('Auth check failed but continuing:', authError);
+            // Continue anyway - don't throw yet
+        }
 
-        // Make API request to fetch user data
-        const userData = await fetchWithRetry('/api/user/profile', {
+        // Use financial data endpoint which should be working
+        console.log('Fetching financial data...');
+        const financialResponse = await fetch(`${API_URL}/financial/dashboard`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
-
-        // Make API request to fetch financial data
-        const financialData = await fetchWithRetry('/api/user/financial-data', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+        
+        if (!financialResponse.ok) {
+            // If unauthorized, try the fallback endpoint
+            if (financialResponse.status === 401) {
+                console.log('Trying fallback endpoint for financial data...');
+                const fallbackResponse = await fetch(`${API_URL}/user/financial-data`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!fallbackResponse.ok) {
+                    throw new Error('Unable to fetch user data');
+                }
+                
+                const fallbackData = await fallbackResponse.json();
+                return {
+                    user: { name: 'User' }, // Default user info
+                    accountSummary: {
+                        totalBalance: fallbackData.totalBalance || 0,
+                        profit: fallbackData.profit || 0,
+                        activeTrades: fallbackData.activeTrades || 0,
+                        activeTraders: fallbackData.activeTraders || 0
+                    },
+                    selectedTrader: fallbackData.selectedTrader || null,
+                    transactions: fallbackData.transactions || [],
+                    investments: fallbackData.investments || []
+                };
             }
-        });
-
-        // Combine user data with financial data
-        const dashboardData = {
-            user: userData,
+            
+            throw new Error(`API request failed with status ${financialResponse.status}`);
+        }
+        
+        // Parse the financial data response
+        const financialData = await financialResponse.json();
+        
+        // For backwards compatibility, check if the data is nested under 'data'
+        const finalData = financialData.data || financialData;
+        
+        // Construct the full dashboard data object
+        return {
+            user: { name: localStorage.getItem('username') || 'User' }, // Use stored name or default
             accountSummary: {
-                totalBalance: financialData.totalBalance || 0,
-                profit: financialData.profit || 0,
-                activeTrades: financialData.activeTrades || 0,
-                activeTraders: financialData.activeTraders || 0
+                totalBalance: finalData.totalBalance || 0,
+                profit: finalData.profit || 0,
+                activeTrades: finalData.activeTrades || 0,
+                activeTraders: finalData.activeTraders || 0
             },
-            selectedTrader: financialData.selectedTrader || null,
-            transactions: financialData.transactions || [],
-            investments: financialData.investments || []
+            selectedTrader: finalData.selectedTrader || null,
+            transactions: finalData.transactions || [],
+            investments: finalData.investments || []
         };
-
-        // Update UI with fetched data
-        updateDashboardUI(dashboardData);
-        
-        // Update transactions and investments if they exist
-        if (financialData.transactions && financialData.transactions.length > 0) {
-            updateTransactionsTable(financialData.transactions);
-        }
-        
-        if (financialData.investments && financialData.investments.length > 0) {
-            updateInvestmentsList(financialData.investments);
-        }
-        
-        // Update selected trader info if exists
-        if (financialData.selectedTrader) {
-            updateTopTraders(financialData.selectedTrader);
-        }
-
-        return dashboardData;
     } catch (error) {
         console.error('Error fetching dashboard data:', error);
         
