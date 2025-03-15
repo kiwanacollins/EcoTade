@@ -77,22 +77,75 @@ function adjustViewport() {
 // Fetch dashboard data from API
 async function fetchDashboardData() {
     try {
-        console.log('Making API request to /auth/dashboard');
-        const response = await auth.getDashboard();
-        console.log('Dashboard API response:', response);
-        return response.data;
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        // Make API request to fetch user data
+        const response = await fetch('/api/user/profile', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch user profile data');
+        }
+
+        const userData = await response.json();
+
+        // Make API request to fetch financial data
+        const financialResponse = await fetch('/api/user/financial-data', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!financialResponse.ok) {
+            throw new Error('Failed to fetch financial data');
+        }
+
+        const financialData = await financialResponse.json();
+
+        // Combine user data with financial data
+        const dashboardData = {
+            user: userData,
+            accountSummary: {
+                totalBalance: financialData.totalBalance || 0,
+                profit: financialData.profit || 0,
+                activeTrades: financialData.activeTrades || 0,
+                activeTraders: financialData.activeTraders || 0
+            },
+            selectedTrader: financialData.selectedTrader || null,
+            transactions: financialData.transactions || [],
+            investments: financialData.investments || []
+        };
+
+        // Update UI with fetched data
+        updateDashboardUI(dashboardData);
+        
+        // Update transactions and investments if they exist
+        if (financialData.transactions && financialData.transactions.length > 0) {
+            updateTransactionsTable(financialData.transactions);
+        }
+        
+        if (financialData.investments && financialData.investments.length > 0) {
+            updateInvestmentsList(financialData.investments);
+        }
+        
+        // Update selected trader info if exists
+        if (financialData.selectedTrader) {
+            updateTopTraders(financialData.selectedTrader);
+        }
+
+        return dashboardData;
     } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Check if token might be invalid/expired
-        if (error.message && (
-            error.message.includes('unauthorized') || 
-            error.message.includes('not authorized') ||
-            error.message.includes('invalid token')
-        )) {
-            // Clear invalid token
-            localStorage.removeItem('token');
-        }
-        return null;
+        showNotification('error', 'Failed to load your dashboard data. Please refresh or try again later.');
+        throw error;
     }
 }
 
@@ -1800,11 +1853,522 @@ function filterTransactions() {
 }
 
 // Initiate deposit process
-function initiateDeposit(amount) {
-    console.log(`Initiating deposit of $${amount}`);
-    // In a real application, this would redirect to a payment gateway
-    // For demo purposes, show a confirmation
-    alert(`This would redirect to payment gateway for $${amount} deposit`);
+async function initiateDeposit(amount) {
+    if (!amount || isNaN(amount) || amount <= 0) {
+        showNotification('error', 'Please enter a valid deposit amount');
+        return;
+    }
+    
+    try {
+        showNotification('info', `Processing your deposit of ${formatCurrency(amount)}...`);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Get current balance from DOM
+        const balanceElement = document.querySelector('.balance-amount');
+        const currentBalance = parseFloat(balanceElement.textContent.replace('$', '').replace(',', '')) || 0;
+        
+        // Calculate new balance
+        const newBalance = currentBalance + parseFloat(amount);
+        
+        // Create transaction record
+        const transaction = {
+            date: new Date(),
+            type: 'Deposit',
+            description: 'Account deposit',
+            amount: parseFloat(amount),
+            status: 'Completed'
+        };
+        
+        // Update UI
+        balanceElement.textContent = formatCurrency(newBalance);
+        
+        // Save updated data to server
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        await fetch('/api/user/financial-data', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                totalBalance: newBalance,
+                transactions: [transaction] // Note: In a real implementation, you'd fetch current transactions first and append
+            })
+        });
+        
+        // Update transactions table with new transaction
+        const transactions = document.querySelector('#transactions-history tbody');
+        if (transactions) {
+            const existingTransactions = Array.from(transactions.querySelectorAll('tr'))
+                .filter(tr => !tr.querySelector('.no-data-message'));
+                
+            if (existingTransactions.length > 0) {
+                // If there are existing transactions, add the new one
+                updateTransactionsTable([transaction]);
+            } else {
+                // If no transactions exist, replace with the new one
+                transactions.innerHTML = '';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>${transaction.type}</td>
+                    <td>${transaction.description}</td>
+                    <td>${formatCurrency(transaction.amount)}</td>
+                    <td><span class="status-badge ${transaction.status.toLowerCase()}">${transaction.status}</span></td>
+                `;
+                transactions.appendChild(tr);
+            }
+        }
+        
+        showNotification('success', `Successfully deposited ${formatCurrency(amount)}`);
+        
+        // Close deposit modal
+        const depositModal = document.getElementById('deposit-modal');
+        if (depositModal) {
+            depositModal.classList.remove('active');
+            setTimeout(() => {
+                depositModal.style.display = 'none';
+            }, 300);
+        }
+    } catch (error) {
+        console.error('Error processing deposit:', error);
+        showNotification('error', 'Failed to process your deposit. Please try again.');
+    }
+}
+
+// Remove the check for stored trader in DOMContentLoaded as we now fetch from server
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup event listeners and initialize dashboard
+    try {
+        adjustViewport();
+        setupEventListeners();
+        fetchDashboardData();
+        
+        // Other initializations
+        const tradingPerformanceChart = document.getElementById('tradingPerformanceChart');
+        if (tradingPerformanceChart) {
+            initializeTradingPerformanceChart(mockPerformanceData());
+        }
+        
+        const assetAllocationChart = document.getElementById('assetAllocationChart');
+        if (assetAllocationChart) {
+            initializeAssetAllocationChart(mockAllocationData());
+        }
+        
+        const investmentPerformanceChart = document.getElementById('investmentPerformanceChart');
+        if (investmentPerformanceChart) {
+            initializeInvestmentPerformanceChart(mockInvestmentData());
+        }
+        
+        initTraderDetailButtons();
+        
+    } catch (error) {
+        console.error('Dashboard initialization error:', error);
+        // Redirect to login if unauthorized
+        window.location.href = './login.html';
+    }
+});
+
+// Update active traders count in the stats card and save to server
+async function updateActiveTraderCount(count) {
+    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    if (activeTradersStat) {
+        activeTradersStat.textContent = count.toString();
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        await fetch('/api/user/financial-data', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                activeTraders: count
+            })
+        });
+    } catch (error) {
+        console.error('Error updating active traders count:', error);
+    }
+}
+
+// Handle trader selection and save to server
+function selectTrader(traderId) {
+    console.log(`Selected trader with ID: ${traderId}`);
+    
+    // Find the trader card based on the trader ID
+    const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
+    const traderName = traderCard.querySelector('h4').textContent;
+    const traderSpec = traderCard.querySelector('.trader-spec').textContent;
+    const traderImg = traderCard.querySelector('.trader-avatar img').src;
+    
+    // Show confirmation modal or notification
+    showNotification('success', `You have selected ${traderName} as your trader. They will now manage your investments.`);
+    
+    // Prepare selected trader data
+    const selectedTrader = {
+        id: traderId,
+        name: traderName,
+        spec: traderSpec,
+        img: traderImg,
+        performance: getTraderPerformance(traderId)
+    };
+    
+    // Save to server instead of local storage
+    saveSelectedTrader(selectedTrader);
+    
+    // After a short delay, navigate back to overview
+    setTimeout(() => {
+        switchPanel('overview');
+        
+        // Update navigation item active state
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-panel') === 'overview') {
+                item.classList.add('active');
+            }
+        });
+        
+        // Update the top traders section in the overview
+        updateTopTraders(selectedTrader);
+        
+        // Update active traders count
+        updateActiveTraderCount(1);
+    }, 1500);
+}
+
+// Save selected trader to server
+async function saveSelectedTrader(trader) {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        await fetch('/api/user/financial-data', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                selectedTrader: trader
+            })
+        });
+    } catch (error) {
+        console.error('Error saving selected trader:', error);
+        showNotification('error', 'Failed to save your trader selection. Please try again.');
+    }
+}
+
+// Initialize all charts
+function initializeCharts(data) {
+    // Trading performance chart (line chart)
+    const tradingCtx = document.getElementById('tradingPerformanceChart');
+    if (tradingCtx) {
+        const performanceData = data.tradingPerformance || mockPerformanceData();
+        
+        new Chart(tradingCtx, {
+            type: 'line',
+            data: {
+                labels: performanceData.labels,
+                datasets: [{
+                    label: 'Account Balance',
+                    data: performanceData.values,
+                    borderColor: '#08c',
+                    backgroundColor: 'rgba(8, 136, 204, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Asset allocation chart (pie chart)
+    const allocationCtx = document.getElementById('assetAllocationChart');
+    if (allocationCtx) {
+        const allocationData = data.assetAllocation || mockAllocationData();
+        
+        new Chart(allocationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: allocationData.labels,
+                datasets: [{
+                    data: allocationData.values,
+                    backgroundColor: [
+                        '#08c', '#f0cd6d', '#4CD964', '#ff9500', '#ff3b30'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Investment performance chart
+    const investmentCtx = document.getElementById('investmentPerformanceChart');
+    if (investmentCtx) {
+        const investmentData = data.investmentPerformance || mockInvestmentData();
+        
+        new Chart(investmentCtx, {
+            type: 'bar',
+            data: {
+                labels: investmentData.labels,
+                datasets: [{
+                    label: 'Return Rate',
+                    data: investmentData.values,
+                    backgroundColor: investmentData.values.map(
+                        value => value >= 0 ? 'rgba(76, 217, 100, 0.7)' : 'rgba(255, 59, 48, 0.7)'
+                    )
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Update the activity feed
+function updateActivityFeed(activities) {
+    const timeline = document.getElementById('activity-timeline');
+    if (!timeline) return;
+    
+    if (!activities || activities.length === 0) {
+        timeline.innerHTML = '<li class="no-activity">No recent activity to display</li>';
+        return;
+    }
+    
+    timeline.innerHTML = '';
+    
+    activities.forEach(activity => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span class="activity-time">${formatDateTime(activity.timestamp)}</span>
+            <div class="activity-content">
+                <p>${activity.message}</p>
+            </div>
+        `;
+        timeline.appendChild(li);
+    });
+}
+
+// Update transactions table
+function updateTransactionsTable(transactions) {
+    const tbody = document.querySelector('#transactions-history tbody');
+    if (!tbody) return;
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-data-message">No transactions to display</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    transactions.forEach(transaction => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${formatDate(transaction.date)}</td>
+            <td>${transaction.type}</td>
+            <td>${transaction.description}</td>
+            <td>${formatCurrency(transaction.amount)}</td>
+            <td><span class="status-badge ${transaction.status.toLowerCase()}">${transaction.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Update investments list
+function updateInvestmentsList(investments) {
+    const list = document.querySelector('.investments-list');
+    if (!list) return;
+    
+    if (!investments || investments.length === 0) {
+        list.innerHTML = '<p class="no-data-message">No active investments yet</p>';
+        return;
+    }
+    
+    list.innerHTML = '';
+    
+    investments.forEach(investment => {
+        const item = document.createElement('div');
+        item.className = 'investment-item';
+        item.innerHTML = `
+            <div class="investment-header">
+                <h4>${investment.name}</h4>
+                <span class="investment-amount">${formatCurrency(investment.amount)}</span>
+            </div>
+            <div class="investment-details">
+                <span>Started: ${formatDate(investment.startDate)}</span>
+                <span>Return: ${investment.returnRate}%</span>
+            </div>
+            <div class="investment-progress">
+                <div class="progress-bar" style="width: ${investment.progress}%"></div>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+// Filter transactions based on selection
+function filterTransactions() {
+    const type = document.getElementById('transaction-type').value;
+    const date = document.getElementById('transaction-date').value;
+    
+    console.log(`Filtering transactions: type=${type}, date=${date}`);
+    // Implementation would fetch filtered data from API or filter client-side
+    
+    // For now just show a message
+    const tbody = document.querySelector('#transactions-history tbody');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-data-message">Filtering not implemented in this demo</td></tr>';
+    }
+}
+
+// Initiate deposit process
+async function initiateDeposit(amount) {
+    if (!amount || isNaN(amount) || amount <= 0) {
+        showNotification('error', 'Please enter a valid deposit amount');
+        return;
+    }
+    
+    try {
+        showNotification('info', `Processing your deposit of ${formatCurrency(amount)}...`);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Get current balance from DOM
+        const balanceElement = document.querySelector('.balance-amount');
+        const currentBalance = parseFloat(balanceElement.textContent.replace('$', '').replace(',', '')) || 0;
+        
+        // Calculate new balance
+        const newBalance = currentBalance + parseFloat(amount);
+        
+        // Create transaction record
+        const transaction = {
+            date: new Date(),
+            type: 'Deposit',
+            description: 'Account deposit',
+            amount: parseFloat(amount),
+            status: 'Completed'
+        };
+        
+        // Update UI
+        balanceElement.textContent = formatCurrency(newBalance);
+        
+        // Save updated data to server
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        await fetch('/api/user/financial-data', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                totalBalance: newBalance,
+                transactions: [transaction] // Note: In a real implementation, you'd fetch current transactions first and append
+            })
+        });
+        
+        // Update transactions table with new transaction
+        const transactions = document.querySelector('#transactions-history tbody');
+        if (transactions) {
+            const existingTransactions = Array.from(transactions.querySelectorAll('tr'))
+                .filter(tr => !tr.querySelector('.no-data-message'));
+                
+            if (existingTransactions.length > 0) {
+                // If there are existing transactions, add the new one
+                updateTransactionsTable([transaction]);
+            } else {
+                // If no transactions exist, replace with the new one
+                transactions.innerHTML = '';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${formatDate(transaction.date)}</td>
+                    <td>${transaction.type}</td>
+                    <td>${transaction.description}</td>
+                    <td>${formatCurrency(transaction.amount)}</td>
+                    <td><span class="status-badge ${transaction.status.toLowerCase()}">${transaction.status}</span></td>
+                `;
+                transactions.appendChild(tr);
+            }
+        }
+        
+        showNotification('success', `Successfully deposited ${formatCurrency(amount)}`);
+        
+        // Close deposit modal
+        const depositModal = document.getElementById('deposit-modal');
+        if (depositModal) {
+            depositModal.classList.remove('active');
+            setTimeout(() => {
+                depositModal.style.display = 'none';
+            }, 300);
+        }
+    } catch (error) {
+        console.error('Error processing deposit:', error);
+        showNotification('error', 'Failed to process your deposit. Please try again.');
+    }
 }
 
 // Helper function to format currency
