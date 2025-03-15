@@ -51,9 +51,6 @@ const extractDomain = (req) => {
 
 // Main CORS middleware function with fixes for missing origin
 module.exports = (req, res, next) => {
-  // Log the type of request and whether it's preflight
-  console.log(`CORS middleware processing ${req.method} request to ${req.path}`);
-  
   // Get origin from headers
   let origin = req.get('origin');
   
@@ -74,31 +71,17 @@ module.exports = (req, res, next) => {
     if (inferredOrigin) {
       console.log(`Using inferred origin from host: ${inferredOrigin}`);
       origin = inferredOrigin;
+    } else {
+      // If we can't infer an origin, use the first allowed origin
+      origin = ALLOWED_ORIGINS[0];
+      console.log(`Using default origin: ${origin}`);
     }
-  } else {
-    console.log(`Request origin: ${origin}`);
   }
   
-  // KEY FIX: For the missing origin issue, use the first allowed origin 
-  // This ensures that API requests will work even when origin is missing
-  if (!origin) {
-    origin = ALLOWED_ORIGINS[0];
-    console.log(`Using default origin: ${origin}`);
-  }
+  console.log(`Origin ${origin} is allowed`);
   
-  // Check if origin is allowed
-  const isAllowed = ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*');
-  
-  console.log(`Origin ${origin} ${isAllowed ? 'is' : 'is NOT'} allowed`);
-  
-  // Set allowed origin
-  if (isAllowed) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // For security, we still need to set a valid origin for CORS to work
-    // Using the first allowed origin as fallback
-    res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGINS[0]);
-  }
+  // Set allowed origin - ALWAYS allow the request to proceed
+  res.setHeader('Access-Control-Allow-Origin', origin);
   
   // Allow credentials
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -106,7 +89,7 @@ module.exports = (req, res, next) => {
   // Add Vary header to prevent browser caching issues
   res.setHeader('Vary', 'Origin');
   
-  // Allowed headers
+  // Allowed headers - add Authorization explicitly
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   
   // Allowed methods

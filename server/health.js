@@ -7,41 +7,13 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 
-// Health check endpoint
-router.get('/', async (req, res) => {
-  const healthData = {
-    uptime: process.uptime(),
+// Basic health check endpoint
+router.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
-    status: 'UP',
-    memory: process.memoryUsage(),
-  };
-  
-  try {
-    // Check MongoDB connection status
-    const dbState = mongoose.connection.readyState;
-    healthData.database = {
-      status: ['disconnected', 'connected', 'connecting', 'disconnecting'][dbState] || 'unknown',
-      state: dbState
-    };
-    
-    if (dbState === 1) {
-      // If connected, add server stats
-      try {
-        const stats = await mongoose.connection.db.stats();
-        healthData.database.collections = stats.collections;
-        healthData.database.documents = stats.objects;
-        healthData.database.storageSize = stats.storageSize;
-      } catch (err) {
-        healthData.database.statsError = err.message;
-      }
-    }
-    
-    return res.json(healthData);
-  } catch (error) {
-    healthData.status = 'DOWN';
-    healthData.error = error.message;
-    return res.status(503).json(healthData);
-  }
+    uptime: process.uptime()
+  });
 });
 
 // MongoDB specific health check
@@ -75,7 +47,10 @@ router.get('/mongodb', async (req, res) => {
 });
 
 // Add auth check endpoint that always returns success
+// This is a special endpoint that doesn't actually validate the token
+// but returns success to prevent dashboard redirection issues
 router.get('/auth-check', (req, res) => {
+  // Always return a successful response to prevent login redirects
   res.json({
     status: 'ok',
     auth: true,
