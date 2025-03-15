@@ -2720,3 +2720,38 @@ function getTraderPerformance(traderId) {
     // Return monthly performance as it's the most prominently displayed metric
     return trader.performance.monthly;
 }
+
+// Function to populate recent transactions
+function populateRecentTransactions() {
+    const transactions = [
+        { date: '11-03-2025', name: 'Shawna Hill', type: 'Deposit', amount: '$5018' },
+        { date: '11-03-2025', name: 'Gilmar Chinedum', type: 'Deposit', amount: '$1771' },
+        { date: '11-03-2025', name: 'K retok Pereira', type: 'Deposit', amount: '$1487' },
+        { date: '11-03-2025', name: 'Jifina Phạm', type: 'Deposit', amount: '$27735' },
+        { date: '11-03-2025', name: 'Furuta Onwuemelie', type: 'Withdrawal', amount: '$3242' },
+        { date: '11-03-2025', name: 'Chelsea نقولا', type: 'Withdrawal', amount: '$6850' },
+        { date: '11-03-2025', name: 'August Norris', type: 'Withdrawal', amount: '$1473' },
+        { date: '11-03-2025', name: 'Trúc Iloabuchi', type: 'Withdrawal', amount: '$3664' },
+        { date: '11-03-2025', name: 'Emmanuel Sankt', type: 'Withdrawal', amount: '$17849' },
+        { date: '11-03-2025', name: 'Charli Arnoldsson', type: 'Withdrawal', amount: '$26589' },
+        { date: '11-03-2025', name: 'Noriaki Bosanac', type: 'Withdrawal', amount: '$12549' },
+        // Add more transactions as needed
+    ];
+
+    const tbody = document.querySelector('.transactions-table tbody');
+    if (tbody) {
+        transactions.forEach(transaction => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${transaction.date}</td>
+                <td>${transaction.name}</td>
+                <td>${transaction.type}</td>
+                <td>${transaction.amount}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+}
+
+// Call the function to populate recent transactions
+document.addEventListener('DOMContentLoaded', populateRecentTransactions);

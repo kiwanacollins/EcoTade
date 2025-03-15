@@ -2333,3 +2333,27 @@ body, .dashboard-main {
     border-color: var(--primary-color);
     transform: translateY(-2px);
 }
+
+/* Recent Transactions Section */
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.transactions-table th,
+.transactions-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.transactions-table th {
+    background-color: #f5f7f9;
+    font-weight: 600;
+    color: var(--text-medium);
+}
+
+.transactions-table tr:hover {
+    background-color: #fafbfd;
+}
