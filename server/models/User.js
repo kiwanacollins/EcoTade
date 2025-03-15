@@ -96,5 +96,5 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Export the schema only, not the model
+// Export schema only, not model
 module.exports = UserSchema;

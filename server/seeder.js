@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const User = require('./models/user.model');
+const { User } = require('./models'); // Update to use centralized models
 
 // Load env vars
 dotenv.config();

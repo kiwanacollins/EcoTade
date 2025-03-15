@@ -1,4 +1,4 @@
-const User = require('../models/user.model');
+const { User } = require('../models'); // Update to use centralized models
 const { OAuth2Client } = require('google-auth-library');
 
 // Create a new OAuth2 client with error handling for missing client ID

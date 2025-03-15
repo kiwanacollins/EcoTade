@@ -4,14 +4,23 @@
  */
 
 const mongoose = require('mongoose');
-
-// Import schemas
 const UserSchema = require('./User');
 
-// Create models only if they don't exist
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+// Function to get or create model to prevent duplicate registration
+const getModel = (name, schema) => {
+  try {
+    // Try to get existing model first
+    return mongoose.model(name);
+  } catch (e) {
+    // If model doesn't exist, create it
+    return mongoose.model(name, schema);
+  }
+};
+
+// Register models
+const User = getModel('User', UserSchema);
 
 // Export models
 module.exports = {
-    User
+  User
 };
