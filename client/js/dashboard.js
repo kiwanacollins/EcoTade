@@ -2,54 +2,69 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Add viewport adjustment function to automatically scale content correctly
     adjustViewport();
     
-    // Check if user is authenticated
+    // Enhanced authentication check
     try {
-        // Check if token exists in localStorage
+        // Check if user is authenticated
         const token = localStorage.getItem('token');
-        if (!token) {
-            console.error('No authentication token found');
+        const isAuthenticated = localStorage.getItem('isAuthenticated');
+        
+        console.log('Auth status check - Token exists:', !!token);
+        console.log('Auth status check - isAuthenticated flag:', isAuthenticated);
+        
+        if (!token || isAuthenticated !== 'true') {
+            console.error('Not authenticated, redirecting to login');
             window.location.href = './login.html';
             return;
         }
         
-        // Try to fetch user data
-        console.log('Fetching dashboard data...');
-        const userData = await fetchDashboardData();
-        if (!userData) {
-            console.error('Failed to fetch dashboard data');
-            window.location.href = './login.html';
-            return;
-        }
-        
-        console.log('Dashboard data loaded successfully');
-        // Load data into dashboard
-        updateDashboardUI(userData);
-        
-        // Set up event listeners - Make sure this is called after the UI is updated
-        setupEventListeners();
-        
-        // Initialize trader detail buttons specifically
-        initTraderDetailButtons();
-        
-        // Check for previously selected trader
-        const storedTrader = localStorage.getItem('selectedTrader');
-        if (storedTrader) {
-            try {
-                const trader = JSON.parse(storedTrader);
-                // Update UI with stored trader after a short delay to ensure DOM is ready
-                setTimeout(() => {
-                    updateTopTraders(trader);
-                    updateActiveTraderCount(1);
-                }, 500);
-            } catch (e) {
-                console.error('Error parsing stored trader:', e);
+        // Verify token validity by making API call
+        console.log('Verifying token validity...');
+        try {
+            // Try to fetch user data
+            const userData = await fetchDashboardData();
+            if (!userData) {
+                throw new Error('Failed to fetch dashboard data with token');
             }
+            
+            console.log('Token validation successful');
+            console.log('Dashboard data loaded successfully');
+            
+            // Load data into dashboard
+            updateDashboardUI(userData);
+            
+            // Set up event listeners - Make sure this is called after the UI is updated
+            setupEventListeners();
+            
+            // Initialize trader detail buttons specifically
+            initTraderDetailButtons();
+            
+            // Check for previously selected trader
+            const storedTrader = localStorage.getItem('selectedTrader');
+            if (storedTrader) {
+                try {
+                    const trader = JSON.parse(storedTrader);
+                    // Update UI with stored trader after a short delay to ensure DOM is ready
+                    setTimeout(() => {
+                        updateTopTraders(trader);
+                        updateActiveTraderCount(1);
+                    }, 500);
+                } catch (e) {
+                    console.error('Error parsing stored trader:', e);
+                }
+            }
+        } catch (error) {
+            console.error('Token validation failed:', error);
+            // Clear stored data and redirect to login
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            window.location.href = './login.html?reason=invalid_session';
+            return;
         }
-        
     } catch (error) {
         console.error('Dashboard initialization error:', error);
         // Redirect to login if unauthorized
-        window.location.href = './login.html';
+        window.location.href = './login.html?reason=init_error';
     }
 });
 
@@ -74,7 +89,7 @@ function adjustViewport() {
     }
 }
 
-// Fetch dashboard data from API
+// Enhanced fetchDashboardData function to properly handle auth errors
 async function fetchDashboardData() {
     try {
         const token = localStorage.getItem('token');
@@ -82,33 +97,48 @@ async function fetchDashboardData() {
             throw new Error('No authentication token found');
         }
 
+        // Add retry logic for API requests
+        const fetchWithRetry = async (url, options, retries = 3) => {
+            try {
+                const response = await fetch(url, options);
+                
+                // If unauthorized, clear auth data and throw specific error
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('isAuthenticated');
+                    throw new Error('Authentication expired');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                
+                return response.json();
+            } catch (error) {
+                if (retries > 0 && !error.message.includes('Authentication expired')) {
+                    console.log(`Retrying API request, ${retries} attempts left`);
+                    await new Promise(r => setTimeout(r, 1000));
+                    return fetchWithRetry(url, options, retries - 1);
+                }
+                throw error;
+            }
+        };
+
         // Make API request to fetch user data
-        const response = await fetch('/api/user/profile', {
+        const userData = await fetchWithRetry('/api/user/profile', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch user profile data');
-        }
-
-        const userData = await response.json();
 
         // Make API request to fetch financial data
-        const financialResponse = await fetch('/api/user/financial-data', {
+        const financialData = await fetchWithRetry('/api/user/financial-data', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
-
-        if (!financialResponse.ok) {
-            throw new Error('Failed to fetch financial data');
-        }
-
-        const financialData = await financialResponse.json();
 
         // Combine user data with financial data
         const dashboardData = {
@@ -144,7 +174,12 @@ async function fetchDashboardData() {
         return dashboardData;
     } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        showNotification('error', 'Failed to load your dashboard data. Please refresh or try again later.');
+        
+        // Show notification only if not an auth error (which will redirect)
+        if (!error.message.includes('Authentication expired')) {
+            showNotification('error', 'Failed to load your dashboard data. Please refresh or try again later.');
+        }
+        
         throw error;
     }
 }

@@ -74,4 +74,13 @@ router.get('/mongodb', async (req, res) => {
   }
 });
 
+// Add auth check endpoint that always returns success
+router.get('/auth-check', (req, res) => {
+  res.json({
+    status: 'ok',
+    auth: true,
+    timestamp: new Date().toISOString()
+  });
+});
+
 module.exports = router;

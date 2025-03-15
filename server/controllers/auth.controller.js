@@ -263,12 +263,12 @@ const sendTokenResponse = (user, statusCode, res) => {
   try {
     // Create token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRE
+      expiresIn: process.env.JWT_EXPIRE || '30d'
     });
 
     const options = {
       expires: new Date(
-        Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+        Date.now() + (process.env.JWT_COOKIE_EXPIRE || 30) * 24 * 60 * 60 * 1000
       ),
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -276,6 +276,10 @@ const sendTokenResponse = (user, statusCode, res) => {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
     };
 
+    // Log the token being set for debugging
+    console.log(`Generating auth token for user: ${user._id}`);
+    
+    // Enhanced response with more details
     res
       .status(statusCode)
       .cookie('token', token, options)
@@ -284,10 +288,11 @@ const sendTokenResponse = (user, statusCode, res) => {
         token,
         user: {
           id: user._id,
-          name: user.name,
+          name: user.name || user.username,
           email: user.email,
           role: user.role
-        }
+        },
+        expiresIn: process.env.JWT_EXPIRE || '30d'
       });
   } catch (error) {
     console.error('Token generation error:', error);

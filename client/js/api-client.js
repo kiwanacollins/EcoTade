@@ -251,7 +251,7 @@ function setupCSPErrorHandling() {
 // Call setup function immediately
 setupCSPErrorHandling();
 
-// Auth functions
+// Auth functions with enhanced error handling
 const auth = {
   register: async (userData) => {
     console.log('Register API call with base URL:', baseUrl);
@@ -261,7 +261,28 @@ const auth = {
   
   login: async (credentials) => {
     console.log('Login API call with base URL:', baseUrl);
-    return await apiRequest('/auth/login', 'POST', credentials);
+    try {
+      const result = await apiRequest('/auth/login', 'POST', credentials);
+      
+      // Validate the response structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid response format');
+      }
+      
+      // Check if token is present
+      if (!result.token) {
+        console.error('Login response missing token:', result);
+        throw new Error('Server response missing authentication token');
+      }
+      
+      console.log('Login successful, token received');
+      
+      // Return the successful response
+      return result;
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   },
   
   googleAuth: async (idToken) => {
@@ -383,12 +404,29 @@ const auth = {
   }
 };
 
-// Check if user is logged in
+// Check if user is logged in - enhanced with better error handling
 async function isLoggedIn() {
   try {
-    await auth.getCurrentUser();
+    const token = localStorage.getItem('token');
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    
+    // Quick check if we have basic auth data before making API call
+    if (!token || isAuthenticated !== 'true') {
+      return false;
+    }
+    
+    // Verify with API
+    console.log('Verifying login status with API');
+    const response = await auth.getCurrentUser();
+    
+    // If we got this far, authentication is valid
+    console.log('Authentication verified with API');
     return true;
   } catch (error) {
+    console.error('Auth check failed:', error);
+    // Clear potentially invalid auth data
+    localStorage.removeItem('token');
+    localStorage.removeItem('isAuthenticated');
     return false;
   }
 }
@@ -397,8 +435,10 @@ async function isLoggedIn() {
 async function requireAuth() {
   const loggedIn = await isLoggedIn();
   if (!loggedIn) {
+    console.log('Auth check failed, redirecting to login');
     window.location.href = './login.html';
     return false;
   }
+  console.log('Auth check passed');
   return true;
 }

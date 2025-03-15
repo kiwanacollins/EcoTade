@@ -104,52 +104,49 @@ async function login(event) {
   
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  
-  // Reset previous errors
-  document.getElementById('login-error').textContent = '';
-  
-  // Form validation
-  if (!email || !password) {
-    document.getElementById('login-error').textContent = 'Email and password are required';
-    return;
-  }
-  
-  // Get submit button and save original text before changing it
   const submitButton = event.target.querySelector('button[type="submit"]');
   const originalText = submitButton.textContent;
   
+  // Show loading state
+  submitButton.classList.add('btn-loading');
+  submitButton.disabled = true;
+  submitButton.textContent = 'Logging in...';
+  
   try {
-    // Show loading state
-    submitButton.classList.add('btn-loading');
-    submitButton.disabled = true;
+    // Reset any error messages
+    document.getElementById('login-error').textContent = '';
     
-    // Log environment info before making API call
-    console.log('Login - Current hostname:', window.location.hostname);
-    console.log('Login - API endpoint:', getApiBaseUrl());
+    // Make API request through our client
+    const response = await apiClient.auth.login({ email, password });
     
-    // Call API
-    const response = await auth.login({
-      email,
-      password
-    });
-    
-    console.log('Login successful:', response);
-    
-    // Store token if returned
-    if (response.token) {
-      console.log('Storing auth token');
+    if (response.success && response.token) {
+      console.log('Login successful, storing token');
+      
+      // Store token in localStorage 
       localStorage.setItem('token', response.token);
       
-      // Set a session cookie as well for redundancy
-      document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
+      // Store user data if available
+      if (response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
       
-      // Redirect to dashboard after a short delay - keep spinner active
-      setTimeout(() => {
-        window.location.href = './dashboard.html';
-      }, 500);
+      // Important: Add a flag to indicate successful login
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      // Log the token to verify it was saved properly (don't log in production)
+      console.log('Auth token stored:', localStorage.getItem('token') ? 'Yes' : 'No');
+      
+      // Clear any login errors
+      document.getElementById('login-error').textContent = '';
+      
+      // Redirect to dashboard
+      console.log('Redirecting to dashboard...');
+      window.location.href = './dashboard.html';
     } else {
-      console.error('No token received after login');
-      document.getElementById('login-error').textContent = 'Authentication error';
+      // Handle unsuccessful login
+      console.error('Login response had no token:', response);
+      document.getElementById('login-error').textContent = 
+        response.message || 'Failed to authenticate. Please check your credentials.';
       
       // Reset button
       submitButton.classList.remove('btn-loading');
@@ -157,15 +154,10 @@ async function login(event) {
       submitButton.textContent = originalText;
     }
   } catch (error) {
+    // Handle login error
     console.error('Login error:', error);
-    
-    // Provide more user-friendly error messages for connection issues
-    if (error.message && error.message.includes('Failed to fetch')) {
-      document.getElementById('login-error').textContent = 
-        'Unable to connect to the server. Please check your internet connection or try again later.';
-    } else {
-      document.getElementById('login-error').textContent = error.message || 'Login failed';
-    }
+    document.getElementById('login-error').textContent = 
+      error.message || 'An error occurred during login. Please try again.';
     
     // Reset button
     submitButton.classList.remove('btn-loading');
