@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { User } = require('../models'); // Import from models index
+const { User } = require('../models'); // Fixed import to use models index
 const auth = require('../middleware/auth');
 
 /**

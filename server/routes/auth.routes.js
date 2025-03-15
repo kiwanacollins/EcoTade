@@ -1,8 +1,8 @@
 const express = require('express');
+const router = express.Router();
+const { User } = require('../models'); // Fixed import to use models index
 const { register, login, getMe, logout, getDashboard, googleAuth } = require('../controllers/auth.controller');
 const { protect } = require('../middlewares/auth.middleware');
-
-const router = express.Router();
 
 // Public routes
 router.post('/register', register);

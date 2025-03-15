@@ -5,15 +5,13 @@
 
 const mongoose = require('mongoose');
 
-// Get or create model function
-const getOrCreateModel = (modelName, schema) => {
-  return mongoose.models[modelName] || mongoose.model(modelName, schema);
-};
+// Import schemas
+const UserSchema = require('./User');
 
-// Register all models here
-const User = require('./User')(mongoose, getOrCreateModel);
+// Create models only if they don't exist
+const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
-// Export all models
+// Export models
 module.exports = {
-  User
+    User
 };
