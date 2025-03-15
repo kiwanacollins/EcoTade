@@ -2025,6 +2025,16 @@ async function updateActiveTraderCount(count) {
     }
 }
 
+// Helper function to get trader performance
+function getTraderPerformance(traderId) {
+    const trader = traderDetails[traderId];
+    if (!trader || !trader.performance) {
+        return 'N/A';
+    }
+    // Return monthly performance as it's the most prominently displayed metric
+    return trader.performance.monthly;
+}
+
 // Modified selectTrader function to ensure both the selection and count update work
 function selectTrader(traderId) {
     console.log(`Selected trader with ID: ${traderId}`);
