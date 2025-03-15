@@ -1189,24 +1189,46 @@
                 refreshButton.title = 'Refresh data from server';
                 refreshButton.addEventListener('click', function() {
                     this.classList.add('fa-spin');
-                    fetchDashboardData(true)
-                        .then(data => {
-                            if (data) {
-                                updateDashboardUI(data);
-                                showNotification('success', 'Dashboard data refreshed from server');
-                            } else {
-                                showNotification('error', 'Could not refresh data');
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Manual refresh failed:', err);
-                            showNotification('error', 'Could not refresh data: ' + err.message);
-                        })
-                        .finally(() => {
-                            setTimeout(() => {
-                                this.classList.remove('fa-spin');
-                            }, 500);
-                        });
+                    
+                    // Add a try/catch block to better handle any Chart.js errors
+                    try {
+                        // First destroy any existing charts to prevent canvas errors
+                        if (window.dashboardCharts) {
+                            Object.values(window.dashboardCharts).forEach(chart => {
+                                if (chart) chart.destroy();
+                            });
+                        }
+                        
+                        // Also destroy trader chart if it exists
+                        if (window.traderChart) {
+                            window.traderChart.destroy();
+                            window.traderChart = null;
+                        }
+                        
+                        // Now fetch fresh data
+                        fetchDashboardData(true)
+                            .then(data => {
+                                if (data) {
+                                    updateDashboardUI(data);
+                                    showNotification('success', 'Dashboard data refreshed from server');
+                                } else {
+                                    showNotification('error', 'Could not refresh data');
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Manual refresh failed:', err);
+                                showNotification('error', 'Could not refresh data: ' + (err.message || 'Unknown error'));
+                            })
+                            .finally(() => {
+                                setTimeout(() => {
+                                    this.classList.remove('fa-spin');
+                                }, 500);
+                            });
+                    } catch (error) {
+                        console.error('Error during refresh:', error);
+                        this.classList.remove('fa-spin');
+                        showNotification('error', 'Refresh failed: ' + (error.message || 'Unknown error'));
+                    }
                 });
                 headerLeft.parentNode.insertBefore(refreshButton, headerLeft.nextSibling);
             }
@@ -1214,6 +1236,15 @@
 
         // Call this function after DOM content is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize dashboardCharts object if not already done in dashboard.js
+            if (!window.dashboardCharts) {
+                window.dashboardCharts = {
+                    tradingChart: null,
+                    allocationChart: null,
+                    investmentChart: null
+                };
+            }
+            
             // Check if we're on a mobile device
             if (/Mobi|Android/i.test(navigator.userAgent)) {
                 addRefreshButton();

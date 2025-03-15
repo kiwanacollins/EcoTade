@@ -941,6 +941,7 @@ function initTraderPerformanceChart(traderId) {
     // Destroy existing chart instance if it exists
     if (window.traderChart) {
         window.traderChart.destroy();
+        window.traderChart = null;
     }
     
     // Generate some mock performance data based on trader's performance numbers
@@ -1585,14 +1586,26 @@ function closeDepositModal() {
     }
 }
 
-// Initialize all charts
+// Store chart instances globally so they can be properly destroyed on refresh
+window.dashboardCharts = {
+    tradingChart: null,
+    allocationChart: null,
+    investmentChart: null
+};
+
+// Initialize all charts with proper cleanup of previous instances
 function initializeCharts(data) {
     // Trading performance chart (line chart)
     const tradingCtx = document.getElementById('tradingPerformanceChart');
     if (tradingCtx) {
+        // Destroy existing chart if it exists
+        if (window.dashboardCharts.tradingChart) {
+            window.dashboardCharts.tradingChart.destroy();
+        }
+        
         const performanceData = data.tradingPerformance || mockPerformanceData();
         
-        new Chart(tradingCtx, {
+        window.dashboardCharts.tradingChart = new Chart(tradingCtx, {
             type: 'line',
             data: {
                 labels: performanceData.labels,
@@ -1647,9 +1660,14 @@ function initializeCharts(data) {
     // Asset allocation chart (pie chart)
     const allocationCtx = document.getElementById('assetAllocationChart');
     if (allocationCtx) {
+        // Destroy existing chart if it exists
+        if (window.dashboardCharts.allocationChart) {
+            window.dashboardCharts.allocationChart.destroy();
+        }
+        
         const allocationData = data.assetAllocation || mockAllocationData();
         
-        new Chart(allocationCtx, {
+        window.dashboardCharts.allocationChart = new Chart(allocationCtx, {
             type: 'doughnut',
             data: {
                 labels: allocationData.labels,
@@ -1676,9 +1694,14 @@ function initializeCharts(data) {
     // Investment performance chart
     const investmentCtx = document.getElementById('investmentPerformanceChart');
     if (investmentCtx) {
+        // Destroy existing chart if it exists
+        if (window.dashboardCharts.investmentChart) {
+            window.dashboardCharts.investmentChart.destroy();
+        }
+        
         const investmentData = data.investmentPerformance || mockInvestmentData();
         
-        new Chart(investmentCtx, {
+        window.dashboardCharts.investmentChart = new Chart(investmentCtx, {
             type: 'bar',
             data: {
                 labels: investmentData.labels,
