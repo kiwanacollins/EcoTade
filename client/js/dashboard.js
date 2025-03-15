@@ -16,10 +16,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
         
         // CRITICAL FIX: Set isAuthenticated flag if token exists but flag doesn't
-        // This ensures dashboard stays loaded even if API calls fail
         if (!localStorage.getItem('isAuthenticated')) {
             console.log('Setting isAuthenticated flag from existing token');
             localStorage.setItem('isAuthenticated', 'true');
+        }
+        
+        // NEW: First quickly verify token without triggering redirects
+        const isTokenValid = await verifyTokenSilently();
+        console.log('Token validation result:', isTokenValid);
+        
+        if (!isTokenValid) {
+            // Only redirect if we're certain the token is invalid
+            console.error('Token validation failed, redirecting to login');
+            window.location.href = './login.html?reason=invalid_token';
+            return;
         }
         
         // Setup UI immediately without waiting for API response
@@ -51,14 +61,59 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('Dashboard initialization error:', error);
         
-        // Only redirect for specific auth errors, otherwise stay on dashboard
-        if (error.message && error.message.includes('auth')) {
-            window.location.href = './login.html';
+        // IMPROVED ERROR HANDLING: Only redirect for specific auth errors
+        // AND check if the error message explicitly mentions authentication
+        if (error.message && (error.message.includes('auth') || error.message.includes('token') || error.message.includes('unauthorized'))) {
+            window.location.href = './login.html?reason=auth_error';
         } else {
+            // For other errors, just show a warning and continue
             showNotification('error', 'There was a problem loading the dashboard. Please refresh to try again.');
         }
     }
 });
+
+// IMPROVED: Enhanced token verification function that's more resilient but still does basic checks
+async function verifyTokenSilently() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+        
+        // Try a simple check that won't cause redirects - using a specialized endpoint
+        try {
+            const response = await fetch('/api/health/auth-check', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                // Important: Don't follow redirects
+                redirect: 'manual',
+                // Timeout after 3 seconds
+                signal: AbortSignal.timeout(3000)
+            });
+            
+            // If we got any successful response, the token is valid
+            if (response.ok || response.status === 304) {
+                return true;
+            }
+        } catch (e) {
+            console.warn('Auth check API error:', e);
+            // Ignore the error and continue with fallback
+        }
+        
+        // If API check fails, but we have the authenticated flag, trust it
+        if (localStorage.getItem('isAuthenticated') === 'true') {
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Silent token verification error:', error);
+        // If verification process itself fails, use isAuthenticated flag as fallback
+        return localStorage.getItem('isAuthenticated') === 'true';
+    }
+}
 
 // Load saved data from localStorage to show something immediately
 function loadDataFromLocalStorage() {
@@ -76,7 +131,7 @@ function loadDataFromLocalStorage() {
     return false;
 }
 
-// Enhanced fetchDashboardData function with better fallbacks
+// IMPROVED: Enhanced fetch function with better error handling and fallbacks
 async function fetchDashboardData() {
     try {
         const token = localStorage.getItem('token');
@@ -94,7 +149,9 @@ async function fetchDashboardData() {
         const endpoints = [
             { url: '/api/financial/dashboard', method: 'GET' },
             { url: '/api/user/financial-data', method: 'GET' },
-            { url: '/api/auth/dashboard', method: 'GET' }
+            { url: '/api/auth/dashboard', method: 'GET' },
+            // ADDED: New endpoint that might be more reliable
+            { url: '/api/health/auth-check', method: 'GET' }
         ];
         
         let data = null;
@@ -104,9 +161,11 @@ async function fetchDashboardData() {
         for (const endpoint of endpoints) {
             try {
                 console.log(`Trying endpoint: ${endpoint.url}`);
+                // Add credentials to ensure cookies are sent
                 const response = await fetch(endpoint.url, { 
                     method: endpoint.method,
-                    headers: headers
+                    headers: headers,
+                    credentials: 'include'
                 });
                 
                 if (response.ok) {
@@ -141,7 +200,17 @@ async function fetchDashboardData() {
                 transactions: data.transactions || [],
                 investments: data.investments || []
             };
-        } else if (error) {
+        }
+        
+        // If all endpoints fail, use cached data
+        const cachedData = localStorage.getItem('dashboardData');
+        if (cachedData) {
+            console.log('Using cached dashboard data after API failures');
+            return JSON.parse(cachedData);
+        }
+        
+        // Last resort fallback
+        if (error) {
             throw error;
         } else {
             throw new Error('All API endpoints failed to return data');
@@ -175,7 +244,6 @@ function adjustViewport() {
         // Use a slightly smaller initial scale for mobile devices
         const initialScale = Math.min(screenWidth / 400, 0.9);
         viewportMeta.setAttribute('content', `width=device-width, initial-scale=${initialScale}, maximum-scale=1.0, user-scalable=yes`);
-        
         console.log(`Viewport adjusted for mobile: scale=${initialScale}`);
         
         // Add additional body class for mobile optimization
@@ -380,7 +448,7 @@ function setupEventListeners() {
         });
     }
     
-    // Payment method change
+    // Payment method changer
     const paymentMethod = document.getElementById('payment-method');
     if (paymentMethod) {
         paymentMethod.addEventListener('change', function() {
@@ -521,15 +589,15 @@ const traderDetails = {
     },
     "8": {
         name: "Linda Martinez",
-        specialty: "ETF Portfolio Manager",
-        background: "Linda specializes in constructing diversified portfolios using Exchange Traded Funds, ensuring broad market exposure.",
-        strategy: "Focuses on balanced asset allocation across various sectors, emphasizing low-cost, liquid ETFs.",
+        specialty: "Value Investing Expert",
+        background: "Linda is dedicated to finding undervalued opportunities through rigorous fundamental analysis.",
+        strategy: "Focuses on companies with strong balance sheets and sustainable competitive advantages, emphasizing long-term growth.",
         performance: {
             monthly: "+14.5%",
             allTime: "+88%"
         },
         riskManagement: "Regularly rebalances portfolios and maintains a long-term perspective to minimize volatility.",
-        additionalInfo: "Valued for her ability to build stable, growth-oriented portfolios that perform reliably over time.",
+        additionalInfo: "Known for her patient, disciplined investment approach that favors long-term wealth accumulation.",
         experience: "14+ years",
         riskLevel: "Low-Moderate",
         minInvestment: "$1,000",
@@ -537,15 +605,15 @@ const traderDetails = {
     },
     "9": {
         name: "James Wilson",
-        specialty: "Quantitative Strategist",
-        background: "James merges advanced mathematical techniques with financial market analysis to create data-driven trading strategies.",
-        strategy: "Develops and implements statistical models that identify inefficiencies and automate execution across multiple assets.",
+        specialty: "Day Trading Specialist",
+        background: "James is an expert in high-frequency, intraday trading, thriving on the fast pace of the market.",
+        strategy: "Executes rapid trades based on real-time technical analysis and momentum indicators, capitalizing on small price movements.",
         performance: {
             monthly: "+23.8%",
             allTime: "+153%"
         },
         riskManagement: "Applies robust quantitative risk controls and diversification methods to maintain portfolio resilience.",
-        additionalInfo: "Continually refines his algorithms to adapt to evolving market conditions and new data sets.",
+        additionalInfo: "Renowned for his quick decision-making and ability to consistently capture short-term market opportunities.",
         experience: "10+ years",
         riskLevel: "Moderate-High",
         minInvestment: "$3,000",
@@ -553,15 +621,15 @@ const traderDetails = {
     },
     "10": {
         name: "Jennifer Lee",
-        specialty: "Value Investing Expert",
-        background: "Jennifer is dedicated to finding undervalued opportunities through rigorous fundamental analysis.",
-        strategy: "Focuses on companies with strong balance sheets and sustainable competitive advantages, emphasizing long-term growth.",
+        specialty: "Global Markets Analyst",
+        background: "Jennifer possesses a deep understanding of international markets and global economic trends.",
+        strategy: "Combines macroeconomic analysis with geopolitical insights to navigate diverse global markets.",
         performance: {
             monthly: "+15.2%",
             allTime: "+87%"
         },
         riskManagement: "Relies on in-depth research and a margin-of-safety approach to limit downside risk.",
-        additionalInfo: "Known for her patient, disciplined investment approach that favors long-term wealth accumulation.",
+        additionalInfo: "Provides valuable market commentary and forecasts that help shape strategic investment decisions.",
         experience: "16+ years",
         riskLevel: "Low-Moderate",
         minInvestment: "$2,000",
@@ -569,40 +637,8 @@ const traderDetails = {
     },
     "11": {
         name: "Thomas Brown",
-        specialty: "Day Trading Specialist",
-        background: "Thomas is an expert in high-frequency, intraday trading, thriving on the fast pace of the market.",
-        strategy: "Executes rapid trades based on real-time technical analysis and momentum indicators, capitalizing on small price movements.",
-        performance: {
-            monthly: "+25.7%",
-            allTime: "+173%"
-        },
-        riskManagement: "Uses strict risk controls, including tight stop-losses, to manage the high volatility inherent in day trading.",
-        additionalInfo: "Renowned for his quick decision-making and ability to consistently capture short-term market opportunities.",
-        experience: "8+ years",
-        riskLevel: "Very High",
-        minInvestment: "$5,000",
-        activeClients: "128"
-    },
-    "12": {
-        name: "Sophia Williams",
-        specialty: "Global Markets Analyst",
-        background: "Sophia possesses a deep understanding of international markets and global economic trends.",
-        strategy: "Combines macroeconomic analysis with geopolitical insights to navigate diverse global markets.",
-        performance: {
-            monthly: "+16.9%",
-            allTime: "+95%"
-        },
-        riskManagement: "Diversifies across regions and sectors to hedge against global economic uncertainties.",
-        additionalInfo: "Provides valuable market commentary and forecasts that help shape strategic investment decisions.",
-        experience: "13+ years",
-        riskLevel: "Moderate",
-        minInvestment: "$1,500",
-        activeClients: "219"
-    },
-    "13": {
-        name: "Daniel Garcia",
         specialty: "Fixed Income Specialist",
-        background: "Daniel has extensive experience in the bond and treasury markets, specializing in income-generating assets.",
+        background: "Thomas has extensive experience in the bond and treasury markets, specializing in income-generating assets.",
         strategy: "Analyzes interest rate trends, credit ratings, and macroeconomic indicators to optimize fixed income portfolios.",
         performance: {
             monthly: "+13.1%",
@@ -615,10 +651,10 @@ const traderDetails = {
         minInvestment: "$2,500",
         activeClients: "356"
     },
-    "14": {
-        name: "Emily Thompson",
+    "12": {
+        name: "Sophia Williams",
         specialty: "Dividend Growth Strategist",
-        background: "Emily focuses on building portfolios around companies with a strong history of dividend growth.",
+        background: "Sophia focuses on building portfolios around companies with a strong history of dividend growth.",
         strategy: "Selects stocks with consistent dividend increases and robust fundamentals to drive long-term returns.",
         performance: {
             monthly: "+14.8%",
@@ -631,7 +667,7 @@ const traderDetails = {
         minInvestment: "$2,000",
         activeClients: "275"
     },
-    "15": {
+    "13": {
         name: "Alexander White",
         specialty: "Futures Trader",
         background: "Alexander specializes in trading futures contracts across commodities and financial instruments.",
@@ -647,7 +683,7 @@ const traderDetails = {
         minInvestment: "$3,000",
         activeClients: "164"
     },
-    "16": {
+    "14": {
         name: "Olivia Harris",
         specialty: "Swing Trading Expert",
         background: "Olivia is adept at identifying and capitalizing on mid-term market movements.",
@@ -663,7 +699,7 @@ const traderDetails = {
         minInvestment: "$1,500",
         activeClients: "238"
     },
-    "17": {
+    "15": {
         name: "William Martin",
         specialty: "Growth Investing Strategist",
         background: "William focuses on high-growth sectors and emerging companies poised for rapid expansion.",
@@ -679,7 +715,7 @@ const traderDetails = {
         minInvestment: "$2,000",
         activeClients: "201"
     },
-    "18": {
+    "16": {
         name: "Natalie Lewis",
         specialty: "DeFi & Web3 Specialist",
         background: "Natalie is immersed in the decentralized finance and Web3 ecosystem, with a keen eye on blockchain innovations.",
@@ -695,7 +731,7 @@ const traderDetails = {
         minInvestment: "$2,000",
         activeClients: "132"
     },
-    "19": {
+    "17": {
         name: "Christopher Clark",
         specialty: "Energy Markets Expert",
         background: "Christopher brings deep expertise in energy commodities, including oil, gas, and renewable sectors.",
@@ -711,7 +747,7 @@ const traderDetails = {
         minInvestment: "$2,500",
         activeClients: "179"
     },
-    "20": {
+    "18": {
         name: "Rachel Green",
         specialty: "Biotech Sector Analyst",
         background: "Rachel specializes in the biotech arena, analyzing clinical trials, regulatory updates, and market trends to inform her decisions.",
@@ -739,9 +775,9 @@ function showTraderDetails(traderId) {
         console.error(`No details found for trader ID: ${traderId}`);
         return;
     }
-
+    
     try {
-        // Find trader card to get the image
+        // Find trader card to get the images visible in the DOM
         const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
         const traderImg = traderCard.querySelector('.trader-avatar img').src;
         
@@ -919,7 +955,7 @@ function openDepositModal() {
                 closeDepositModal();
             }
         });
-
+        
         // Set default payment method
         const paymentMethodSelect = document.getElementById('payment-method-select');
         if (paymentMethodSelect) {
@@ -1076,16 +1112,27 @@ function setupDepositModalListeners() {
     // Copy address buttons for crypto
     document.querySelectorAll('.copy-address').forEach(button => {
         button.addEventListener('click', function() {
-            copyToClipboard(this.dataset.address);
-            showCopiedFeedback(this);
-        });
-    });
-    
-    // Copy buttons for bank and mobile money
-    document.querySelectorAll('.copy-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            copyToClipboard(this.dataset.copy);
-            showCopiedFeedback(this);
+            const address = this.dataset.address;
+            navigator.clipboard.writeText(address).then(() => {
+                // Show a brief "Copied" message
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                this.classList.add('copied');
+                
+                // Create a tooltip-style message
+                const tooltip = document.createElement('div');
+                tooltip.className = 'copy-tooltip';
+                tooltip.textContent = 'Copied!';
+                this.appendChild(tooltip);
+                
+                setTimeout(() => {
+                    if (tooltip.parentNode === this) {
+                        this.removeChild(tooltip);
+                    }
+                    this.innerHTML = originalHTML;
+                    this.classList.remove('copied');
+                }, 2000);
+            });
         });
     });
 }
@@ -1170,40 +1217,62 @@ function updateCryptoMethod(method) {
         const cryptoName = document.querySelector(`option[value="${method}"]`).textContent.split('(')[0].trim();
         amountInput.placeholder = `Enter amount in USD (min $10) to convert to ${cryptoName}`;
     }
+    
+    // If amount is already entered, calculate and show approximate crypto amount
+    if (amountInput && amountInput.value) {
+        showCryptoEquivalent(amountInput.value, method);
+    }
+}
+
+// Show crypto equivalent for entered USD amount
+function showCryptoEquivalent(usdAmount, cryptoType) {
+    // This would normally make an API call to get current exchange rates
+    // For demo purposes, we'll use static conversion rates
+    const rates = {
+        bitcoin: 0.000034,  // 1 USD = 0.000034 BTC
+        ethereum: 0.00058,  // 1 USD = 0.00058 ETH
+        usdt: 1,            // 1 USD = 1 USDT
+        sol: 0.16,          // 1 USD = 0.16 SOL
+        bnb: 0.0033         // 1 USD = 0.0033 BNB
+    };
+    
+    const symbols = {
+        bitcoin: 'BTC',
+        ethereum: 'ETH',
+        usdt: 'USDT',
+        sol: 'SOL',
+        bnb: 'BNB'
+    };
+    
+    if (!usdAmount || isNaN(parseFloat(usdAmount)) || parseFloat(usdAmount) <= 0) {
+        return;
+    }
+    
+    const cryptoAmount = parseFloat(usdAmount) * rates[cryptoType];
+    const cryptoSymbol = symbols[cryptoType];
+    
+    // Find or create the crypto equivalent element
+    let cryptoEquivalentEl = document.querySelector('.crypto-equivalent');
+    if (!cryptoEquivalentEl) {
+        cryptoEquivalentEl = document.createElement('p');
+        cryptoEquivalentEl.className = 'form-hint crypto-equivalent';
+        document.querySelector('.amount-input').appendChild(cryptoEquivalentEl);
+    }
+    
+    cryptoEquivalentEl.innerHTML = `Approximately <strong>${cryptoAmount.toFixed(8)} ${cryptoSymbol}</strong> (based on current exchange rate)`;
 }
 
 // Process deposit with selected payment method
 function processDeposit() {
     const amount = document.getElementById('modal-deposit-amount').value;
+    const cryptoMethod = document.getElementById('payment-method').value;
     
     if (!amount || parseFloat(amount) < 10) {
         showNotification('error', 'Please enter a valid amount (minimum $10)');
         return;
     }
     
-    // Get selected payment method
-    const paymentMethodSelect = document.getElementById('payment-method-select');
-    const paymentMethod = paymentMethodSelect.value;
-    
-    // Get payment details based on method
-    let paymentDetails = '';
-    
-    if (paymentMethod === 'bank') {
-        paymentDetails = document.getElementById('bank-reference').textContent;
-        paymentMethod = 'Bank Transfer';
-    } else if (paymentMethod === 'airtel') {
-        paymentDetails = document.getElementById('airtel-reference').textContent;
-        paymentMethod = 'Airtel Money';
-    } else if (paymentMethod === 'mtn') {
-        paymentDetails = document.getElementById('mtn-reference').textContent;
-        paymentMethod = 'MTN Mobile Money';
-    } else if (paymentMethod === 'crypto') {
-        const cryptoSelect = document.getElementById('payment-method');
-        paymentMethod = cryptoSelect.options[cryptoSelect.selectedIndex].text;
-        paymentDetails = cryptoSelect.value;
-    }
-    
-    console.log(`Processing deposit of $${amount} via ${paymentMethod}`);
+    console.log(`Processing deposit of $${amount} via ${cryptoMethod}`);
     
     // Show loading state
     const confirmButton = document.getElementById('confirm-deposit');
@@ -1226,8 +1295,8 @@ function processDeposit() {
             <div class="deposit-confirmation">
                 <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success-color); margin-bottom: 15px;"></i>
                 <h5>Your deposit request has been received</h5>
-                <p>Please complete your payment of <strong>$${parseFloat(amount).toFixed(2)}</strong> via <strong>${paymentMethod}</strong>.</p>
-                <p>Your account will be credited after payment confirmation.</p>
+                <p>Please send <strong>$${parseFloat(amount).toFixed(2)}</strong> worth of <strong>${cryptoMethod.toUpperCase()}</strong> to the provided wallet address.</p>
+                <p>Your account will be credited after blockchain confirmation.</p>
                 <a href="#" class="finish-later" id="finish-deposit">I'll finish this later</a>
             </div>
         `;
@@ -1252,8 +1321,8 @@ function processDeposit() {
             modalBody.innerHTML = originalBody;
             modalFooter.innerHTML = originalFooter;
             
-            // Reset form state
-            resetDepositModal();
+            // Re-initialize event listeners
+            setupDepositModalListeners();
         });
         
         document.getElementById('view-transactions').addEventListener('click', function() {
@@ -1282,15 +1351,14 @@ function processDeposit() {
             li.innerHTML = `
                 <span class="activity-time">${formatDateTime(now)}</span>
                 <div class="activity-content">
-                    <p>Initiated deposit of $${parseFloat(amount).toFixed(2)} via ${paymentMethod}</p>
+                    <p>Initiated deposit of $${parseFloat(amount).toFixed(2)} via ${cryptoMethod.toUpperCase()}</p>
                 </div>
             `;
             timeline.prepend(li);
         }
         
         // Add to transactions table
-        updateTransactionsWithNewDeposit(amount, paymentMethod);
-        
+        updateTransactionsWithNewDeposit(amount, cryptoMethod);
     }, 1500);
 }
 
@@ -1424,252 +1492,14 @@ function closeDepositModal() {
     const modal = document.getElementById('deposit-modal');
     if (modal) {
         modal.classList.remove('active');
-    }
-}
-
-// Enhanced payment method handling
-function updatePaymentMethod(method) {
-    // Hide all payment method details
-    document.querySelectorAll('.payment-method-details').forEach(el => {
-        el.classList.add('hidden');
-    });
-    
-    // Show the selected cryptocurrency method
-    const selectedMethod = document.getElementById(`${method}-info`);
-    if (selectedMethod) {
-        selectedMethod.classList.remove('hidden');
         
-        // Apply subtle entrance animation
-        selectedMethod.style.opacity = '0';
-        selectedMethod.style.transform = 'translateY(-10px)';
-        
+        // Remove widget after animation completes
         setTimeout(() => {
-            selectedMethod.style.opacity = '1';
-            selectedMethod.style.transform = 'translateY(0)';
-        }, 50);
-    }
-    
-    // Update the deposit amount input placeholder with the selected crypto
-    const amountInput = document.getElementById('modal-deposit-amount');
-    if (amountInput) {
-        const cryptoName = document.querySelector(`option[value="${method}"]`).textContent.split('(')[0].trim();
-        amountInput.placeholder = `Enter amount in USD (min $10) to convert to ${cryptoName}`;
-    }
-    
-    // If amount is already entered, calculate and show approximate crypto amount
-    if (amountInput && amountInput.value) {
-        showCryptoEquivalent(amountInput.value, method);
-    }
-}
-
-// Show crypto equivalent for entered USD amount
-function showCryptoEquivalent(usdAmount, cryptoType) {
-    // This would normally make an API call to get current exchange rates
-    // For demo purposes, we'll use static conversion rates
-    const rates = {
-        bitcoin: 0.000034,  // 1 USD = 0.000034 BTC
-        ethereum: 0.00058,  // 1 USD = 0.00058 ETH
-        usdt: 1,            // 1 USD = 1 USDT
-        sol: 0.16,          // 1 USD = 0.16 SOL
-        bnb: 0.0033         // 1 USD = 0.0033 BNB
-    };
-    
-    const symbols = {
-        bitcoin: 'BTC',
-        ethereum: 'ETH',
-        usdt: 'USDT',
-        sol: 'SOL',
-        bnb: 'BNB'
-    };
-    
-    if (!usdAmount || isNaN(parseFloat(usdAmount)) || parseFloat(usdAmount) <= 0) {
-        return;
-    }
-    
-    const cryptoAmount = parseFloat(usdAmount) * rates[cryptoType];
-    const cryptoSymbol = symbols[cryptoType];
-    
-    // Find or create the crypto equivalent element
-    let cryptoEquivalentEl = document.querySelector('.crypto-equivalent');
-    if (!cryptoEquivalentEl) {
-        cryptoEquivalentEl = document.createElement('p');
-        cryptoEquivalentEl.className = 'form-hint crypto-equivalent';
-        document.querySelector('.amount-input').appendChild(cryptoEquivalentEl);
-    }
-    
-    cryptoEquivalentEl.innerHTML = `Approximately <strong>${cryptoAmount.toFixed(8)} ${cryptoSymbol}</strong> (based on current exchange rate)`;
-}
-
-// Add listeners for deposit amount field
-document.addEventListener('DOMContentLoaded', function() {
-    // Existing code...
-    
-    // Add input event listener for deposit amount
-    const depositAmount = document.getElementById('modal-deposit-amount');
-    if (depositAmount) {
-        depositAmount.addEventListener('input', function() {
-            const cryptoType = document.getElementById('payment-method').value;
-            showCryptoEquivalent(this.value, cryptoType);
-        });
-    }
-});
-
-// Process deposit form with enhanced feedback
-function processDeposit() {
-    const amount = document.getElementById('modal-deposit-amount').value;
-    const cryptoMethod = document.getElementById('payment-method').value;
-    
-    if (!amount || parseFloat(amount) < 10) {
-        showNotification('error', 'Please enter a valid amount (minimum $10)');
-        return;
-    }
-    
-    console.log(`Processing deposit of $${amount} via ${cryptoMethod}`);
-    
-    // Show loading state
-    const confirmButton = document.getElementById('confirm-deposit');
-    const originalText = confirmButton.innerHTML;
-    confirmButton.disabled = true;
-    confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
-    // Simulate API call with timeout
-    setTimeout(() => {
-        // Instead of closing modal, show success state within modal
-        const modalBody = document.querySelector('.modal-body');
-        const modalFooter = document.querySelector('.modal-footer');
-        
-        // Store original content for later
-        const originalBody = modalBody.innerHTML;
-        const originalFooter = modalFooter.innerHTML;
-        
-        // Update modal with confirmation
-        modalBody.innerHTML = `
-            <div class="deposit-confirmation">
-                <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success-color); margin-bottom: 15px;"></i>
-                <h5>Your deposit request has been received</h5>
-                <p>Please send <strong>$${parseFloat(amount).toFixed(2)}</strong> worth of <strong>${cryptoMethod.toUpperCase()}</strong> to the provided wallet address.</p>
-                <p>Your account will be credited after blockchain confirmation.</p>
-                <a href="#" class="finish-later" id="finish-deposit">I'll finish this later</a>
-            </div>
-        `;
-        
-        modalFooter.innerHTML = `
-            <button class="btn btn-primary" id="new-deposit">
-                <i class="fas fa-plus"></i> New Deposit
-            </button>
-            <button class="btn btn-highlight" id="view-transactions">
-                <i class="fas fa-list"></i> View Transactions
-            </button>
-        `;
-        
-        // Add event listeners for new buttons
-        document.getElementById('finish-deposit').addEventListener('click', function(e) {
-            e.preventDefault();
-            closeDepositModal();
-        });
-        
-        document.getElementById('new-deposit').addEventListener('click', function() {
-            // Restore original form
-            modalBody.innerHTML = originalBody;
-            modalFooter.innerHTML = originalFooter;
-            
-            // Re-initialize event listeners
-            setupDepositModalListeners();
-        });
-        
-        document.getElementById('view-transactions').addEventListener('click', function() {
-            closeDepositModal();
-            switchPanel('transactions');
-            
-            // Update navigation item active state
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.getAttribute('data-panel') === 'transactions') {
-                    item.classList.add('active');
-                }
-            });
-        });
-        
-        // Add to activity timeline
-        const timeline = document.getElementById('activity-timeline');
-        if (timeline) {
-            const noActivity = timeline.querySelector('.no-activity');
-            if (noActivity) {
-                timeline.innerHTML = '';
+            if (modal.parentNode) {
+                modal.parentNode.removeChild(modal);
             }
-            
-            const li = document.createElement('li');
-            const now = new Date();
-            li.innerHTML = `
-                <span class="activity-time">${formatDateTime(now)}</span>
-                <div class="activity-content">
-                    <p>Initiated deposit of $${parseFloat(amount).toFixed(2)} via ${cryptoMethod.toUpperCase()}</p>
-                </div>
-            `;
-            timeline.prepend(li);
-        }
-    }, 1500);
-}
-
-// Setup all event listeners for the deposit modal
-function setupDepositModalListeners() {
-    // Payment method change
-    const paymentMethod = document.getElementById('payment-method');
-    if (paymentMethod) {
-        paymentMethod.addEventListener('change', function() {
-            updatePaymentMethod(this.value);
-        });
+        }, 300);
     }
-    
-    // Confirm deposit button
-    const confirmDeposit = document.getElementById('confirm-deposit');
-    if (confirmDeposit) {
-        confirmDeposit.addEventListener('click', function() {
-            processDeposit();
-        });
-    }
-    
-    // Cancel deposit button
-    const cancelDeposit = document.getElementById('cancel-deposit');
-    if (cancelDeposit) {
-        cancelDeposit.addEventListener('click', closeDepositModal);
-    }
-    
-    // Deposit amount input
-    const depositAmount = document.getElementById('modal-deposit-amount');
-    if (depositAmount) {
-        depositAmount.addEventListener('input', function() {
-            const cryptoType = document.getElementById('payment-method').value;
-            showCryptoEquivalent(this.value, cryptoType);
-        });
-    }
-    
-    // Copy address buttons
-    document.querySelectorAll('.copy-address').forEach(button => {
-        button.addEventListener('click', function() {
-            const address = this.dataset.address;
-            navigator.clipboard.writeText(address).then(() => {
-                // Show a brief "Copied" message
-                const originalHTML = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-check"></i>';
-                this.classList.add('copied');
-                
-                // Create a tooltip-style message
-                const tooltip = document.createElement('div');
-                tooltip.className = 'copy-tooltip';
-                tooltip.textContent = 'Copied!';
-                this.appendChild(tooltip);
-                
-                setTimeout(() => {
-                    if (tooltip.parentNode === this) {
-                        this.removeChild(tooltip);
-                    }
-                    this.innerHTML = originalHTML;
-                    this.classList.remove('copied');
-                }, 2000);
-            });
-        });
-    });
 }
 
 // Initialize all charts
@@ -1701,7 +1531,12 @@ function initializeCharts(data) {
                     },
                     tooltip: {
                         mode: 'index',
-                        intersect: false
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Value: $${Number(context.raw).toLocaleString()}`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -1709,6 +1544,11 @@ function initializeCharts(data) {
                         beginAtZero: false,
                         grid: {
                             drawBorder: false
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
                         }
                     },
                     x: {
@@ -1878,438 +1718,6 @@ function updateInvestmentsList(investments) {
 function filterTransactions() {
     const type = document.getElementById('transaction-type').value;
     const date = document.getElementById('transaction-date').value;
-    
-    console.log(`Filtering transactions: type=${type}, date=${date}`);
-    // Implementation would fetch filtered data from API or filter client-side
-    
-    // For now just show a message
-    const tbody = document.querySelector('#transactions-history tbody');
-    if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="5" class="no-data-message">Filtering not implemented in this demo</td></tr>';
-    }
-}
-
-// Initiate deposit process
-async function initiateDeposit(amount) {
-    if (!amount || isNaN(amount) || amount <= 0) {
-        showNotification('error', 'Please enter a valid deposit amount');
-        return;
-    }
-    
-    try {
-        showNotification('info', `Processing your deposit of ${formatCurrency(amount)}...`);
-        
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Get current balance from DOM
-        const balanceElement = document.querySelector('.balance-amount');
-        const currentBalance = parseFloat(balanceElement.textContent.replace('$', '').replace(',', '')) || 0;
-        
-        // Calculate new balance
-        const newBalance = currentBalance + parseFloat(amount);
-        
-        // Create transaction record
-        const transaction = {
-            date: new Date(),
-            type: 'Deposit',
-            description: 'Account deposit',
-            amount: parseFloat(amount),
-            status: 'Completed'
-        };
-        
-        // Update UI
-        balanceElement.textContent = formatCurrency(newBalance);
-        
-        // Save updated data to server
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        await fetch('/api/user/financial-data', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                totalBalance: newBalance,
-                transactions: [transaction] // Note: In a real implementation, you'd fetch current transactions first and append
-            })
-        });
-        
-        // Update transactions table with new transaction
-        const transactions = document.querySelector('#transactions-history tbody');
-        if (transactions) {
-            const existingTransactions = Array.from(transactions.querySelectorAll('tr'))
-                .filter(tr => !tr.querySelector('.no-data-message'));
-                
-            if (existingTransactions.length > 0) {
-                // If there are existing transactions, add the new one
-                updateTransactionsTable([transaction]);
-            } else {
-                // If no transactions exist, replace with the new one
-                transactions.innerHTML = '';
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${formatDate(transaction.date)}</td>
-                    <td>${transaction.type}</td>
-                    <td>${transaction.description}</td>
-                    <td>${formatCurrency(transaction.amount)}</td>
-                    <td><span class="status-badge ${transaction.status.toLowerCase()}">${transaction.status}</span></td>
-                `;
-                transactions.appendChild(tr);
-            }
-        }
-        
-        showNotification('success', `Successfully deposited ${formatCurrency(amount)}`);
-        
-        // Close deposit modal
-        const depositModal = document.getElementById('deposit-modal');
-        if (depositModal) {
-            depositModal.classList.remove('active');
-            setTimeout(() => {
-                depositModal.style.display = 'none';
-            }, 300);
-        }
-    } catch (error) {
-        console.error('Error processing deposit:', error);
-        showNotification('error', 'Failed to process your deposit. Please try again.');
-    }
-}
-
-// Remove the check for stored trader in DOMContentLoaded as we now fetch from server
-document.addEventListener('DOMContentLoaded', function() {
-    // Setup event listeners and initialize dashboard
-    try {
-        adjustViewport();
-        setupEventListeners();
-        fetchDashboardData();
-        
-        // Other initializations
-        const tradingPerformanceChart = document.getElementById('tradingPerformanceChart');
-        if (tradingPerformanceChart) {
-            initializeTradingPerformanceChart(mockPerformanceData());
-        }
-        
-        const assetAllocationChart = document.getElementById('assetAllocationChart');
-        if (assetAllocationChart) {
-            initializeAssetAllocationChart(mockAllocationData());
-        }
-        
-        const investmentPerformanceChart = document.getElementById('investmentPerformanceChart');
-        if (investmentPerformanceChart) {
-            initializeInvestmentPerformanceChart(mockInvestmentData());
-        }
-        
-        initTraderDetailButtons();
-        
-    } catch (error) {
-        console.error('Dashboard initialization error:', error);
-        // Redirect to login if unauthorized
-        window.location.href = './login.html';
-    }
-});
-
-// Update active traders count in the stats card and save to server
-async function updateActiveTraderCount(count) {
-    const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
-    if (activeTradersStat) {
-        activeTradersStat.textContent = count.toString();
-    }
-    
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        await fetch('/api/user/financial-data', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                activeTraders: count
-            })
-        });
-    } catch (error) {
-        console.error('Error updating active traders count:', error);
-    }
-}
-
-// Handle trader selection and save to server
-function selectTrader(traderId) {
-    console.log(`Selected trader with ID: ${traderId}`);
-    
-    // Find the trader card based on the trader ID
-    const traderCard = document.querySelector(`.trader-card button[data-trader-id="${traderId}"]`).closest('.trader-card');
-    const traderName = traderCard.querySelector('h4').textContent;
-    const traderSpec = traderCard.querySelector('.trader-spec').textContent;
-    const traderImg = traderCard.querySelector('.trader-avatar img').src;
-    
-    // Show confirmation modal or notification
-    showNotification('success', `You have selected ${traderName} as your trader. They will now manage your investments.`);
-    
-    // Prepare selected trader data
-    const selectedTrader = {
-        id: traderId,
-        name: traderName,
-        spec: traderSpec,
-        img: traderImg,
-        performance: getTraderPerformance(traderId)
-    };
-    
-    // Save to server instead of local storage
-    saveSelectedTrader(selectedTrader);
-    
-    // After a short delay, navigate back to overview
-    setTimeout(() => {
-        switchPanel('overview');
-        
-        // Update navigation item active state
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-panel') === 'overview') {
-                item.classList.add('active');
-            }
-        });
-        
-        // Update the top traders section in the overview
-        updateTopTraders(selectedTrader);
-        
-        // Update active traders count
-        updateActiveTraderCount(1);
-    }, 1500);
-}
-
-// Save selected trader to server
-async function saveSelectedTrader(trader) {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        await fetch('/api/user/financial-data', {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                selectedTrader: trader
-            })
-        });
-    } catch (error) {
-        console.error('Error saving selected trader:', error);
-        showNotification('error', 'Failed to save your trader selection. Please try again.');
-    }
-}
-
-// Initialize all charts
-function initializeCharts(data) {
-    // Trading performance chart (line chart)
-    const tradingCtx = document.getElementById('tradingPerformanceChart');
-    if (tradingCtx) {
-        const performanceData = data.tradingPerformance || mockPerformanceData();
-        
-        new Chart(tradingCtx, {
-            type: 'line',
-            data: {
-                labels: performanceData.labels,
-                datasets: [{
-                    label: 'Account Balance',
-                    data: performanceData.values,
-                    borderColor: '#08c',
-                    backgroundColor: 'rgba(8, 136, 204, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        grid: {
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
-    
-    // Asset allocation chart (pie chart)
-    const allocationCtx = document.getElementById('assetAllocationChart');
-    if (allocationCtx) {
-        const allocationData = data.assetAllocation || mockAllocationData();
-        
-        new Chart(allocationCtx, {
-            type: 'doughnut',
-            data: {
-                labels: allocationData.labels,
-                datasets: [{
-                    data: allocationData.values,
-                    backgroundColor: [
-                        '#08c', '#f0cd6d', '#4CD964', '#ff9500', '#ff3b30'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    }
-                }
-            }
-        });
-    }
-    
-    // Investment performance chart
-    const investmentCtx = document.getElementById('investmentPerformanceChart');
-    if (investmentCtx) {
-        const investmentData = data.investmentPerformance || mockInvestmentData();
-        
-        new Chart(investmentCtx, {
-            type: 'bar',
-            data: {
-                labels: investmentData.labels,
-                datasets: [{
-                    label: 'Return Rate',
-                    data: investmentData.values,
-                    backgroundColor: investmentData.values.map(
-                        value => value >= 0 ? 'rgba(76, 217, 100, 0.7)' : 'rgba(255, 59, 48, 0.7)'
-                    )
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-    }
-}
-
-// Update the activity feed
-function updateActivityFeed(activities) {
-    const timeline = document.getElementById('activity-timeline');
-    if (!timeline) return;
-    
-    if (!activities || activities.length === 0) {
-        timeline.innerHTML = '<li class="no-activity">No recent activity to display</li>';
-        return;
-    }
-    
-    timeline.innerHTML = '';
-    
-    activities.forEach(activity => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-            <span class="activity-time">${formatDateTime(activity.timestamp)}</span>
-            <div class="activity-content">
-                <p>${activity.message}</p>
-            </div>
-        `;
-        timeline.appendChild(li);
-    });
-}
-
-// Update transactions table
-function updateTransactionsTable(transactions) {
-    const tbody = document.querySelector('#transactions-history tbody');
-    if (!tbody) return;
-    
-    if (!transactions || transactions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="no-data-message">No transactions to display</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = '';
-    
-    transactions.forEach(transaction => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${formatDate(transaction.date)}</td>
-            <td>${transaction.type}</td>
-            <td>${transaction.description}</td>
-            <td>${formatCurrency(transaction.amount)}</td>
-            <td><span class="status-badge ${transaction.status.toLowerCase()}">${transaction.status}</span></td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-// Update investments list
-function updateInvestmentsList(investments) {
-    const list = document.querySelector('.investments-list');
-    if (!list) return;
-    
-    if (!investments || investments.length === 0) {
-        list.innerHTML = '<p class="no-data-message">No active investments yet</p>';
-        return;
-    }
-    
-    list.innerHTML = '';
-    
-    investments.forEach(investment => {
-        const item = document.createElement('div');
-        item.className = 'investment-item';
-        item.innerHTML = `
-            <div class="investment-header">
-                <h4>${investment.name}</h4>
-                <span class="investment-amount">${formatCurrency(investment.amount)}</span>
-            </div>
-            <div class="investment-details">
-                <span>Started: ${formatDate(investment.startDate)}</span>
-                <span>Return: ${investment.returnRate}%</span>
-            </div>
-            <div class="investment-progress">
-                <div class="progress-bar" style="width: ${investment.progress}%"></div>
-            </div>
-        `;
-        list.appendChild(item);
-    });
-}
-
-// Filter transactions based on selection
-function filterTransactions() {
-    const type = document.getElementById('transaction-type').value;
-    const date = document.getElementById('transaction-date').value;
-    
     console.log(`Filtering transactions: type=${type}, date=${date}`);
     // Implementation would fetch filtered data from API or filter client-side
     
@@ -2466,7 +1874,7 @@ function switchPanel(panelId) {
     }
 }
 
-// Handle trader selection
+// Handle trader selection and save to server
 function selectTrader(traderId) {
     console.log(`Selected trader with ID: ${traderId}`);
     
@@ -2479,7 +1887,7 @@ function selectTrader(traderId) {
     // Show confirmation modal or notification
     showNotification('success', `You have selected ${traderName} as your trader. They will now manage your investments.`);
     
-    // Store selected trader in local storage for persistence
+    // Prepare selected trader data
     const selectedTrader = {
         id: traderId,
         name: traderName,
@@ -2488,7 +1896,8 @@ function selectTrader(traderId) {
         performance: getTraderPerformance(traderId)
     };
     
-    localStorage.setItem('selectedTrader', JSON.stringify(selectedTrader));
+    // Save to server instead of local storage
+    saveSelectedTrader(selectedTrader);
     
     // After a short delay, navigate back to overview
     setTimeout(() => {
@@ -2510,25 +1919,51 @@ function selectTrader(traderId) {
     }, 1500);
 }
 
-// Get trader performance based on trader ID
-function getTraderPerformance(traderId) {
-    // Map of trader performances
-    const performances = {
-        '1': '+24.6%', '2': '+18.3%', '3': '+21.7%', '4': '+19.2%',
-        '5': '+16.8%', '6': '+22.4%', '7': '+17.9%', '8': '+14.5%',
-        '9': '+23.8%', '10': '+15.2%', '11': '+25.7%', '12': '+16.9%',
-        '13': '+13.1%', '14': '+14.8%', '15': '+21.2%', '16': '+18.5%',
-        '17': '+20.4%', '18': '+27.1%', '19': '+19.8%', '20': '+22.5%'
-    };
-    
-    return performances[traderId] || '+0%';
+// Save selected trader to server
+async function saveSelectedTrader(trader) {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        await fetch('/api/user/financial-data', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                selectedTrader: trader
+            })
+        });
+    } catch (error) {
+        console.error('Error saving selected trader:', error);
+        showNotification('error', 'Failed to save your trader selection. Please try again.');
+    }
 }
 
 // Update active traders count in the stats card
-function updateActiveTraderCount(count) {
+async function updateActiveTraderCount(count) {
     const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
     if (activeTradersStat) {
         activeTradersStat.textContent = count.toString();
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        await fetch('/api/user/financial-data', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                activeTraders: count
+            })
+        });
+    } catch (error) {
+        console.error('Error updating active traders count:', error);
     }
 }
 
@@ -2670,8 +2105,7 @@ document.addEventListener('click', function(e) {
 });
 
 // Array of motivational investment messages
-const motivationalMessages = [
-    {
+const motivationalMessages = [{
         title: "Compound Interest Magic",
         message: "The earlier you invest, the more time your money has to grow. Small investments today can lead to significant returns tomorrow.",
         icon: "chart-line"
@@ -2700,7 +2134,7 @@ const motivationalMessages = [
         title: "Take Action Today",
         message: "Don't wait for the 'perfect time' to invest. Time in the market beats timing the market.",
         icon: "rocket"
-    },
+    }, 
     {
         title: "Professional Management",
         message: "Our expert traders have consistently outperformed market averages. Let them work for you.",
