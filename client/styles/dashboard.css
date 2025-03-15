@@ -1904,7 +1904,7 @@ body, .dashboard-main {
 .mobile-money-qr {
     background-color: white;
     padding: 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var (--border-color);
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;
@@ -2423,4 +2423,70 @@ body, .dashboard-main {
 
 #scrolling-transactions tr td[data-type="Withdrawal"] {
     color: var(--primary-color);
+}
+
+/* Endless Scrolling Transactions - Improved for mobile */
+.transactions-scroll-container {
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 8px;
+    background: white;
+    -webkit-mask-image: -webkit-linear-gradient(bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    mask-image: linear-gradient(to top, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+.transactions-scroll-content {
+    animation: scrollTransactions 45s linear infinite;
+    will-change: transform;
+    transform: translateZ(0); /* Force hardware acceleration */
+    -webkit-transform: translateZ(0);
+}
+
+.transactions-scroll-container:hover .transactions-scroll-content {
+    animation-play-state: paused;
+}
+
+@keyframes scrollTransactions {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+@media (max-width: 768px) {
+    .transactions-scroll-container {
+        height: 350px;
+        -webkit-overflow-scrolling: touch; /* Improve mobile scrolling */
+    }
+    
+    .transactions-scroll-content {
+        animation-duration: 60s; /* Slower animation on mobile */
+    }
+    
+    /* Adding specific styles for mobile scrolling */
+    .transactions-table {
+        margin: 0;
+        width: 100%;
+    }
+    
+    .transactions-table th,
+    .transactions-table td {
+        padding: 10px 8px; /* Smaller padding for mobile */
+    }
+    
+    .transactions-table th:last-child,
+    .transactions-table td:last-child {
+        text-align: right;
+    }
+    
+    /* Ensure text doesn't overflow on mobile */
+    .transactions-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
 }

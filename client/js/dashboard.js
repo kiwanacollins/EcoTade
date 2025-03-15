@@ -2830,3 +2830,157 @@ function populateRecentTransactions() {
 
 // Call the function to populate recent transactions
 document.addEventListener('DOMContentLoaded', populateRecentTransactions);
+
+// Function to populate recent transactions with improved mobile support
+function populateRecentTransactions() {
+    const transactions = [
+        { date: '15-03-2025', name: 'Shawna Hill', type: 'Deposit', amount: '$5,018' },
+        { date: '14-03-2025', name: 'Gilmar Chinedum', type: 'Deposit', amount: '$1,771' },
+        { date: '15-03-2025', name: 'K retok Pereira', type: 'Deposit', amount: '$1,487' },
+        { date: '16-03-2025', name: 'Jifina Phạm', type: 'Deposit', amount: '$27,735' },
+        { date: '13-03-2025', name: 'Furuta Onwuemelie', type: 'Withdrawal', amount: '$3,242' },
+        { date: '12-02-2025', name: 'Chelsea نقولا', type: 'Withdrawal', amount: '$6,850' },
+        { date: '16-02-2025', name: 'August Norris', type: 'Withdrawal', amount: '$1,473' },
+        { date: '11-02-2025', name: 'Trúc Iloabuchi', type: 'Withdrawal', amount: '$3,664' },
+        { date: '16-02-2025', name: 'Emmanuel Sankt', type: 'Withdrawal', amount: '$17,849' },
+        { date: '09-01-2025', name: 'Charli Arnoldsson', type: 'Withdrawal', amount: '$26,589' },
+        { date: '11-01-2025', name: 'Noriaki Bosanac', type: 'Withdrawal', amount: '$12,549' },
+        { date: '08-01-2025', name: 'Maria Gonzalez', type: 'Deposit', amount: '$8,320' },
+        { date: '16-01-2025', name: 'Rajiv Patel', type: 'Deposit', amount: '$5,740' },
+        { date: '10-31-2025', name: 'Yuki Tanaka', type: 'Withdrawal', amount: '$2,650' },
+        { date: '16-31-2025', name: 'Sofia Rodriguez', type: 'Deposit', amount: '$9,100' },
+        { date: '10-30-2025', name: 'Lars Andersen', type: 'Withdrawal', amount: '$4,725' },
+        { date: '09-30-2025', name: 'Aisha Mbeki', type: 'Deposit', amount: '$3,890' },
+        { date: '16-29-2025', name: 'Chen Wei', type: 'Deposit', amount: '$12,450' },
+        { date: '16-29-2025', name: 'Isabella Rossi', type: 'Withdrawal', amount: '$7,300' },
+        { date: '16-28-2025', name: 'Aleksandr Petrov', type: 'Deposit', amount: '$15,200' }
+    ];
+
+    // Get the container
+    const container = document.querySelector('.transactions-scroll-container');
+    if (!container) return;
+    
+    // Create the scroll content if it doesn't exist
+    let scrollContent = container.querySelector('.transactions-scroll-content');
+    if (!scrollContent) {
+        scrollContent = document.createElement('div');
+        scrollContent.className = 'transactions-scroll-content';
+        container.appendChild(scrollContent);
+    }
+    
+    // Create the table
+    const table = document.createElement('table');
+    table.className = 'transactions-table';
+    
+    // Create table header
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+        <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Amount</th>
+        </tr>
+    `;
+    table.appendChild(thead);
+    
+    // Create table body
+    const tbody = document.createElement('tbody');
+    tbody.id = 'scrolling-transactions';
+    
+    // Create twice the number of rows for smooth infinite scrolling
+    const allTransactions = [...transactions, ...transactions];
+    
+    allTransactions.forEach(transaction => {
+        const tr = document.createElement('tr');
+        
+        const typeClass = transaction.type === 'Deposit' ? 'deposit-amount' : 'withdrawal-amount';
+        const typeColor = transaction.type === 'Deposit' ? '#4CD964' : '#08c';
+        
+        tr.innerHTML = `
+            <td>${transaction.date}</td>
+            <td>${transaction.name}</td>
+            <td style="color: ${typeColor};" data-type="${transaction.type}">${transaction.type}</td>
+            <td class="${typeClass}">${transaction.amount}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    table.appendChild(tbody);
+    scrollContent.appendChild(table);
+    
+    // Adjust animation duration based on device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const duration = isMobile ? 60 : 45; // Slower on mobile
+    
+    scrollContent.style.animationDuration = `${duration}s`;
+    
+    // Add fallback for browsers that might have issues with CSS animations
+    if (isMobile) {
+        // Check if the animation is working after a short delay
+        setTimeout(() => {
+            const computedStyle = window.getComputedStyle(scrollContent);
+            const isAnimating = computedStyle.animationName !== 'none';
+            
+            if (!isAnimating) {
+                // Fallback to JavaScript animation
+                startJsScrollAnimation(scrollContent, allTransactions.length);
+            }
+        }, 1000);
+    }
+}
+
+// JavaScript fallback animation for mobile devices
+function startJsScrollAnimation(element, rowCount) {
+    let currentPos = 0;
+    const totalHeight = element.scrollHeight;
+    const scrollAmount = totalHeight / (rowCount * 2); // Smooth scroll amount
+    
+    // Clear any existing animation
+    if (window.scrollInterval) {
+        clearInterval(window.scrollInterval);
+    }
+    
+    // Create new interval for scrolling
+    window.scrollInterval = setInterval(() => {
+        currentPos -= 1;
+        
+        // Reset when we've scrolled half way (to create infinite loop effect)
+        if (Math.abs(currentPos) >= totalHeight / 2) {
+            currentPos = 0;
+        }
+        
+        element.style.transform = `translateY(${currentPos}px)`;
+    }, 50);
+    
+    // Pause on touch/hover
+    element.addEventListener('touchstart', () => {
+        clearInterval(window.scrollInterval);
+    });
+    
+    element.addEventListener('touchend', () => {
+        startJsScrollAnimation(element, rowCount);
+    });
+}
+
+// Enhance the existing DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+    
+    // Initialize the endless scrolling transactions
+    populateRecentTransactions();
+    
+    // Handle window resize for responsive adjustments
+    window.addEventListener('resize', function() {
+        // If we're using the JS fallback, restart it to adjust to new dimensions
+        if (window.scrollInterval) {
+            const scrollContent = document.querySelector('.transactions-scroll-content');
+            const rowCount = document.querySelectorAll('#scrolling-transactions tr').length;
+            
+            if (scrollContent && rowCount) {
+                clearInterval(window.scrollInterval);
+                startJsScrollAnimation(scrollContent, rowCount);
+            }
+        }
+    });
+});
