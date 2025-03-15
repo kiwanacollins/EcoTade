@@ -97,6 +97,9 @@ process.on('unhandledRejection', (reason, promise) => {
   logMessage(`UNHANDLED REJECTION: ${reason}`, 'error');
 });
 
+// Import our request logger middleware
+const { requestLogger, jsonErrorHandler } = require('./middleware/request-logger');
+
 // Initialize the Express app
 const app = express();
 
@@ -104,38 +107,29 @@ const app = express();
 const corsMiddleware = require('./middleware/cors');
 app.use(corsMiddleware);
 
-// Enhance JSON body parser with better error handling
+// Add request logging (before body parsing)
+app.use(requestLogger);
+
+// Configure body parsers with better error handling
 app.use(express.json({
   limit: '10mb',
-  verify: (req, res, buf, encoding) => {
+  verify: (req, res, buf) => {
     try {
+      // Only attempt to parse if there's content
       if (buf.length) {
         JSON.parse(buf);
       }
     } catch (e) {
-      res.status(400).json({ 
-        status: 'error',
-        message: 'Invalid JSON payload',
-        details: e.message
-      });
-      throw new Error('Invalid JSON');
+      // Don't throw - let the error handler middleware deal with it
+      req.rawBody = buf.toString();
     }
   }
 }));
 
-// Add proper body parser error handling middleware
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('Bad JSON:', err.message);
-    return res.status(400).json({ 
-      status: 'error',
-      message: 'Invalid JSON data',
-      details: 'Please check your request format'
-    });
-  }
-  next(err);
-});
+// JSON parsing error handler MUST come right after express.json()
+app.use(jsonErrorHandler);
 
+// Continue with URL-encoded parser
 app.use(express.urlencoded({ extended: true }));
 
 // Enhanced cookie parser setup
@@ -227,6 +221,32 @@ try {
     next();
   }, require('./routes/user.routes'));
   
+  // Add financial routes
+  app.use('/api/financial', (req, res, next) => {
+    if (!dbConnected) {
+      return res.status(503).json({ 
+        message: 'Database connection not available',
+        status: 'maintenance',
+        retry: true
+      });
+    }
+    next();
+  }, require('./routes/financial.routes'));
+
+  // For backward compatibility - map old endpoint patterns to new ones
+  app.use('/api/user/financial-data', (req, res, next) => {
+    if (req.method === 'GET') {
+      req.url = '/dashboard';
+      req.originalUrl = '/dashboard';
+      return require('./routes/financial.routes')(req, res, next);
+    } else if (req.method === 'PUT') {
+      req.url = '/dashboard'; 
+      req.originalUrl = '/dashboard';
+      return require('./routes/financial.routes')(req, res, next);
+    }
+    next();
+  });
+
   // Default route - always accessible
   app.get('/', (req, res) => {
     res.json({ 

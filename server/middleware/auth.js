@@ -1,46 +1,70 @@
 const jwt = require('jsonwebtoken');
-const config = require('../config/config');
 
 module.exports = function(req, res, next) {
-  // Get token from header or query parameter (fallback for downloads/files)
-  const token = req.header('Authorization')?.replace('Bearer ', '') || 
-                req.query?.token;
+  // Get token from various sources (header, cookie, query)
+  const token = 
+    req.header('Authorization')?.replace('Bearer ', '') || 
+    req.cookies?.token ||
+    req.query?.token;
 
   // Check if no token
   if (!token) {
-    return res.status(401).json({ message: 'No token, authorization denied' });
+    return res.status(401).json({ 
+      success: false,
+      message: 'No authentication token, access denied'
+    });
   }
 
   // Verify token with proper error handling
   try {
     // Ensure we have a JWT secret
-    if (!config.jwtSecret) {
-      console.error('JWT_SECRET is not configured! Authentication will fail.');
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    if (!jwtSecret) {
+      console.error('Missing JWT_SECRET in environment. Authentication will fail.');
       return res.status(500).json({ 
-        message: 'Server authentication configuration error',
-        error: 'JWT_SECRET_MISSING'
+        success: false,
+        message: 'Server configuration error',
+        error: 'authentication_config_error'
       });
     }
     
-    const decoded = jwt.verify(token, config.jwtSecret);
+    const decoded = jwt.verify(token, jwtSecret);
+    
+    // Add user data to request
     req.user = decoded;
+    
+    // For debugging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔑 Authenticated user: ${decoded.id}`);
+    }
+    
     next();
   } catch (err) {
-    console.error('Token verification error:', err.message);
+    // Log the error in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Auth error:', err.message);
+    }
     
-    // Provide more helpful error messages based on error type
+    // Provide helpful error responses based on error type
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ 
-        message: 'Token has expired',
-        error: 'TOKEN_EXPIRED'
+        success: false, 
+        message: 'Token has expired, please login again',
+        error: 'token_expired'
       });
     } else if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
-        message: 'Invalid token',
-        error: 'INVALID_TOKEN' 
+        success: false, 
+        message: 'Invalid token, please login again',
+        error: 'token_invalid'
       });
     }
     
-    res.status(401).json({ message: 'Token is not valid' });
+    res.status(401).json({ 
+      success: false, 
+      message: 'Token verification failed',
+      error: 'authentication_failed'
+    });
   }
 };
