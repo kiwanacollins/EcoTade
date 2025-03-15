@@ -191,6 +191,22 @@ const connectWithRetry = (retryCount = 0) => {
 // Start database connection process
 connectWithRetry();
 
+// Clear model cache before loading routes
+try {
+  console.log('Checking for model conflicts...');
+  
+  // Force clear the mongoose model cache to prevent conflicts
+  Object.keys(mongoose.models).forEach(modelName => {
+    console.log(`- Cleaning up model: ${modelName}`);
+    delete mongoose.models[modelName];
+    delete mongoose.modelSchemas[modelName];
+  });
+  
+  console.log('Model cache cleared successfully');
+} catch (error) {
+  console.error('Error clearing model cache:', error);
+}
+
 // Routes with try-catch blocks
 try {
   // Add health check routes

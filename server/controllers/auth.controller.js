@@ -1,5 +1,6 @@
 const { User } = require('../models'); // Update to use centralized models
 const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken'); // Add this import for JWT
 
 // Create a new OAuth2 client with error handling for missing client ID
 const getGoogleClient = () => {

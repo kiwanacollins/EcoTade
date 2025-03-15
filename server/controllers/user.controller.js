@@ -1,4 +1,4 @@
-const User = require('../models/user.model');
+const { User } = require('../models'); // Import from centralized models
 
 // @desc    Get all users
 // @route   GET /api/users
