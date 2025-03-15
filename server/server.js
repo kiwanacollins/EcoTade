@@ -5,15 +5,16 @@ const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const path = require('path');
 const { checkConfigOnStartup } = require('./utils/config-validator');
-// Add JWT configuration check
-const { isJwtConfigured } = require('./scripts/check-jwt');
+// Add JWT configuration check with fix attempt
+const { isJwtConfigured, attemptJwtFix } = require('./scripts/check-jwt');
 
 // Try to load environment from dotenv files
 try {
-  // Load .env file (created by restart-pm2.sh)
-  dotenv.config();
-  require('dotenv').config();
-  console.log('Attempted to load environment variables from .env');
+  // Load from both project root and server directory to be safe
+  dotenv.config({ path: path.join(__dirname, '../.env') });
+  dotenv.config({ path: path.join(__dirname, '.env') });
+  
+  console.log('Attempted to load environment variables from .env files');
   
   // Log if we found the MongoDB URI
   if (process.env.MONGODB_URI) {
@@ -25,22 +26,25 @@ try {
   console.error('Error loading environment variables:', error);
 }
 
+// If JWT_SECRET is not set, try to fix it
+if (!process.env.JWT_SECRET) {
+  if (!attemptJwtFix() && process.env.NODE_ENV !== 'production') {
+    console.warn('JWT_SECRET not found, setting development fallback');
+    process.env.JWT_SECRET = "ecotradesecurekey2024";
+  } else if (!process.env.JWT_SECRET) {
+    console.error('JWT_SECRET not set in production environment! Authentication will fail!');
+  }
+}
+
 // ALWAYS set a hardcoded fallback for Docker MongoDB - this ensures it always works
 console.log('Setting Docker MongoDB connection...');
 process.env.MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
-
-// Add JWT secret fallback for development only
-if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'production') {
-  console.warn('JWT_SECRET not found, setting development fallback');
-  process.env.JWT_SECRET = "ecotradesecurekey2024";
-} else if (!process.env.JWT_SECRET) {
-  console.error('JWT_SECRET not set in production environment! Authentication will fail!');
-}
 
 // Log what we're using
 console.log('Application Settings:');
 console.log('- NODE_ENV:', process.env.NODE_ENV);
 console.log('- MONGODB_URI:', process.env.MONGODB_URI.replace(/\/\/.*:.*@/, '//****:****@')); // Hide credentials
+console.log('- JWT_SECRET:', process.env.JWT_SECRET ? '****' + process.env.JWT_SECRET.substr(-4) : 'NOT SET');
 console.log('- Running on port:', process.env.PORT || 5000);
 
 // Check environment variables before starting the server
@@ -100,13 +104,38 @@ const app = express();
 const corsMiddleware = require('./middleware/cors');
 app.use(corsMiddleware);
 
-// IMPORTANT: Make sure NO other CORS-related middleware is used!
-// Remove or comment out ALL other CORS configurations:
-// - app.use(cors())
-// - app.options('*', cors(corsOptions))
-// - Any other cors() usages
+// Enhance JSON body parser with better error handling
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buf, encoding) => {
+    try {
+      if (buf.length) {
+        JSON.parse(buf);
+      }
+    } catch (e) {
+      res.status(400).json({ 
+        status: 'error',
+        message: 'Invalid JSON payload',
+        details: e.message
+      });
+      throw new Error('Invalid JSON');
+    }
+  }
+}));
 
-app.use(express.json());
+// Add proper body parser error handling middleware
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Bad JSON:', err.message);
+    return res.status(400).json({ 
+      status: 'error',
+      message: 'Invalid JSON data',
+      details: 'Please check your request format'
+    });
+  }
+  next(err);
+});
+
 app.use(express.urlencoded({ extended: true }));
 
 // Enhanced cookie parser setup

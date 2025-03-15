@@ -1,47 +1,43 @@
 /**
- * Script to verify JWT configuration
- * Run this to ensure authentication will work properly
+ * Check if JWT secret is properly configured
+ * This script is imported in server.js
  */
 
-console.log('Checking JWT configuration...');
-
-// Check if JWT_SECRET is set
-if (!process.env.JWT_SECRET) {
-  console.error('❌ JWT_SECRET is not set! User authentication will fail.');
-  console.error('Please set JWT_SECRET in your environment or .env file');
-  
-  // Set a fallback for development only
-  if (process.env.NODE_ENV !== 'production') {
-    process.env.JWT_SECRET = 'ecotradesecurekey2024';
-    console.log('✅ Set a default development JWT_SECRET');
+function isJwtConfigured() {
+  if (!process.env.JWT_SECRET) {
+    console.error('❌ JWT_SECRET is not set! User authentication will fail.');
+    console.error('Please set JWT_SECRET in your environment or .env file');
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Using fallback JWT_SECRET for development only');
+      process.env.JWT_SECRET = 'ecotradesecurekey2024';
+      return true; // Allow development to continue with fallback
+    }
+    return false;
   }
-} else {
-  console.log('✅ JWT_SECRET is properly configured');
   
-  // Don't log the actual secret in production
-  if (process.env.NODE_ENV === 'production') {
-    console.log('  Secret is hidden for security');
-  } else {
-    console.log('  Using secret: ', process.env.JWT_SECRET.substring(0, 3) + '...');
+  console.log('✅ JWT_SECRET is configured correctly');
+  return true;
+}
+
+// Try to fix missing JWT_SECRET by checking alternate environments
+function attemptJwtFix() {
+  // Check if JWT_SECRET exists in another common environment variable name
+  const possibleAlternatives = ['JWT_TOKEN', 'API_SECRET', 'APP_SECRET', 'SECRET_KEY'];
+  
+  for (const alt of possibleAlternatives) {
+    if (process.env[alt]) {
+      console.log(`Found alternative secret key in ${alt}, using it as JWT_SECRET`);
+      process.env.JWT_SECRET = process.env[alt];
+      return true;
+    }
   }
+  
+  return false;
 }
 
-// Check JWT expiration settings
-if (!process.env.JWT_EXPIRE) {
-  console.log('❌ JWT_EXPIRE not set, using default of 30d');
-  process.env.JWT_EXPIRE = '30d';
-} else {
-  console.log('✅ JWT_EXPIRE set to:', process.env.JWT_EXPIRE);
-}
-
-// Check cookie expiration
-if (!process.env.JWT_COOKIE_EXPIRE) {
-  console.log('❌ JWT_COOKIE_EXPIRE not set, using default of 30 days');
-  process.env.JWT_COOKIE_EXPIRE = '30';
-} else {
-  console.log('✅ JWT_COOKIE_EXPIRE set to:', process.env.JWT_COOKIE_EXPIRE, 'days');
-}
-
+// Export functions for use in server.js
 module.exports = {
-  isJwtConfigured: !!process.env.JWT_SECRET
+  isJwtConfigured,
+  attemptJwtFix
 };
