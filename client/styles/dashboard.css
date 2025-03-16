@@ -1254,6 +1254,7 @@ body {
     
     .header-left h2 {
         font-size: 18px;
+        margin-top: -50px;
     }
     
     .stats-cards {
