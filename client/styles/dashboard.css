@@ -2419,7 +2419,7 @@ body, .dashboard-main {
 
 #scrolling-transactions tr td:nth-child(4) {
     font-weight: 600;
-    text-align: right;
+    text-align: left;
 }
 
 #scrolling-transactions tr td[data-type="Deposit"] {

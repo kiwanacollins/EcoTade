@@ -489,17 +489,27 @@ function setupEventListeners() {
         });
     });
     
-    // Logout button - fixed implementation
+    // Logout button
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log("Logout button clicked");
-            logout();
+            // The issue is here - we're calling logout() but it's not defined in this scope
+            // Let's properly import it from auth.js
+            window.location.href = './login.html'; // Redirect to login page
+            
+            // Clear authentication data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            
+            // Also clear any session cookies
+            document.cookie = "app_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         });
     }
     
     // Account settings form
+    const accountForm = document.getElementById('account-form');
     if (accountForm) {
         accountForm.addEventListener('submit', async function(e) {
             e.preventDefault();
