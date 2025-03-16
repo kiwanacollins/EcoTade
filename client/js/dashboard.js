@@ -2877,7 +2877,7 @@ function populateRecentTransactions() {
       },
       {
         date: "16-29-2025",
-        name: "Isabella Rossi",
+        name: "Nakimuli Nansamba",
         type: "Withdrawal",
         amount: "$7,300",
       },
