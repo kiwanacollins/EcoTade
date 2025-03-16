@@ -578,6 +578,63 @@ function setupEventListeners() {
             });
         });
     }
+    
+    // Add event listener for withdraw button
+    document.getElementById('withdraw-btn').addEventListener('click', function() {
+        const currentBalance = parseFloat(document.querySelector('.balance-amount').textContent.replace(/[^0-9.-]+/g, ''));
+
+        if (isNaN(currentBalance) || currentBalance <= 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Insufficient Balance',
+                text: 'You need to have funds in your account before making a withdrawal.',
+                confirmButtonText: 'Deposit Funds',
+                cancelButtonText: 'Close',
+                showCancelButton: true,
+                confirmButtonColor: '#08c',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to deposit page or open deposit modal
+                    window.location.href = './payments.html';
+                }
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Enter Withdrawal Amount',
+            input: 'number',
+            inputLabel: `Available Balance: $${currentBalance.toFixed(2)}`,
+            inputPlaceholder: 'Enter amount to withdraw',
+            showCancelButton: true,
+            confirmButtonText: 'Withdraw',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#08c',
+            inputValidator: (value) => {
+                const amount = parseFloat(value);
+                if (!value) {
+                    return 'Please enter an amount';
+                }
+                if (amount <= 0) {
+                    return 'Amount must be greater than 0';
+                }
+                if (amount > currentBalance) {
+                    return 'Amount exceeds available balance';
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Here you would normally make an API call to process the withdrawal
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Processing Withdrawal',
+                    text: 'Please contact support to complete your withdrawal.',
+                    confirmButtonColor: '#08c'
+                });
+            }
+        });
+    });
 }
 
 // Trader details data

@@ -77,6 +77,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    padding: 20px;
 }
 
 .form-group {
@@ -96,6 +97,8 @@
     border: 1px solid var(--border-color);
     border-radius: 8px;
     overflow: hidden;
+    position: relative;
+    margin-bottom: 15px;
 }
 
 .input-group-text {
@@ -105,6 +108,11 @@
     background-color: var(--background-color);
     color: var(--text-secondary);
     font-weight: 600;
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-medium);
 }
 
 .deposit-amount {
@@ -114,6 +122,11 @@
     outline: none;
     font-size: 16px;
     font-weight: 500;
+    width: 100%;
+    padding: 12px 12px 12px 35px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
 }
 
 .conversion-result {
@@ -277,17 +290,30 @@
     z-index: 1001;
     transition: bottom 0.3s ease;
     opacity: 0;
+    bottom: 20px;
+    right: 20px;
+    transform: translateX(120%);
+    transition: transform 0.3s;
+    z-index: 1000;
 }
 
 .toast-notification.show {
     bottom: 30px;
     opacity: 1;
+    transform: translateX(0);
 }
 
 .toast-content {
     display: flex;
     align-items: flex-start;
     padding: 16px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .toast-icon {

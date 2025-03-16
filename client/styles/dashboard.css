@@ -2497,3 +2497,54 @@ body, .dashboard-main {
         max-width: 120px;
     }
 }
+
+/* Withdraw button states */
+.btn-withdraw:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.withdraw-error {
+    color: #ff3b30;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+/* Withdraw button styles */
+.btn-withdraw {
+    background-color: #f8f9fa;
+    color: #212529;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.btn-withdraw:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.btn-withdraw.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* SweetAlert2 custom styles */
+.swal2-popup {
+    font-family: var(--font-body);
+}
+
+.swal2-title {
+    color: var(--text-dark) !important;
+}
+
+.swal2-input {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+}
+
+.swal2-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(8, 136, 204, 0.25) !important;
+}
