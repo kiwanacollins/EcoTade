@@ -139,7 +139,7 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     position: fixed;
-     width: 100vw;
+     width: 80vw;
     top: 0;
     z-index: 900;
 }
@@ -1252,8 +1252,8 @@ body {
     .dashboard-header {
         padding: 0 15px;
         position: fixed;
-        /* width: 87vw; */
-        width: 100vw;
+        width: 87vw;
+        /* width: 100vw; */
     }
     
     .user-info {
