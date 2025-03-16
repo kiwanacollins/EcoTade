@@ -2835,6 +2835,7 @@ blockquote p {
     
     main p, main ul li {
         font-size: 15px;
+        padding-left: 25px;
     }
 }
 
