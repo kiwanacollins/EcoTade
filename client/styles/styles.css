@@ -2384,3 +2384,73 @@ body {
     }
 }
 
+/* New styles for Trading News Section */
+.news-section {
+    background: #f1f1f1;
+    padding: 40px 20px;
+    text-align: center;
+}
+.news-section h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #333;
+}
+.news-section p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: #555;
+}
+.news-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.news-item {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+.news-item:hover {
+    transform: translateY(-5px);
+}
+.news-item .news-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+.news-item .news-content {
+    padding: 15px;
+    text-align: left;
+}
+.news-item .news-content h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #08c;
+}
+.news-item .news-content p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
+.news-item .news-meta {
+    font-size: 14px;
+    color: #777;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.news-item .news-link {
+    text-decoration: none;
+    color: #08c;
+    font-weight: 600;
+}
+.news-loading {
+    text-align: center;
+    padding: 40px 0;
+    color: #08c;
+}
+
