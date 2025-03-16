@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="./styles/styles.css">
     <link rel="stylesheet" href="./styles/dashboard.css">
+    <link rel="stylesheet" href="./styles/payments.css">
     <style>
         :root {
             --primary-color: #0066FF;
@@ -703,7 +704,7 @@
                             </div>
                         </div>
                         <div class="payment-action">
-                            <a href="#" class="btn">
+                            <a href="#" class="btn" data-payment="usdt">
                                 <i class="fas fa-plus-circle"></i> Deposit with USDT
                             </a>
                         </div>
@@ -733,7 +734,7 @@
                             </div>
                         </div>
                         <div class="payment-action">
-                            <a href="#" class="btn">
+                            <a href="#" class="btn" data-payment="bitcoin">
                                 <i class="fas fa-plus-circle"></i> Deposit with Bitcoin
                             </a>
                         </div>
@@ -894,6 +895,7 @@
             }
         }
     </script>
+    <script src="./js/payments.js"></script>
 </body>
 
 </html>

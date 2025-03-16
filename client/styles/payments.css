@@ -1,0 +1,343 @@
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.deposit-modal {
+    background-color: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.deposit-modal.active {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--danger-color);
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.deposit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.input-group {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-group-text {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background-color: var(--background-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.deposit-amount {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.conversion-result {
+    background-color: var(--background-color);
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.conversion-result strong {
+    color: var(--primary-color);
+}
+
+.crypto-details {
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 5px;
+}
+
+.crypto-details h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.qr-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.qr-code {
+    width: 180px;
+    height: 180px;
+    background-color: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.address-container {
+    display: flex;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.crypto-address {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    font-family: monospace;
+    font-size: 14px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.copy-btn {
+    background-color: var(--background-color);
+    border: none;
+    padding: 0 16px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.copy-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.payment-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background-color: rgba(255, 149, 0, 0.1);
+    border-radius: 8px;
+}
+
+.payment-notice i {
+    color: var(--warning-color);
+    margin-top: 3px;
+}
+
+.payment-notice p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.confirm-btn {
+    position: relative;
+    padding: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.confirm-btn.loading {
+    background-color: var(--primary-hover);
+    pointer-events: none;
+}
+
+.confirm-btn .btn-text {
+    transition: opacity 0.3s;
+}
+
+.confirm-btn.loading .btn-text {
+    opacity: 0;
+}
+
+.confirm-btn .spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    opacity: 0;
+    visibility: hidden;
+    animation: spinner 1s infinite linear;
+    transition: all 0.3s;
+}
+
+.confirm-btn.loading .spinner {
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes spinner {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 300px;
+    max-width: 90%;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    transition: bottom 0.3s ease;
+    opacity: 0;
+}
+
+.toast-notification.show {
+    bottom: 30px;
+    opacity: 1;
+}
+
+.toast-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+}
+
+.toast-icon {
+    margin-right: 16px;
+    font-size: 24px;
+}
+
+.toast-icon.success {
+    color: var(--success-color);
+}
+
+.toast-message {
+    flex: 1;
+}
+
+.toast-message h4 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.toast-message p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0 8px;
+    align-self: flex-start;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .deposit-modal {
+        width: 95%;
+    }
+    
+    .qr-code {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .toast-notification {
+        width: 90%;
+    }
+}
