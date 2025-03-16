@@ -368,6 +368,8 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     height: 100%;
     transition: all 0.3s ease;
+    position: relative;
+    right: 23px;
 }
 
 .dashboard-card:hover {
@@ -382,6 +384,8 @@ body {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+    left: 30px;
 }
 
 .no-data-message {
