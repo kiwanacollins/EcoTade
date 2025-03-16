@@ -689,7 +689,7 @@ const traderDetails = {
     },
     "4": {
         name: "Mamba fx",
-        specialty: "Algorithmic Trading Expert",
+        specialty: "Forex Trader",
         background: "With a strong background in both coding and finance,Mamba fx excels at designing automated trading systems.",
         strategy: "Implements and continuously refines quantitative models that automate trade execution based on historical data and real-time signals.",
         performance: {
