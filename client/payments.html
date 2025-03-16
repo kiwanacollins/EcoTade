@@ -117,7 +117,7 @@
 
         .nav-item.active {
             background-color: rgba(0, 102, 255, 0.1);
-            color: var(--primary-color);
+            /* color: var(--primary-color); */
             font-weight: 600;
         }
 
@@ -584,10 +584,10 @@
                     <i class="fas fa-credit-card"></i>
                     <span>Payments</span>
                 </a>
-                <a href="#" class="nav-item">
+                <!-- <a href="#" class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
-                </a>
+                </a> -->
             </nav>
 
             <div class="sidebar-footer">
@@ -616,8 +616,8 @@
                     <div class="user-profile">
                         <i class="fas fa-user-circle avatar" style="font-size: 1.6em;"></i>
                         <div class="user-info">
-                            <span class="user-name">Loading...</span>
-                            <span class="user-role">Member</span>
+                            <!-- <span class="user-name">Loading...</span>
+                            <span class="user-role">Member</span> -->
                         </div>
                     </div>
                 </div>
@@ -697,7 +697,7 @@
                             </div>
                             <div class="detail-row">
                                 <span class="detail-label">Limits:</span>
-                                <span class="detail-value">10 USD – 250 USD</span>
+                                <span class="detail-value">50 USD</span>
                             </div>
                         </div>
                     </div>
@@ -720,7 +720,7 @@
                             </div>
                             <div class="detail-row">
                                 <span class="detail-label">Limits:</span>
-                                <span class="detail-value">50 USD – 100000 USD</span>
+                                <span class="detail-value">50 USD</span>
                             </div>
                         </div>
                         <div class="payment-action">
@@ -748,7 +748,7 @@
                             </div>
                             <div class="detail-row">
                                 <span class="detail-label">Limits:</span>
-                                <span class="detail-value">50 USD – 100000 USD</span>
+                                <span class="detail-value">50 USD</span>
                             </div>
                         </div>
                         <div class="payment-action">
@@ -776,7 +776,7 @@
                             </div>
                             <div class="detail-row">
                                 <span class="detail-label">Limits:</span>
-                                <span class="detail-value">10 USD – 100000 USD</span>
+                                <span class="detail-value">10 USD</span>
                             </div>
                         </div>
                         <div class="payment-action">
@@ -804,7 +804,7 @@
                             </div>
                             <div class="detail-row">
                                 <span class="detail-label">Limits:</span>
-                                <span class="detail-value">50 USD – 100000 USD</span>
+                                <span class="detail-value">50 USD</span>
                             </div>
                         </div>
                         <div class="payment-action">
@@ -888,17 +888,17 @@
                                 })
                                 .catch(err => {
                                     console.error('Error fetching user profile:', err);
-                                    userNameElement.textContent = 'Guest User';
+                                    // userNameElement.textContent = 'Guest User';
                                 });
                         } else {
                             userNameElement.textContent = 'User';
                         }
                     } else {
-                        userNameElement.textContent = 'Guest User';
+                        // userNameElement.textContent = 'Guest User';
                     }
                 } catch (error) {
                     console.error('Error setting user info:', error);
-                    userNameElement.textContent = 'Guest User';
+                    // userNameElement.textContent = 'Guest User';
                 }
             }
 
