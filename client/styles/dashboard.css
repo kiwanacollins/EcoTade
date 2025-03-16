@@ -1522,12 +1522,14 @@ body, .dashboard-main {
     font-size: 28px;
     font-weight: 600;
     margin-bottom: 10px;
+    color: white;
 }
 
 .welcome-banner p {
     margin: 0;
     opacity: 0.9;
     font-size: 16px;
+    color: white;
 }
 
 /* Select Trader Button */
