@@ -136,3 +136,66 @@ function initTestimonialSlider() {
         }, 5000);
     });
 }
+
+// Counter animation for stats section
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to check if element is in viewport
+    function isInViewport(element) {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.8 &&
+            rect.bottom >= 0
+        );
+    }
+
+    // Function to animate the counter
+    function animateCounter(element, target) {
+        const duration = 2000; // Animation duration in milliseconds
+        const increment = target / 100; // Calculate increment amount
+        const isLargeNumber = target > 999;
+        
+        let current = 0;
+        const timer = setInterval(() => {
+            current += increment;
+            
+            // Format with commas for large numbers
+            if (isLargeNumber) {
+                element.textContent = Math.floor(current).toLocaleString();
+            } else {
+                element.textContent = Math.floor(current);
+            }
+            
+            // Stop when target reached
+            if (current >= target) {
+                element.textContent = isLargeNumber ? target.toLocaleString() : target;
+                clearInterval(timer);
+            }
+        }, 20);
+    }
+
+    // Init counter animation
+    const statsSection = document.querySelector('.stats-section');
+    const statNumbers = document.querySelectorAll('.stat-number');
+    let animated = false;
+    
+    function checkStats() {
+        if (!animated && isInViewport(statsSection)) {
+            animated = true;
+            
+            // Animate each counter with a slight delay
+            statNumbers.forEach((statNumber, index) => {
+                setTimeout(() => {
+                    const target = parseInt(statNumber.getAttribute('data-target'), 10);
+                    animateCounter(statNumber, target);
+                }, index * 200); // 200ms delay between counters
+            });
+            
+            // Remove event listener after animation triggers
+            window.removeEventListener('scroll', checkStats);
+        }
+    }
+    
+    // Check on scroll and initial page load
+    window.addEventListener('scroll', checkStats);
+    checkStats(); // Check immediately in case section is already visible
+});
