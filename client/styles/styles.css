@@ -1135,7 +1135,10 @@ body {
     
     .navbar-logo span {
         font-size: 22px;
-    }
+        position: relative;
+        bottom: 25px;
+        left: 8px;
+        }
     
     .hero-content h1 {
         font-size: 30px;
