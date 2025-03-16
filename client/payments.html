@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments - Forexprox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="./styles/styles.css">
+    <link rel="stylesheet" href="./styles/dashboard.css">
+    <style>
+        :root {
+            --primary-color: #0066FF;
+            --primary-hover: #0055CC;
+            --secondary-color: #27AE60;
+            --accent-color: #F7931A;
+            --background-color: #F5F7FA;
+            --sidebar-bg: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border-color: #E0E0E0;
+            --danger-color: #FF3B30;
+            --warning-color: #FF9500;
+            --success-color: #34C759;
+            --font-body: 'Inter', sans-serif;
+            --font-heading: 'Montserrat', sans-serif;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .dashboard-sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-logo img {
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
+        }
+
+        .sidebar-logo span {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+            flex-grow: 1;
+        }
+
+        .nav-item,
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            text-decoration: none;
+            /* color: var(--text-secondary); */
+            font-weight: 500;
+            transition: var(--transition);
+            position: relative;
+            margin: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover,
+        .logout-btn:hover {
+            background-color: rgba(0, 102, 255, 0.05);
+            color: var(--primary-color);
+        }
+
+        .nav-item.active {
+            background-color: rgba(0, 102, 255, 0.1);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--primary-color);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-item i,
+        .logout-btn i {
+            margin-right: 14px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Main Content Area */
+        .dashboard-main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 0;
+            transition: var(--transition);
+        }
+
+        /* Header */
+        .dashboard-header {
+            background-color: var(--card-bg);
+            padding: 18px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-right: 20px;
+            display: none;
+        }
+
+        .dashboard-header h2 {
+            font-family: var(--font-heading);
+            /* font-weight: 700; */
+            font-size: 24px;
+            /* color: var(--primary-color); */
+        }
+
+        /* Payment Methods Styling */
+        .payments-section {
+            padding: 40px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+        }
+
+        .section-header h3 {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            max-width: 600px;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 24px;
+        }
+
+        .payment-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .payment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .payment-status {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: white;
+            border-radius: 0 0 0 12px;
+        }
+
+        .status-available {
+            background-color: var(--success-color);
+        }
+
+        .status-unavailable {
+            background-color: var(--danger-color);
+        }
+
+        .payment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .payment-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-size: 28px;
+            color: white;
+        }
+
+        .icon-crypto {
+            background: linear-gradient(135deg, #F7931A 0%, #FF9500 100%);
+        }
+
+        .icon-mobile {
+            background: linear-gradient(135deg, #FF2D55 0%, #FF375F 100%);
+        }
+
+        .icon-bank {
+            background: linear-gradient(135deg, #32ADE6 0%, #0066FF 100%);
+        }
+
+        .payment-title {
+            flex: 1;
+        }
+
+        .payment-title h4 {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .payment-subtitle {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .payment-details {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 10px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-label i {
+            margin-right: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .detail-highlight {
+            color: var(--primary-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--success-color);
+        }
+
+        .badge-info {
+            background-color: rgba(0, 102, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .payment-action {
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-disabled:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        /* Header Right */
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .notification-icon {
+            position: relative;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .avatar {
+            margin-right: 10px;
+            color: var(--text-secondary);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var (--text-primary);
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .payment-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+
+            .dashboard-sidebar.active {
+                transform: translateX(0);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .dashboard-main {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .payments-section {
+                padding: 20px;
+            }
+
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Add these styles to fix mobile menu */
+        .menu-toggle {
+            display: block !important; /* Force display on mobile */
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 260px;
+                z-index: 1000;
+                transition: transform 0.3s ease;
+            }
+
+            .dashboard-sidebar.active {
+                transform: translateX(0);
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            }
+
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+
+            .overlay.active {
+                display: block;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./js/api-client.js"></script>
+    <script src="./js/auth.js"></script>
+    <script src="./js/token-manager.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Add overlay div right after dashboard-container opening tag -->
+        <div class="overlay"></div>
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <a href="../index.html" style="text-decoration: none;">
+                <div class="sidebar-logo">
+                    <img src="./images/logo.png" alt="Forexprox Logo">
+                    <span>Forexprox</span>
+                </div>
+            </a>
+
+            <nav class="sidebar-nav">
+                <a href="./dashboard.html" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Traders</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Investments</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transactions</span>
+                </a>
+                <a href="./payments.html" class="nav-item active">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Payments</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-main">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2>Payments</h2>
+                </div>
+                <div class="header-right">
+                    <div class="notification-icon">
+                        <i class="far fa-bell" style="font-size: 1.6em;"></i>
+                        <span class="notification-badge">0</span>
+                    </div>
+                    <div class="user-profile">
+                        <i class="fas fa-user-circle avatar" style="font-size: 1.6em;"></i>
+                        <div class="user-info">
+                            <span class="user-name">Loading...</span>
+                            <span class="user-role">Member</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Payments Section -->
+            <section class="payments-section">
+                <div class="section-header">
+                    <h3 style="color: black !important;">Payment Methods</h3>
+                    <p>Select your preferred payment method from the options below.</p>
+                </div>
+                <div class="payment-grid">
+                    <!-- Airtel -->
+                    <div class="payment-card">
+                        <div class="payment-status status-unavailable">Currently Not Available</div>
+                        <div class="payment-header">
+                            <div class="payment-icon icon-mobile">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>Airtel</h4>
+                                <p class="payment-subtitle">Processing time: Instant</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">50 USD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MTN Mobile Money -->
+                    <div class="payment-card">
+                        <div class="payment-status status-unavailable">Currently Not Available</div>
+                        <div class="payment-header">
+                            <div class="payment-icon icon-mobile">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>MTN Mobile Money</h4>
+                                <p class="payment-subtitle">Processing time: Instant</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">50 USD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Airtel Money -->
+                    <div class="payment-card">
+                        <div class="payment-status status-unavailable">Currently Not Available</div>
+                        <div class="payment-header">
+                            <div class="payment-icon icon-mobile">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>Airtel Money</h4>
+                                <p class="payment-subtitle">Processing time: Instant</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">10 USD – 250 USD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tether USD/USDT -->
+                    <div class="payment-card">
+                        <div class="payment-header">
+                            <div class="payment-icon icon-crypto">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>Tether USD/USDT</h4>
+                                <p class="payment-subtitle">Processing time: Instant – 30 minutes</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">50 USD – 100000 USD</span>
+                            </div>
+                        </div>
+                        <div class="payment-action">
+                            <a href="#" class="btn">
+                                <i class="fas fa-plus-circle"></i> Deposit with USDT
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- USD Coin / USDC -->
+                    <div class="payment-card">
+                        <div class="payment-header">
+                            <div class="payment-icon icon-crypto">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>USD Coin / USDC</h4>
+                                <p class="payment-subtitle">Processing time: 30 minutes</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">50 USD – 100000 USD</span>
+                            </div>
+                        </div>
+                        <div class="payment-action">
+                            <a href="#" class="btn">
+                                <i class="fas fa-plus-circle"></i> Deposit with USDC
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Bitcoin -->
+                    <div class="payment-card">
+                        <div class="payment-header">
+                            <div class="payment-icon icon-crypto">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>Bitcoin</h4>
+                                <p class="payment-subtitle">Processing time: 30 minutes</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">10 USD – 100000 USD</span>
+                            </div>
+                        </div>
+                        <div class="payment-action">
+                            <a href="#" class="btn">
+                                <i class="fas fa-plus-circle"></i> Deposit with Bitcoin
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Ethereum -->
+                    <div class="payment-card">
+                        <div class="payment-header">
+                            <div class="payment-icon icon-crypto">
+                                <i class="fab fa-ethereum"></i>
+                            </div>
+                            <div class="payment-title">
+                                <h4>Ethereum</h4>
+                                <p class="payment-subtitle">Processing time: 30 minutes</p>
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Fee:</span>
+                                <span class="detail-value">0%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Limits:</span>
+                                <span class="detail-value">50 USD – 100000 USD</span>
+                            </div>
+                        </div>
+                        <div class="payment-action">
+                            <a href="#" class="btn">
+                                <i class="fas fa-plus-circle"></i> Deposit with Ethereum
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle sidebar on mobile
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.dashboard-sidebar');
+            const overlay = document.querySelector('.overlay');
+            const container = document.querySelector('.dashboard-container');
+
+            // Toggle sidebar
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                // Prevent body scroll when sidebar is open
+                document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+            }
+
+            // Event listeners
+            menuToggle.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+
+            // Close sidebar when clicking on a link
+            const sidebarLinks = document.querySelectorAll('.nav-item');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        toggleSidebar();
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Close sidebar when swiping left on mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            sidebar.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+
+            sidebar.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 50) { // Swipe left
+                    toggleSidebar();
+                }
+            });
+
+            // Try to get user info
+            const userNameElement = document.querySelector('.user-name');
+            if (userNameElement) {
+                try {
+                    // Check if token exists and is valid
+                    if (window.TokenManager && window.TokenManager.getToken()) {
+                        // Use the API client if available
+                        if (window.ApiClient) {
+                            window.ApiClient.getUserProfile()
+                                .then(profile => {
+                                    if (profile && profile.name) {
+                                        userNameElement.textContent = profile.name;
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Error fetching user profile:', err);
+                                    userNameElement.textContent = 'Guest User';
+                                });
+                        } else {
+                            userNameElement.textContent = 'User';
+                        }
+                    } else {
+                        userNameElement.textContent = 'Guest User';
+                    }
+                } catch (error) {
+                    console.error('Error setting user info:', error);
+                    userNameElement.textContent = 'Guest User';
+                }
+            }
+
+            // Add click event for logout button
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (window.logout) {
+                        logout();
+                    } else {
+                        // Fallback logout
+                        localStorage.removeItem('token');
+                        window.location.href = "../index.html";
+                    }
+                });
+            }
+        });
+
+        // Fallback logout function if not imported
+        function logout() {
+            try {
+                // Clear token and redirect
+                if (window.TokenManager) {
+                    window.TokenManager.removeToken();
+                } else {
+                    localStorage.removeItem('token');
+                }
+                window.location.href = "../index.html";
+            } catch (error) {
+                console.error('Error during logout:', error);
+                alert('Something went wrong during logout. Please try again.');
+            }
+        }
+    </script>
+</body>
+
+</html>

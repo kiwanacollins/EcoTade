@@ -1251,7 +1251,8 @@ body {
     .dashboard-header {
         padding: 0 15px;
         position: fixed;
-        width: 87vw;
+        /* width: 87vw; */
+        width: 100vw;
     }
     
     .user-info {
