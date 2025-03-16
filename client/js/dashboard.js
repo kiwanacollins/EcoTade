@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             window.location.href = './login.html?reason=auth_error';
         } else {
             // For other errors, just show a warning and continue
-            showNotification('error', 'There was a problem loading the dashboard. Please refresh to try again.');
+            // showNotification('error', 'There was a problem loading the dashboard. Please refresh to try again.');
         }
     }
 });
@@ -293,7 +293,7 @@ async function fetchDashboardData(skipCache = false) {
         console.error('Error in fetchDashboardData:', error);
         
         // Show more detailed error notification with recovery info
-        showNotification('error', 'Could not fetch the latest data. Using cached data instead. Try refreshing the page or checking your internet connection.');
+        // showNotification('error', 'Could not fetch the latest data. Using cached data instead. Try refreshing the page or checking your internet connection.');
         
         // Attempt to use cached data with clear marking that it's cached
         const cachedData = localStorage.getItem('dashboardData');
@@ -2063,9 +2063,9 @@ async function saveSelectedTrader(trader) {
         console.error('Error saving selected trader to database:', error);
         
         // Show warning notification with explanation about cross-device sync
-        showNotification('warning', 
-            'Your trader selection was saved locally, but might not sync to other devices. Check your internet connection.',
-            5000);
+        // showNotification('warning', 
+        //     'Your trader selection was saved locally, but might not sync to other devices. Check your internet connection.',
+        //     5000);
             
         return false;
     }
@@ -2174,7 +2174,7 @@ function selectTrader(traderId) {
     
     // Show a more informative notification that mentions database saving
     showNotification('success', 
-        `You have selected ${traderName} as your trader. Saving to database...`);
+        `You have selected ${traderName} as your trader.`);
     
     // Prepare selected trader data
     const selectedTrader = {
@@ -2197,7 +2197,7 @@ function selectTrader(traderId) {
                 
                 // Show completion notification
                 showNotification('success', 
-                    `${traderName} has been saved as your trader. Your selection has been stored in the database.`);
+                    `${traderName} has been saved as your trader.`);
                 
                 // After a short delay, navigate back to overview
                 setTimeout(() => {
@@ -2226,8 +2226,8 @@ function selectTrader(traderId) {
         .catch(error => {
             console.error('Error in trader selection process:', error);
             
-            showNotification('warning', 
-                'Trader selected locally, but there was an issue saving to the database. Your selection may not sync across devices.');
+            // showNotification('warning', 
+            //     'Trader selected locally, but there was an issue saving to the database. Your selection may not sync across devices.');
         });
 }
 
@@ -2659,9 +2659,9 @@ function showConnectionErrorNotification() {
         'Connection info not available';
     
     console.warn(`Connection issue detected. ${connectionInfo}`);
-    showNotification('warning', 
-        'Having trouble connecting to the server. Your changes may not be saved across devices.', 
-        8000); // Show for longer time
+    // showNotification('warning', 
+    //     'Having trouble connecting to the server. Your changes may not be saved across devices.', 
+    //     8000); // Show for longer time
 }
 
 // Improved function to update active trader count

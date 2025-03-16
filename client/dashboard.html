@@ -1239,14 +1239,14 @@
                             .then(data => {
                                 if (data) {
                                     // Show clear indication of refresh success
-                                    showNotification('success', 'Dashboard data refreshed from database');
+                                    // showNotification('success', 'Dashboard data refreshed from database');
                                 } else {
-                                    showNotification('error', 'Could not refresh data from database');
+                                    // showNotification('error', 'Could not refresh data from database');
                                 }
                             })
                             .catch(err => {
                                 console.error('Manual refresh failed:', err);
-                                showNotification('error', 'Could not refresh data: ' + (err.message || 'Unknown error'));
+                                // showNotification('error', 'Could not refresh data: ' + (err.message || 'Unknown error'));
                             })
                             .finally(() => {
                                 setTimeout(() => {
@@ -1256,7 +1256,7 @@
                     } catch (error) {
                         console.error('Error during refresh:', error);
                         this.classList.remove('fa-spin');
-                        showNotification('error', 'Refresh failed: ' + (error.message || 'Unknown error'));
+                        // showNotification('error', 'Refresh failed: ' + (error.message || 'Unknown error'));
                     }
                 });
                 headerLeft.parentNode.insertBefore(refreshButton, headerLeft.nextSibling);
