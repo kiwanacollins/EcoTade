@@ -844,6 +844,13 @@ body {
     width: 100%;
     margin: 0;
     color: #002654 !important;
+    /* Add these properties for better alignment and size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 20px;
+    font-size: 16px;
+    height: 40px;
 }
 
 /* Overlay for mobile nav */
@@ -1109,6 +1116,22 @@ body {
         line-height: 1.4;
         flex: 1;
     }
+
+    .navbar-buttons .btn-registration,
+    .navbar-buttons .btn-login {
+        padding: 8px 20px;
+        font-size: 16px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .mobile-nav-buttons .btn {
+        padding: 8px 16px;
+        font-size: 16px;
+        height: 40px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -1192,6 +1215,15 @@ body {
     
     .blog-post p {
         font-size: 16px;
+    }
+
+    .navbar-buttons .btn-registration,
+    .navbar-buttons .btn-login,
+    .mobile-nav-buttons .btn {
+        padding: 6px 15px;
+        font-size: 14px;
+        height: 36px;
+        min-height: 36px;
     }
 }
 
