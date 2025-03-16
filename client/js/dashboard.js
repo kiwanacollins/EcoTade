@@ -494,17 +494,7 @@ function setupEventListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            // The issue is here - we're calling logout() but it's not defined in this scope
-            // Let's properly import it from auth.js
-            window.location.href = './login.html'; // Redirect to login page
-            
-            // Clear authentication data
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('isAuthenticated');
-            
-            // Also clear any session cookies
-            document.cookie = "app_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            logout();
         });
     }
     
@@ -3417,3 +3407,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Add the logout function
+function logout() {
+    // Clear authentication data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
+    
+    // Clear any session cookies
+    document.cookie = "app_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    
+    // Redirect to login page
+    window.location.href = './login.html';
+}
