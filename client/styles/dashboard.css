@@ -138,7 +138,8 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
-    position: sticky;
+    position: fixed;
+     width: 100vw;
     top: 0;
     z-index: 900;
 }
