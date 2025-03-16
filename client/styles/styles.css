@@ -2454,3 +2454,365 @@ body {
     color: #08c;
 }
 
+/* About Us Page Styles */
+main {
+    padding-top: 140px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+main section {
+    padding: 60px 25px;
+    margin-bottom: 30px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+main section:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+main h1 {
+    font-family: var(--font-heading);
+    font-size: 42px;
+    font-weight: 800;
+    color: #002654;
+    margin-bottom: 25px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+main h1:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(to right, #002654, #08c);
+    border-radius: 2px;
+}
+
+main h2 {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 700;
+    color: #08c;
+    margin: 40px 0 20px;
+    position: relative;
+    padding-left: 15px;
+}
+
+main h2:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 5px;
+    background: #08c;
+    border-radius: 3px;
+}
+
+main h3 {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 600;
+    color: #002654;
+    margin: 30px 0 15px;
+}
+
+main p {
+    font-family: var(--font-primary);
+    font-size: 18px;
+    line-height: 1.7;
+    color: #444;
+    margin-bottom: 20px;
+}
+
+main ul {
+    padding-left: 20px;
+    margin-bottom: 25px;
+}
+
+main ul li {
+    font-family: var(--font-primary);
+    font-size: 18px;
+    line-height: 1.7;
+    color: #444;
+    margin-bottom: 12px;
+    position: relative;
+    padding-left: 25px;
+    list-style-type: none;
+}
+
+main ul li:before {
+    content: "\f054";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    top: 5px;
+    color: #08c;
+    font-size: 14px;
+}
+
+main ul li strong {
+    color: #002654;
+    font-weight: 600;
+}
+
+.mission-values {
+    background: linear-gradient(145deg, #f9f9f9, #fff);
+    border-top: 5px solid #08c;
+}
+
+.premium-services {
+    background: linear-gradient(145deg, #f9f9f9, #fff);
+    border-left: 5px solid #08c;
+}
+
+.educational-resources {
+    background-color: #f5f9fd;
+}
+
+.how-it-works {
+    background: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center;
+    background-size: cover;
+    position: relative;
+    color: #fff;
+    z-index: 1;
+    padding: 80px 25px;
+}
+
+.how-it-works:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(0, 38, 84, 0.95), rgba(8, 136, 204, 0.85));
+    z-index: -1;
+    border-radius: 12px;
+}
+
+.how-it-works h2, 
+.how-it-works h3, 
+.how-it-works p, 
+.how-it-works li,
+.how-it-works li:before {
+    color: #fff;
+}
+
+.how-it-works h2:before {
+    background: #fff;
+}
+
+.performance-metrics {
+    background: linear-gradient(145deg, #f9f9f9, #fff);
+    border-right: 5px solid #08c;
+}
+
+.risk-management {
+    background-color: #f0f7fc;
+}
+
+.client-testimonials {
+    background: linear-gradient(to right, #f5f9fd, #e5f2fb);
+    padding: 70px 25px;
+}
+
+.client-testimonials h2 {
+    text-align: center;
+    padding-left: 0;
+    margin-bottom: 40px;
+}
+
+.client-testimonials h2:before {
+    display: none;
+}
+
+.client-testimonials h2:after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: #08c;
+    border-radius: 2px;
+}
+
+blockquote {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #08c;
+    position: relative;
+}
+
+blockquote:before {
+    content: '\f10d';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: #08c;
+    opacity: 0.2;
+    font-size: 20px;
+}
+
+blockquote p {
+    padding-left: 10px;
+    font-style: italic;
+}
+
+.corporate-social-responsibility {
+    background: linear-gradient(145deg, #f9f9f9, #fff);
+}
+
+.security-measures {
+    background: linear-gradient(145deg, #f0f7fc, #fff);
+}
+
+.join-community {
+    background: linear-gradient(135deg, #002654 0%, #0977ad 100%);
+    color: #fff;
+    padding: 70px 35px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.join-community:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://images.unsplash.com/photo-1450101499163-c8848c66ca85?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center;
+    background-size: cover;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+.join-community h2,
+.join-community h3,
+.join-community p,
+.join-community li,
+.join-community li:before {
+    color: #fff;
+}
+
+.join-community ul {
+    display: inline-block;
+    text-align: left;
+}
+
+.join-community h2:before {
+    display: none;
+}
+
+.join-community h2:after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+.join-community p:last-of-type {
+    font-size: 14px;
+    margin-top: 40px;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* Responsive adjustments for About Us page */
+@media (max-width: 992px) {
+    main {
+        padding-top: 120px;
+    }
+    
+    main h1 {
+        font-size: 36px;
+    }
+    
+    main h2 {
+        font-size: 28px;
+    }
+    
+    main h3 {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 768px) {
+    main {
+        padding-top: 100px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    main section {
+        padding: 40px 20px;
+        margin-bottom: 25px;
+    }
+    
+    main h1 {
+        font-size: 32px;
+    }
+    
+    main h2 {
+        font-size: 24px;
+        margin: 30px 0 15px;
+    }
+    
+    main h3 {
+        font-size: 20px;
+        margin: 25px 0 10px;
+    }
+    
+    main p, main ul li {
+        font-size: 16px;
+    }
+    
+    blockquote {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    main {
+        padding-top: 90px;
+    }
+    
+    main section {
+        padding: 30px 15px;
+    }
+    
+    main h1 {
+        font-size: 28px;
+    }
+    
+    main p, main ul li {
+        font-size: 15px;
+    }
+}
+
