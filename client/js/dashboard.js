@@ -489,17 +489,17 @@ function setupEventListeners() {
         });
     });
     
-    // Logout button
+    // Logout button - fixed implementation
     const logoutBtn = document.querySelector('.logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async function(e) {
+        logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            await logout();
+            console.log("Logout button clicked");
+            logout();
         });
     }
     
     // Account settings form
-    const accountForm = document.getElementById('account-form');
     if (accountForm) {
         accountForm.addEventListener('submit', async function(e) {
             e.preventDefault();
