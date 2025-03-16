@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Testimonial slider functionality
     initTestimonialSlider();
+    
+    // Initialize news section
+    fetchFinancialNews();
 });
 
 // Function to animate the stat counters
@@ -199,3 +202,121 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('scroll', checkStats);
     checkStats(); // Check immediately in case section is already visible
 });
+
+// Function to fetch and display financial news
+function fetchFinancialNews() {
+    const newsContainer = document.querySelector('.news-container');
+    const apiKey = 'c9f89621a9704ec883532e1847213c79'; // Your NewsAPI key
+    const apiUrl = `https://newsapi.org/v2/everything?q=financial%20market&language=en&sortBy=publishedAt&apiKey=${apiKey}`;
+    
+    // Show enhanced loading state
+    newsContainer.innerHTML = `
+        <div class="news-loading">
+            <div class="spinner"></div>
+            <p>Loading Latest Financial News</p>
+            <p class="loading-info">Getting market insights for you...</p>
+        </div>
+    `;
+    
+    // Fetch news data
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Clear loading message
+            newsContainer.innerHTML = '';
+            
+            // Check if we have articles to display
+            if (data && data.articles && data.articles.length > 0) {
+                // Limit to 6 articles
+                const articles = data.articles.slice(0, 10);
+                
+                // Track loading of all images
+                let loadedImages = 0;
+                const totalImages = articles.length;
+                const animationDelayMs = 150; // Delay between each article animation
+                
+                // Create HTML for each article with staggered animation
+                articles.forEach((article, index) => {
+                    // Create excerpt from content (limit length)
+                    const excerpt = article.description ? article.description.substring(0, 120) + '...' : 'No description available.';
+                    
+                    // Format date
+                    const articleDate = new Date(article.publishedAt);
+                    const formattedDate = articleDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    
+                    // Create article element
+                    const articleElement = document.createElement('div');
+                    articleElement.className = 'news-item';
+                    articleElement.style.animationDelay = `${index * animationDelayMs}ms`;
+                    articleElement.innerHTML = `
+                        <div class="news-image">
+                            <img src="${article.urlToImage || './client/images/news-placeholder.jpg'}" 
+                                 alt="${article.title}" 
+                                 onerror="this.src='./client/images/news-placeholder.jpg';">
+                        </div>
+                        <div class="news-content">
+                            <h3>${article.title}</h3>
+                            <p class="news-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</p>
+                            <p class="news-excerpt">${excerpt}</p>
+                            <div class="news-meta">
+                                <span class="news-author"><i class="far fa-user"></i> ${article.author || 'Unknown'}</span>
+                                <a href="${article.url}" target="_blank" class="news-link">Read More <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add to container but keep hidden until all images loaded
+                    newsContainer.appendChild(articleElement);
+                    
+                    // Track image loading
+                    const img = articleElement.querySelector('img');
+                    
+                    // Function to handle when an image is loaded or failed
+                    const handleImageLoad = () => {
+                        loadedImages++;
+                        // When all images are loaded, make articles visible with staggered animation
+                        if (loadedImages === totalImages) {
+                            // All images loaded, allow the CSS animations to play
+                            document.querySelectorAll('.news-item').forEach((item, i) => {
+                                // Keep the animation delay we set earlier
+                            });
+                        }
+                    };
+                    
+                    // Add event listeners for both successful load and error
+                    if (img.complete) {
+                        handleImageLoad();
+                    } else {
+                        img.addEventListener('load', handleImageLoad);
+                        img.addEventListener('error', handleImageLoad); // Also count errors as "loaded"
+                    }
+                });
+            } else {
+                // No articles found
+                newsContainer.innerHTML = `
+                    <div class="news-error">
+                        <i class="fas fa-newspaper"></i>
+                        <p>No financial news articles available at the moment.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching news:', error);
+            newsContainer.innerHTML = `
+                <div class="news-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Unable to load financial news. Please try again later.</p>
+                </div>
+            `;
+        });
+}
