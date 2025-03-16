@@ -43,6 +43,22 @@
         }
     </script>
     
+    <style>
+        /* Animation for the checkbox reminder */
+        @keyframes pulseHighlight {
+            0% { box-shadow: 0 0 0 0 rgba(8, 136, 204, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(8, 136, 204, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(8, 136, 204, 0); }
+        }
+        .checkbox-pulse {
+            animation: pulseHighlight 1.5s ease-in-out;
+        }
+        .highlight-container {
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+    </style>
+    
     <script src="./js/api-client.js"></script>
     <script src="./js/auth.js"></script>
     <script src="./js/form-validation.js" defer></script>
@@ -102,7 +118,7 @@
                     <div class="error-message" id="confirm-password-error"></div>
                 </div>
                 <div class="form-group">
-                    <div class="checkbox-container">
+                    <div class="checkbox-container highlight-container" id="terms-container">
                         <input type="checkbox" id="terms" name="terms" required>
                         <label for="terms">I agree to the <a href="./terms-privacy-policy.html">Terms</a> and <a href="./terms-privacy-policy.html">Privacy Policy</a></label>
                     </div>
@@ -121,5 +137,57 @@
             </form>
         </div>
     </section>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('registration-form');
+            const termsCheckbox = document.getElementById('terms');
+            const termsContainer = document.getElementById('terms-container');
+            const termsError = document.getElementById('terms-error');
+            
+            // Listen for form submission
+            form.addEventListener('submit', function(event) {
+                // If terms are not checked
+                if (!termsCheckbox.checked) {
+                    event.preventDefault();
+                    
+                    // Show visual feedback
+                    termsContainer.classList.add('checkbox-pulse');
+                    termsError.textContent = 'Please accept the Terms and Privacy Policy to continue';
+                    termsError.style.display = 'block';
+                    
+                    // Focus on the checkbox
+                    termsCheckbox.focus();
+                    
+                    // Auto-check the checkbox after a short delay
+                    setTimeout(function() {
+                        termsCheckbox.checked = true;
+                        // Trigger the change event to update validation state
+                        termsCheckbox.dispatchEvent(new Event('change'));
+                        
+                        // After checkbox is checked, you can either:
+                        // Option 1: Show a message that it's been checked
+                        termsError.textContent = 'Terms accepted! You can now submit.';
+                        
+                        // Option 2: Submit the form automatically (disabled by default)
+                        // form.submit();
+                    }, 500);
+                    
+                    // Remove the animation class after it completes
+                    setTimeout(function() {
+                        termsContainer.classList.remove('checkbox-pulse');
+                    }, 1500);
+                }
+            });
+            
+            // Clear error when checkbox is checked manually
+            termsCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    termsError.textContent = '';
+                    termsError.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
