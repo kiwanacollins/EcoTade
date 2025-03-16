@@ -1246,6 +1246,8 @@ body {
 @media (max-width: 576px) {
     .dashboard-header {
         padding: 0 15px;
+        position: fixed;
+        width: 87vw;
     }
     
     .user-info {
