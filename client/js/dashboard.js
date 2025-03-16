@@ -583,7 +583,7 @@ function setupEventListeners() {
 // Trader details data
 const traderDetails = {
     "1": {
-        name: "John Smith",
+        name: "Jonas Hovan",
         specialty: "Crypto Specialist",
         background: "A seasoned trader focused on digital assets, John has developed deep insights into the crypto market over several years.",
         strategy: "Leverages technical analysis, blockchain sentiment, and emerging token trends to identify opportunities in both major and altcoins.",
@@ -595,11 +595,11 @@ const traderDetails = {
         additionalInfo: "Actively involved in crypto communities and early-adopter projects, always on the lookout for breakthrough blockchain innovations.",
         experience: "8+ years",
         riskLevel: "Moderate-High",
-        minInvestment: "$500",
+        minInvestment: "$1000",
         activeClients: "384"
     },
     "2": {
-        name: "Emma Johnson",
+        name: "Stuart Fx Flipper",
         specialty: "Forex Expert",
         background: "With a decade of experience in currency markets, Emma is well-versed in the dynamics of forex trading.",
         strategy: "Combines technical chart patterns with fundamental economic indicators to time entries and exits accurately.",
@@ -611,7 +611,7 @@ const traderDetails = {
         additionalInfo: "Known for her precision and ability to read volatile market conditions, ensuring steady returns.",
         experience: "10+ years",
         riskLevel: "Moderate",
-        minInvestment: "$1,000",
+        minInvestment: "$100",
         activeClients: "256"
     },
     "3": {
