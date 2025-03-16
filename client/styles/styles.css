@@ -890,7 +890,7 @@ body {
     body, p, li, a, span:not(.navbar-logo span), button:not(.btn) {
         font-family: var(--font-primary) !important;
         text-decoration: none;
-                margin-left: -11px;
+                /* margin-left: -11px; */
     }
     
     h1, h2, h3, h4, h5, h6, .navbar-logo span, .btn {
