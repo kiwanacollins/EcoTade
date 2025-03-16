@@ -2273,14 +2273,21 @@ function updateTopTraders(trader) {
     const viewProfileBtn = traderElement.querySelector('.view-profile');
     if (viewProfileBtn) {
         viewProfileBtn.addEventListener('click', function() {
-            switchPanel('traders');
-            // Update navigation item active state
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-                if (item.getAttribute('data-panel') === 'traders') {
-                    item.classList.add('active');
-                }
-            });
+            // Instead of switching to traders panel, show the trader details modal
+            const traderId = trader.id;
+            if (traderId) {
+                showTraderDetails(traderId);
+            } else {
+                console.error('Trader ID not found, cannot display details');
+                // Fallback to old behavior if no trader ID is available
+                switchPanel('traders');
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-panel') === 'traders') {
+                        item.classList.add('active');
+                    }
+                });
+            }
         });
     }
     
