@@ -1882,14 +1882,6 @@ body, .dashboard-main {
     font-size: 14px;
 }
 
-/* Step Navigation UI */
-.deposit-navigation {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
 /* Bank Transfer and Mobile Money Styles */
 .bank-transfer-info, .mobile-money-info {
     background-color: #f8f9fa;
@@ -1914,7 +1906,7 @@ body, .dashboard-main {
 .mobile-money-qr {
     background-color: white;
     padding: 15px;
-    border: 1px solid var (--border-color);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     margin-bottom: 20px;

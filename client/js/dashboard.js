@@ -519,21 +519,21 @@ function setupEventListeners() {
         });
     }
 
-    // Deposit funds button
-    // const depositBtn = document.getElementById('deposit-btn');
-    // if (depositBtn) {
-    //     depositBtn.addEventListener('click', function() {
-    //         openDepositModal();
-    //     });
-    // }
+    //Deposit funds button
+    const depositBtn = document.getElementById('deposit-btn');
+    if (depositBtn) {
+        depositBtn.addEventListener('click', function() {
+            openDepositModal();
+        });
+    }
     
     // Quick Deposit button in overview panel
-    // const quickDepositBtn = document.getElementById('quick-deposit-btn');
-    // if (quickDepositBtn) {
-    //     quickDepositBtn.addEventListener('click', function() {
-    //         openDepositModal();
-    //     });
-    // }
+    const quickDepositBtn = document.getElementById('quick-deposit-btn');
+    if (quickDepositBtn) {
+        quickDepositBtn.addEventListener('click', function() {
+            openDepositModal();
+        });
+    }
     
     // Modal close button
     const closeModal = document.querySelector('.close-modal');
@@ -1048,31 +1048,31 @@ function initTraderPerformanceChart(traderId) {
     });
 }
 
-// Open the deposit modal with improved multi-step process
-// function openDepositModal() {
-//     const modal = document.getElementById('deposit-modal');
-//     if (modal) {
-//         modal.classList.add('active');
+//Open the deposit modal with improved multi-step process
+function openDepositModal() {
+    const modal = document.getElementById('deposit-modal');
+    if (modal) {
+        modal.classList.add('active');
         
-//         // Reset the modal to first step
-//         resetDepositModal();
+        // Reset the modal to first step
+        resetDepositModal();
         
-//         // Add event listener to close when clicking outside
-//         modal.addEventListener('click', function(e) {
-//             if (e.target === modal) {
-//                 closeDepositModal();
-//             }
-//         });
+        // Add event listener to close when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeDepositModal();
+            }
+        });
         
-//         // Set default payment method
-//         const paymentMethodSelect = document.getElementById('payment-method-select');
-//         if (paymentMethodSelect) {
-//             // Default to bank
-//             paymentMethodSelect.value = 'bank';
-//             updatePaymentDetails('bank');
-//         }
-//     }
-// }
+        // Set default payment method
+        const paymentMethodSelect = document.getElementById('payment-method-select');
+        if (paymentMethodSelect) {
+            // Default to bank
+            paymentMethodSelect.value = 'bank';
+            updatePaymentDetails('bank');
+        }
+    }
+}
 
 // Reset deposit modal to initial state
 function resetDepositModal() {
