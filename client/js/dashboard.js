@@ -588,8 +588,8 @@ const traderDetails = {
         background: "A seasoned trader focused on digital assets, Jonas has developed deep insights into the crypto market over several years.",
         strategy: "Leverages technical analysis, blockchain sentiment, and emerging token trends to identify opportunities in both major and altcoins.",
         performance: {
-            monthly: "+24.6%",
-            allTime: "+142%"
+            monthly: "+80.6%",
+            allTime: "+182%"
         },
         riskManagement: "Uses diversified holdings and strict stop-loss orders to navigate crypto volatility.",
         additionalInfo: "Actively involved in crypto communities and early-adopter projects, always on the lookout for breakthrough blockchain innovations.",
@@ -604,8 +604,8 @@ const traderDetails = {
         background: "With a decade of experience in currency markets, Stuart is well-versed in the dynamics of forex trading.",
         strategy: "Combines technical chart patterns with fundamental economic indicators to time entries and exits accurately.",
         performance: {
-            monthly: "+18.3%",
-            allTime: "+95%"
+            monthly: "+70.3%",
+            allTime: "+165%"
         },
         riskManagement: "Employs careful leverage management and dynamic stop-loss strategies to protect capital.",
         additionalInfo: "Known for her precision and ability to read volatile market conditions, ensuring steady returns.",
