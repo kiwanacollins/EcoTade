@@ -650,7 +650,7 @@ const traderDetails = {
         },
         riskManagement: "Uses diversified holdings and strict stop-loss orders to navigate crypto volatility.",
         additionalInfo: "Actively involved in crypto communities and early-adopter projects, always on the lookout for breakthrough blockchain innovations.",
-        experience: "6+ years",
+        experience: "5+ years",
         riskLevel: "Moderate-High",
         minInvestment: "$1200",
         activeClients: "82"
