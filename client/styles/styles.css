@@ -2540,17 +2540,6 @@ main h2 {
     padding-left: 15px;
 }
 
-main h2:before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 5px;
-    background: #08c;
-    border-radius: 3px;
-}
-
 main h3 {
     font-family: var(--font-heading);
     font-size: 24px;
