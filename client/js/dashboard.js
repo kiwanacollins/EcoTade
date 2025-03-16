@@ -2093,7 +2093,7 @@ function updateDashboardUI(dashboardData) {
     const userRole = document.querySelector('.user-role');
     
     if (userName) userName.textContent = dashboardData.user.name;
-    if (userFullName) userFullName.textContent = dashboardData.user.name;
+    if (userFullName) userFullName.textContent = " " + dashboardData.user.name;
     if (userRole) userRole.textContent = dashboardData.user.role;
     
     // Update account summary
