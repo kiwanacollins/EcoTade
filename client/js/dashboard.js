@@ -595,7 +595,7 @@ const traderDetails = {
         additionalInfo: "Actively involved in crypto communities and early-adopter projects, always on the lookout for breakthrough blockchain innovations.",
         experience: "8+ years",
         riskLevel: "Moderate-High",
-        minInvestment: "$1000",
+        minInvestment: "$1200",
         activeClients: "384"
     },
     "2": {
