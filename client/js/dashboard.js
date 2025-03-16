@@ -585,7 +585,7 @@ const traderDetails = {
     "1": {
         name: "Jonas Hovan",
         specialty: "Crypto Specialist",
-        background: "A seasoned trader focused on digital assets, John has developed deep insights into the crypto market over several years.",
+        background: "A seasoned trader focused on digital assets, Jonas has developed deep insights into the crypto market over several years.",
         strategy: "Leverages technical analysis, blockchain sentiment, and emerging token trends to identify opportunities in both major and altcoins.",
         performance: {
             monthly: "+24.6%",
@@ -601,7 +601,7 @@ const traderDetails = {
     "2": {
         name: "Stuart Fx Flipper",
         specialty: "Forex Expert",
-        background: "With a decade of experience in currency markets, Emma is well-versed in the dynamics of forex trading.",
+        background: "With a decade of experience in currency markets, Stuart is well-versed in the dynamics of forex trading.",
         strategy: "Combines technical chart patterns with fundamental economic indicators to time entries and exits accurately.",
         performance: {
             monthly: "+18.3%",
