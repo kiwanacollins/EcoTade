@@ -650,10 +650,10 @@ const traderDetails = {
         },
         riskManagement: "Uses diversified holdings and strict stop-loss orders to navigate crypto volatility.",
         additionalInfo: "Actively involved in crypto communities and early-adopter projects, always on the lookout for breakthrough blockchain innovations.",
-        experience: "8+ years",
+        experience: "6+ years",
         riskLevel: "Moderate-High",
         minInvestment: "$1200",
-        activeClients: "384"
+        activeClients: "82"
     },
     "2": {
         name: "Stuart Fx Flipper",
@@ -673,7 +673,7 @@ const traderDetails = {
     },
     "3": {
         name: "TJ Trades",
-        specialty: "Stock Market Analyst",
+        specialty: "Forex Trader",
         background: "TJ Trades brings robust equity research and market insight to the table, focusing on stock performance analysis.",
         strategy: "Uses a blend of fundamental analysis and technical indicators to identify undervalued stocks and growth opportunities.",
         performance: {
@@ -685,7 +685,7 @@ const traderDetails = {
         experience: "12+ years",
         riskLevel: "Moderate",
         minInvestment: "$1,000",
-        activeClients: "312"
+        activeClients: "75"
     },
     "4": {
         name: "Mamba fx",
@@ -701,11 +701,11 @@ const traderDetails = {
         experience: "7+ years",
         riskLevel: "Moderate",
         minInvestment: "$2,000",
-        activeClients: "195"
+        activeClients: "78"
     },
     "5": {
         name: "Ahmed M fx",
-        specialty: "Commodities Specialist",
+        specialty: "Forex Trader",
         background: "Ahmed has extensive experience in commodities, with a focus on metals, energy, and agriculture.",
         strategy: "Analyzes supply and demand fundamentals combined with technical chart patterns to identify commodity price movements.",
         performance: {
@@ -721,7 +721,7 @@ const traderDetails = {
     },
     "6": {
         name: "Flex Fx",
-        specialty: "Options Trading Strategist",
+        specialty: "Forex Trader",
         background: "Flex is a specialist in derivatives with an in-depth understanding of options markets and pricing models.",
         strategy: "Uses advanced options strategies (spreads, straddles, iron condors) to capitalize on market volatility and directional moves.",
         performance: {
@@ -737,7 +737,7 @@ const traderDetails = {
     },
     "7": {
         name: "Robert Taylor",
-        specialty: "Technical Analyst",
+        specialty: "Forex Trader",
         background: "Robert's expertise lies in interpreting market charts and identifying technical patterns that forecast price movements.",
         strategy: "Utilizes candlestick analysis, moving averages, and oscillators to pinpoint high-probability trade signals.",
         performance: {
