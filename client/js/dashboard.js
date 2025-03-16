@@ -585,7 +585,7 @@ const traderDetails = {
     "1": {
         name: "Jonas Hovan",
         specialty: "Crypto Specialist",
-        background: "A trader focused on digital assets, Jonas has developed deep insights into the crypto market over several years.",
+        background: "A trader focused on digital assets, Jonas has developed deep insights into the Forex market over several years.",
         strategy: "Leverages technical analysis, blockchain sentiment, and emerging token trends to identify opportunities in both major and altcoins.",
         performance: {
             monthly: "+80.6%",
