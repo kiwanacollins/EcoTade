@@ -615,7 +615,7 @@ const traderDetails = {
         activeClients: "256"
     },
     "3": {
-        name: "Michael Chen",
+        name: "TJ Trades",
         specialty: "Stock Market Analyst",
         background: "Michael brings robust equity research and market insight to the table, focusing on stock performance analysis.",
         strategy: "Uses a blend of fundamental analysis and technical indicators to identify undervalued stocks and growth opportunities.",
@@ -631,7 +631,7 @@ const traderDetails = {
         activeClients: "312"
     },
     "4": {
-        name: "Sarah Johnson",
+        name: "Mamba fx",
         specialty: "Algorithmic Trading Expert",
         background: "With a strong background in both coding and finance, Sarah excels at designing automated trading systems.",
         strategy: "Implements and continuously refines quantitative models that automate trade execution based on historical data and real-time signals.",
@@ -647,7 +647,7 @@ const traderDetails = {
         activeClients: "195"
     },
     "5": {
-        name: "David Rodriguez",
+        name: "Ahmed M fx",
         specialty: "Commodities Specialist",
         background: "David has extensive experience in commodities, with a focus on metals, energy, and agriculture.",
         strategy: "Analyzes supply and demand fundamentals combined with technical chart patterns to identify commodity price movements.",
@@ -663,7 +663,7 @@ const traderDetails = {
         activeClients: "178"
     },
     "6": {
-        name: "Jessica Kim",
+        name: "Flex Fx",
         specialty: "Options Trading Strategist",
         background: "Jessica is a specialist in derivatives with an in-depth understanding of options markets and pricing models.",
         strategy: "Uses advanced options strategies (spreads, straddles, iron condors) to capitalize on market volatility and directional moves.",
