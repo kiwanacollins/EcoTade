@@ -384,7 +384,7 @@ body {
     padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
     position: relative;
-    left: 30px;
+    left: 10px;
 }
 
 .no-data-message {
