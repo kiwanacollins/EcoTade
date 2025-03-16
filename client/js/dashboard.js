@@ -698,7 +698,7 @@ const traderDetails = {
         },
         riskManagement: "Uses backtesting and rigorous parameter optimization to ensure algorithms perform reliably under varied market conditions.",
         additionalInfo: "Constantly monitors system performance and market trends to adjust strategies on the fly.",
-        experience: "7+ years",
+        experience: "4+ years",
         riskLevel: "Moderate",
         minInvestment: "$2,000",
         activeClients: "78"
