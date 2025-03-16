@@ -149,15 +149,14 @@ body {
     align-items: center;
 }
 
+/* Hide menu toggle by default */
 .menu-toggle {
     display: none;
     background: none;
     border: none;
-    color: var(--text-dark);
-    font-size: 20px;
+    font-size: 24px;
     cursor: pointer;
-    margin-right: 15px;
-    padding: 5px;
+    padding: 10px;
 }
 
 .header-left h2 {
@@ -1192,6 +1191,8 @@ body {
     
     .menu-toggle {
         display: block;
+        z-index: 1000;
+        color: var(--text-secondary);
     }
     
     .stats-cards {
