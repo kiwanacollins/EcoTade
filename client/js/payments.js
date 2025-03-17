@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Form submission
         const form = document.getElementById(`${type}-deposit-form`);
         form.addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.processingeventDefault();
             
             // Get the button and show loading state
             const confirmBtn = form.querySelector('.confirm-btn');
