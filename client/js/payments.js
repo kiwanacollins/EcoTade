@@ -308,6 +308,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
         
+        // Setup dollar sign visibility on focus/blur
+        const dollarSign = modal.querySelector('.input-group-text');
+        
+        // Hide dollar sign on input focus
+        amountInput.addEventListener('focus', function() {
+            dollarSign.classList.add('hidden');
+        });
+        
+        // Show dollar sign on input blur if input is empty
+        amountInput.addEventListener('blur', function() {
+            if (!this.value) {
+                dollarSign.classList.remove('hidden');
+            }
+        });
+        
         // Form submission
         const form = document.getElementById(`${type}-deposit-form`);
         form.addEventListener('submit', function(e) {
