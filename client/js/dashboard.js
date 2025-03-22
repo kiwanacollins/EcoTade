@@ -676,10 +676,10 @@ const traderDetails = {
         },
         riskManagement: "Employs careful leverage management and dynamic stop-loss strategies to protect capital.",
         additionalInfo: "Known for her precision and ability to read volatile market conditions, ensuring steady returns.",
-        experience: "10+ years",
+        experience: "5+ years",
         riskLevel: "Moderate",
-        minInvestment: "$100",
-        activeClients: "256"
+        minInvestment: "$1000",
+        activeClients: "48"
     },
     "3": {
         name: "TJ Trades",
