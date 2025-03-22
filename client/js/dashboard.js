@@ -689,7 +689,7 @@ const traderDetails = {
         additionalInfo: "Known for her precision and ability to read volatile market conditions, ensuring steady returns.",
         experience: "5+ years",
         riskLevel: "Moderate",
-        minInvestment: "$500",
+        minInvestment: "$100",
         activeClients: "48"
     },
     "3": {
