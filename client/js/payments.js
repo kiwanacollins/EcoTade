@@ -489,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get the correct API URL from the config
             const apiUrl = window.AppConfig ? 
                 window.AppConfig.api.getUrl('/api/financial/proof-upload') : 
-                'https://api.forexprox.com/api/financial/proof-upload';
+                'https://forexprox.com/api/financial/proof-upload';
             
             console.log('Uploading payment proof to:', apiUrl);
             
