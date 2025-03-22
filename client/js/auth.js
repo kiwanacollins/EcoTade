@@ -50,21 +50,16 @@ async function register(event) {
     });
     
     console.log('Registration successful:', response);
+
+    // Clear any existing messages
+    document.getElementById('signup-error').textContent = '';
     
-    // Don't store token after registration
-    if (response.success) {
-      // Store success message and redirect to login
-      sessionStorage.setItem('registrationSuccess', 'Registration successful! Please log in.');
-      window.location.replace('./login.html');
-    } else {
-      console.error('Registration failed:', response);
-      document.getElementById('signup-error').textContent = 'Registration failed';
-      
-      // Reset button
-      submitButton.classList.remove('btn-loading');
-      submitButton.disabled = false;
-      submitButton.textContent = originalText;
-    }
+    // Store success message and redirect to login
+    sessionStorage.setItem('registrationSuccess', 'Registration successful! Please log in with your credentials.');
+    
+    // Use window.location.replace for more reliable redirect
+    window.location.replace('./login.html');
+    
   } catch (error) {
     console.error('Registration error:', error);
     

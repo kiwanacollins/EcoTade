@@ -262,11 +262,8 @@
                     return;
                 }
 
-                // Clear file input before submission
-                fileInput.value = '';
-                
-                // Continue with form submission
-                form.submit();
+                // Use the register function from auth.js instead of form.submit()
+                register(event);
             });
 
             // Terms checkbox change handler
