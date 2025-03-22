@@ -104,7 +104,7 @@ exports.processPaymentProof = async (req, res) => {
     
     res.json({
       success: true,
-      message: 'Payment proof received successfully',
+      message: 'Payment proof received successfully, Your balance will be updated shortly.',
       data: {
         fileInfo: req.file,
         paymentDetails: {
