@@ -116,8 +116,8 @@ async function login(event) {
     // Reset any error messages
     document.getElementById('login-error').textContent = '';
     
-    // Make API request through our client
-    const response = await apiClient.auth.login({ email, password });
+    // Use auth directly instead of apiClient
+    const response = await auth.login({ email, password });
     
     if (response.success && response.token) {
       console.log('Login successful, storing token');
@@ -132,9 +132,6 @@ async function login(event) {
       
       // Important: Add a flag to indicate successful login
       localStorage.setItem('isAuthenticated', 'true');
-      
-      // Log the token to verify it was saved properly (don't log in production)
-      console.log('Auth token stored:', localStorage.getItem('token') ? 'Yes' : 'No');
       
       // Clear any login errors
       document.getElementById('login-error').textContent = '';
