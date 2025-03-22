@@ -486,13 +486,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Upload payment proof to server
     async function uploadPaymentProof(formData, type) {
         try {
-            // Define URL based on your API (adjust as needed)
-            const apiUrl = '/api/payments/proof-upload';
+            // Define URL based on your API
+            const apiUrl = '/api/financial/proof-upload';
+            
+            // Get auth token from TokenManager (if available)
+            let headers = {};
+            if (window.TokenManager && window.TokenManager.getToken) {
+                const token = window.TokenManager.getToken();
+                if (token) {
+                    headers = {
+                        'Authorization': `Bearer ${token}`
+                    };
+                }
+            }
             
             // Make API call to your server
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: formData,
+                headers: headers
                 // Don't set Content-Type header - browser will set it with the boundary parameter
             });
             
