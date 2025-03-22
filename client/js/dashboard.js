@@ -152,12 +152,18 @@ async function fetchDashboardData(skipCache = false) {
             return;
         }
 
-        // Ensure anti-cache parameters are always added to prevent browser caching
+        // ALWAYS use anti-cache parameters to prevent browser caching
         const cacheParam = `?nocache=${Date.now()}`;
         
-        // Attempt to get data directly from the financial API endpoint
+        // ALWAYS clear localStorage cache before fetching fresh data
+        if (skipCache) {
+            localStorage.removeItem('dashboardData');
+            console.log('Cleared localStorage dashboard data cache');
+        }
+        
+        // Always attempt to get data directly from the financial API endpoint first
         try {
-            // Direct request to financial data API with no-cache headers
+            // Direct request to financial data API with strict no-cache headers
             const financialResponse = await fetch(`/api/financial/dashboard${cacheParam}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -230,10 +236,23 @@ async function fetchDashboardData(skipCache = false) {
                         updateTopTraders(dashboardData.selectedTrader);
                         
                         // Update active traders count in UI
-                        const activeTradersStat = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+                        const activeTradersStat = document.querySelector('.stat-card:nth-child(6) .stat-info p');
                         if (activeTradersStat) {
                             activeTradersStat.textContent = dashboardData.accountSummary.activeTraders.toString();
                         }
+                    }
+                    
+                    // Show sync status indication
+                    const syncStatusElem = document.querySelector('.sync-status');
+                    if (syncStatusElem) {
+                        syncStatusElem.textContent = 'Data synced from server';
+                        syncStatusElem.className = 'sync-status synced';
+                        syncStatusElem.style.display = 'inline-block';
+                        
+                        // Hide after a few seconds
+                        setTimeout(() => {
+                            syncStatusElem.classList.add('hiding');
+                        }, 3000);
                     }
                     
                     return dashboardData;
@@ -244,59 +263,69 @@ async function fetchDashboardData(skipCache = false) {
         }
         
         // Fallback to legacy endpoint if the first attempt fails
-        const response = await fetch(`/api/auth/dashboard${cacheParam}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Dashboard data from legacy endpoint:', data);
+        try {
+            const response = await fetch(`/api/auth/dashboard${cacheParam}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
             
-            if (data && data.data) {
-                // Cache the response
-                localStorage.setItem('dashboardData', JSON.stringify(data.data));
-                return data.data;
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Dashboard data from legacy endpoint:', data);
+                
+                if (data && data.data) {
+                    // Update UI immediately
+                    updateDashboardUI(data.data);
+                    // Cache the response
+                    localStorage.setItem('dashboardData', JSON.stringify(data.data));
+                    return data.data;
+                }
             }
+        } catch (error) {
+            console.error('Error fetching from legacy endpoint:', error);
         }
         
         // If we get here, try another endpoint as a last resort
-        const fallbackResponse = await fetch(`/api/user/financial-data${cacheParam}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
+        try {
+            const fallbackResponse = await fetch(`/api/user/financial-data${cacheParam}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            
+            if (fallbackResponse.ok) {
+                const data = await fallbackResponse.json();
+                const username = localStorage.getItem('username');
+                
+                const dashboardData = {
+                    user: { name: username || 'User' },
+                    accountSummary: {
+                        totalBalance: data.totalBalance || 0,
+                        profit: data.profit || 0,
+                        dailyProfit: data.dailyProfit || 0, 
+                        dailyLoss: data.dailyLoss || 0,
+                        activeTrades: data.activeTrades || 0,
+                        activeTraders: data.activeTraders || 0
+                    },
+                    selectedTrader: data.selectedTrader || null,
+                    transactions: data.transactions || [],
+                    investments: data.investments || []
+                };
+                
+                // Update UI immediately
+                updateDashboardUI(dashboardData);
+                
+                return dashboardData;
             }
-        });
-        
-        if (fallbackResponse.ok) {
-            const data = await fallbackResponse.json();
-            const username = localStorage.getItem('username');
-            
-            const dashboardData = {
-                user: { name: username || 'User' },
-                accountSummary: {
-                    totalBalance: data.totalBalance || 0,
-                    profit: data.profit || 0,
-                    dailyProfit: data.dailyProfit || 0, 
-                    dailyLoss: data.dailyLoss || 0,
-                    activeTrades: data.activeTrades || 0,
-                    activeTraders: data.activeTraders || 0
-                },
-                selectedTrader: data.selectedTrader || null,
-                transactions: data.transactions || [],
-                investments: data.investments || []
-            };
-            
-            // Update UI immediately
-            updateDashboardUI(dashboardData);
-            
-            return dashboardData;
+        } catch (error) {
+            console.error('Error fetching from financial-data endpoint:', error);
         }
         
         // Add diagnostic information to error message
@@ -305,9 +334,6 @@ async function fetchDashboardData(skipCache = false) {
                         ', Last Sync: ' + (localStorage.getItem('lastDataSync') || 'Never'));
     } catch (error) {
         console.error('Error in fetchDashboardData:', error);
-        
-        // Show more detailed error notification with recovery info
-        // showNotification('error', 'Could not fetch the latest data. Using cached data instead. Try refreshing the page or checking your internet connection.');
         
         // Attempt to use cached data with clear marking that it's cached
         const cachedData = localStorage.getItem('dashboardData');
@@ -318,6 +344,9 @@ async function fetchDashboardData(skipCache = false) {
             // Mark data as coming from cache for UI display
             data.syncSource = 'cache';
             data.usingCachedData = true;
+            
+            // Update UI with cached data
+            updateDashboardUI(data);
             
             return data;
         }
