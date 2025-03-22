@@ -1,4 +1,15 @@
-const User = require('../models/User');
+const mongoose = require('mongoose');
+const UserSchema = require('../models/User');
+
+// We need to ensure the model is registered properly
+let User;
+try {
+  // Try to get the model if it's already registered
+  User = mongoose.model('User');
+} catch (error) {
+  // If not registered yet, register it
+  User = mongoose.model('User', UserSchema);
+}
 
 // Get user's financial dashboard data with improved error handling
 exports.getDashboard = async (req, res) => {
@@ -122,7 +133,7 @@ exports.saveSelectedTrader = async (req, res) => {
     
     // Increment active traders count or set to 1 if not present
     // Only increment if the trader is different than the previous one
-    const previousTraderId = user.financialData.selectedTrader?.id;
+    const previousTraderId = user.financialData?.selectedTrader?.id;
     if (!previousTraderId || previousTraderId !== traderId) {
       user.financialData.activeTraders = (user.financialData.activeTraders || 0) + 1;
     }
@@ -210,9 +221,6 @@ exports.updateDailyProfitLoss = async (req, res) => {
 exports.scheduledDailyUpdate = async () => {
   try {
     console.log('Starting scheduled daily profit/loss update');
-    
-    // Import the User model
-    const User = require('../models/User');
     
     // Find all users
     const users = await User.find();

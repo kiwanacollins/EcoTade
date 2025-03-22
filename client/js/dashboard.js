@@ -2091,6 +2091,8 @@ async function saveSelectedTrader(trader) {
             return false;
         }
         
+        console.log('Sending trader data to server:', trader);
+        
         // Use relative URL and include credentials
         const response = await fetch('/api/financial/trader', {
             method: 'POST',
@@ -2108,11 +2110,14 @@ async function saveSelectedTrader(trader) {
             })
         });
         
-        const result = await response.json();
-        
+        // Check for non-OK response before trying to parse JSON
         if (!response.ok) {
-            throw new Error(result.message || `Server error: ${response.statusText}`);
+            const errorText = await response.text();
+            console.error('Server returned error:', response.status, errorText);
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
         }
+        
+        const result = await response.json();
         
         if (!result.success) {
             throw new Error(result.message || 'Failed to save trader selection');
@@ -2231,7 +2236,7 @@ function updateDashboardUI(dashboardData) {
         }
     }
     
-    // ...rest of existing code...
+  
 }
 
 // Modified selectTrader function with improved database persistence
