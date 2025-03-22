@@ -40,9 +40,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Set up the data sync mechanism first
         setupDataSyncMechanism();
         
-        // Load stored data while we fetch from API (temporary display)
-        const loadedFromLocalStorage = loadDataFromLocalStorage();
-        console.log('Loaded from localStorage:', loadedFromLocalStorage);
+        // Clear localStorage cache for dashboard data to ensure fresh fetch
+        localStorage.removeItem('dashboardData');
         
         // IMPORTANT: Always fetch fresh data from server with skipCache=true
         // This ensures we're getting the latest data from MongoDB
@@ -153,16 +152,18 @@ async function fetchDashboardData(skipCache = false) {
             return;
         }
 
-        // Add anti-cache query parameter if skipCache is true
-        const cacheParam = skipCache ? `?nocache=${Date.now()}` : '';
+        // Ensure anti-cache parameters are always added to prevent browser caching
+        const cacheParam = `?nocache=${Date.now()}`;
         
         // Attempt to get data directly from the financial API endpoint
         try {
-            // Direct request to financial data API
+            // Direct request to financial data API with no-cache headers
             const financialResponse = await fetch(`/api/financial/dashboard${cacheParam}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
                 }
             });
             
@@ -175,7 +176,9 @@ async function fetchDashboardData(skipCache = false) {
                     const userResponse = await fetch(`/api/users/profile${cacheParam}`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
-                            'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
                         }
                     });
                     
@@ -244,7 +247,9 @@ async function fetchDashboardData(skipCache = false) {
         const response = await fetch(`/api/auth/dashboard${cacheParam}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
         
@@ -263,7 +268,9 @@ async function fetchDashboardData(skipCache = false) {
         const fallbackResponse = await fetch(`/api/user/financial-data${cacheParam}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Cache-Control': skipCache ? 'no-cache, no-store' : 'default'
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
         
@@ -285,6 +292,9 @@ async function fetchDashboardData(skipCache = false) {
                 transactions: data.transactions || [],
                 investments: data.investments || []
             };
+            
+            // Update UI immediately
+            updateDashboardUI(dashboardData);
             
             return dashboardData;
         }
