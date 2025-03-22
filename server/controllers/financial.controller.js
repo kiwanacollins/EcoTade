@@ -1,174 +1,121 @@
-const { User } = require('../models');
+const User = require('../models/User');
 
-// @desc    Get user's financial dashboard data
-// @route   GET /api/financial/dashboard
-// @access  Private
+// Get user's financial dashboard data
 exports.getDashboard = async (req, res) => {
   try {
-    // Get user from authenticated request
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).select('financialData');
     
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     
-    // Return formatted financial data
-    return res.status(200).json({
+    res.json({
       success: true,
-      data: {
-        totalBalance: user.financialData?.totalBalance || 0,
-        profit: user.financialData?.profit || 0,
-        activeTrades: user.financialData?.activeTrades || 0,
-        activeTraders: user.financialData?.activeTraders || 0,
-        selectedTrader: user.financialData?.selectedTrader || null,
-        transactions: user.financialData?.transactions || [],
-        investments: user.financialData?.investments || []
+      data: user.financialData || {
+        balance: 0,
+        profit: 0,
+        trades: [],
+        payments: []
       }
     });
-  } catch (error) {
-    console.error('Error fetching financial dashboard:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error fetching financial data'
-    });
+  } catch (err) {
+    console.error('Error fetching dashboard data:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-// @desc    Update user's financial dashboard data
-// @route   PUT /api/financial/dashboard
-// @access  Private
+// Update user's financial dashboard data
 exports.updateDashboard = async (req, res) => {
   try {
-    // Get user from authenticated request
+    const { balance, profit, trades } = req.body;
+    
     const user = await User.findById(req.user.id);
     
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     
-    // Initialize financialData if it doesn't exist
+    // Initialize financial data if it doesn't exist
     if (!user.financialData) {
       user.financialData = {};
     }
     
-    const updateData = {};
+    // Update only the fields that are provided
+    if (balance !== undefined) user.financialData.balance = balance;
+    if (profit !== undefined) user.financialData.profit = profit;
+    if (trades !== undefined) user.financialData.trades = trades;
     
-    // Only update fields that are provided in the request
-    if (req.body.selectedTrader !== undefined) {
-      updateData['financialData.selectedTrader'] = req.body.selectedTrader;
-    }
+    await user.save();
     
-    if (req.body.activeTraders !== undefined) {
-      updateData['financialData.activeTraders'] = req.body.activeTraders;
-    }
-    
-    if (req.body.totalBalance !== undefined) {
-      updateData['financialData.totalBalance'] = req.body.totalBalance;
-    }
-    
-    if (req.body.profit !== undefined) {
-      updateData['financialData.profit'] = req.body.profit;
-    }
-    
-    if (req.body.activeTrades !== undefined) {
-      updateData['financialData.activeTrades'] = req.body.activeTrades;
-    }
-    
-    // If there's transaction data, add it to the transactions array
-    if (req.body.transaction) {
-      updateData.$push = { 'financialData.transactions': req.body.transaction };
-    }
-    
-    // If there's investment data, add it to the investments array
-    if (req.body.investment) {
-      updateData.$push = { 'financialData.investments': req.body.investment };
-    }
-    
-    // Update the user document
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      updateData,
-      {
-        new: true, // Return the updated document
-        runValidators: true // Validate the update against the schema
-      }
-    );
-    
-    return res.status(200).json({
+    res.json({
       success: true,
-      message: 'Financial data updated successfully',
-      data: {
-        totalBalance: updatedUser.financialData?.totalBalance || 0,
-        profit: updatedUser.financialData?.profit || 0,
-        activeTrades: updatedUser.financialData?.activeTrades || 0,
-        activeTraders: updatedUser.financialData?.activeTraders || 0,
-        selectedTrader: updatedUser.financialData?.selectedTrader || null
-      }
+      data: user.financialData
     });
-  } catch (error) {
-    console.error('Error updating financial dashboard:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error updating financial data'
-    });
+  } catch (err) {
+    console.error('Error updating dashboard data:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
-// @desc    Save selected trader
-// @route   POST /api/financial/trader
-// @access  Private
+// Save selected trader
 exports.saveSelectedTrader = async (req, res) => {
   try {
-    const { traderId, traderData } = req.body;
+    const { traderId } = req.body;
     
-    if (!traderId && !traderData) {
-      return res.status(400).json({
-        success: false,
-        message: 'Trader ID or trader data is required'
-      });
+    if (!traderId) {
+      return res.status(400).json({ success: false, message: 'Trader ID is required' });
     }
     
-    // Get user from authenticated request
     const user = await User.findById(req.user.id);
     
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
     
-    // Initialize financialData if it doesn't exist
+    // Initialize financial data if it doesn't exist
     if (!user.financialData) {
       user.financialData = {};
     }
     
-    // Update selected trader and active traders count
-    user.financialData.selectedTrader = traderData || traderId;
-    user.financialData.activeTraders = 1; // Set to 1 when a trader is selected
-    
-    // Save the updated user
+    user.financialData.selectedTrader = traderId;
     await user.save();
     
-    return res.status(200).json({
+    res.json({
       success: true,
       message: 'Trader selected successfully',
+      data: { selectedTrader: traderId }
+    });
+  } catch (err) {
+    console.error('Error saving selected trader:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// Process payment proof (this will be called by the file upload route)
+exports.processPaymentProof = async (req, res) => {
+  try {
+    // This function would typically:
+    // 1. Save payment data to the database
+    // 2. Update user's payment history
+    // 3. Handle any additional business logic
+    
+    // For now, we'll just return a success response
+    // The actual file upload is handled by multer middleware in the route
+    
+    res.json({
+      success: true,
+      message: 'Payment proof received successfully',
       data: {
-        selectedTrader: user.financialData.selectedTrader,
-        activeTraders: user.financialData.activeTraders
+        fileInfo: req.file,
+        paymentDetails: {
+          type: req.body.paymentType,
+          amount: req.body.amount,
+          timestamp: new Date()
+        }
       }
     });
-  } catch (error) {
-    console.error('Error saving selected trader:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error saving selected trader'
-    });
+  } catch (err) {
+    console.error('Error processing payment proof:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

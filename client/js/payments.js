@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let isUpdatingRates = false;
     let lastUpdateTime = null;
     
+    // Track payment screenshot
+    let paymentScreenshot = null;
+    
     // Fetch real exchange rates from CoinGecko API
     async function fetchExchangeRates() {
         if (isUpdatingRates) {
@@ -188,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <form class="deposit-form" id="${type}-deposit-form">
+                    <form class="deposit-form" id="${type}-deposit-form" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="${type}-amount">Amount in USD</label>
                             <div class="input-group">
@@ -223,7 +226,31 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <p>Please send the exact amount to the address above.</p>
                             </div>
                         </div>
-                        <button type="submit" class="btn confirm-btn">
+                        
+                        <!-- Screenshot Upload Section -->
+                        <div class="upload-section" id="${type}-upload-section">
+                            <div class="upload-header">
+                                <h4>Payment Proof</h4>
+                                <span class="required-badge">Required</span>
+                            </div>
+                            <input type="file" id="${type}-file-input" class="file-input" accept="image/*">
+                            <div class="upload-placeholder" id="${type}-upload-placeholder">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Upload screenshot of your payment</p>
+                                <small>Click or drag an image here (JPG, PNG, GIF)</small>
+                            </div>
+                            <div class="upload-preview" id="${type}-upload-preview">
+                                <img src="" alt="Payment screenshot" class="preview-image" id="${type}-preview-image">
+                                <div class="preview-actions">
+                                    <button type="button" class="remove-btn" id="${type}-remove-file">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="upload-error" id="${type}-upload-error"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn confirm-btn" id="${type}-confirm-btn" disabled>
                             <span class="btn-text">Confirm Payment</span>
                             <span class="spinner"></span>
                         </button>
@@ -323,25 +350,181 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // Setup file upload functionality
+        setupFileUpload(type);
+        
         // Form submission
         const form = document.getElementById(`${type}-deposit-form`);
         form.addEventListener('submit', function(e) {
-            e.preventDefault(); // Fixed from e.processingeventDefault
+            e.preventDefault();
+            
+            // Check if screenshot is uploaded
+            if (!paymentScreenshot) {
+                showUploadError(type, 'Please upload a screenshot of your payment');
+                return;
+            }
             
             // Get the button and show loading state
             const confirmBtn = form.querySelector('.confirm-btn');
             confirmBtn.classList.add('loading');
             confirmBtn.disabled = true;
             
-            // Simulate API call (3 seconds)
-            setTimeout(() => {
-                // Hide modal
-                closeModal();
-                
-                // Show success message
-                showSuccessMessage(type);
-            }, 3000);
+            // Create FormData to handle the file upload
+            const formData = new FormData();
+            formData.append('paymentType', type);
+            formData.append('amount', document.getElementById(`${type}-amount`).value);
+            formData.append('screenshot', paymentScreenshot);
+            
+            // Send to server
+            uploadPaymentProof(formData, type);
         });
+    }
+    
+    // Setup file upload functionality
+    function setupFileUpload(type) {
+        const uploadSection = document.getElementById(`${type}-upload-section`);
+        const fileInput = document.getElementById(`${type}-file-input`);
+        const uploadPlaceholder = document.getElementById(`${type}-upload-placeholder`);
+        const uploadPreview = document.getElementById(`${type}-upload-preview`);
+        const previewImage = document.getElementById(`${type}-preview-image`);
+        const removeFileBtn = document.getElementById(`${type}-remove-file`);
+        const confirmBtn = document.getElementById(`${type}-confirm-btn`);
+        const errorDiv = document.getElementById(`${type}-upload-error`);
+        
+        // Click on placeholder to trigger file input
+        uploadPlaceholder.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Handle file input change
+        fileInput.addEventListener('change', (e) => {
+            handleFileSelection(e.target.files);
+        });
+        
+        // Handle drag and drop
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                handleFileSelection(e.dataTransfer.files);
+            }
+        });
+        
+        // Remove file functionality
+        removeFileBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            uploadPreview.classList.remove('active');
+            uploadPlaceholder.style.display = 'flex';
+            uploadSection.classList.remove('has-file');
+            previewImage.src = '';
+            paymentScreenshot = null;
+            confirmBtn.disabled = true;
+            errorDiv.classList.remove('visible');
+        });
+        
+        // Handle file selection
+        function handleFileSelection(files) {
+            if (!files.length) return;
+            
+            const file = files[0];
+            
+            // Check file type
+            if (!file.type.match('image.*')) {
+                showUploadError(type, 'Please upload an image file (JPG, PNG, GIF)');
+                return;
+            }
+            
+            // Check file size (limit to 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showUploadError(type, 'File is too large. Please upload an image less than 5MB');
+                return;
+            }
+            
+            // Clear previous error
+            errorDiv.classList.remove('visible');
+            
+            // Create file preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                uploadPreview.classList.add('active');
+                uploadPlaceholder.style.display = 'none';
+                uploadSection.classList.add('has-file');
+                paymentScreenshot = file;
+                confirmBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    // Show upload error
+    function showUploadError(type, message) {
+        const errorDiv = document.getElementById(`${type}-upload-error`);
+        errorDiv.textContent = message;
+        errorDiv.classList.add('visible');
+        
+        // Highlight upload section
+        const uploadSection = document.getElementById(`${type}-upload-section`);
+        uploadSection.style.borderColor = 'var(--danger-color)';
+        
+        // Reset border after animation
+        setTimeout(() => {
+            uploadSection.style.borderColor = '';
+        }, 2000);
+    }
+    
+    // Upload payment proof to server
+    async function uploadPaymentProof(formData, type) {
+        try {
+            // Define URL based on your API (adjust as needed)
+            const apiUrl = '/api/payments/proof-upload';
+            
+            // Make API call to your server
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData,
+                // Don't set Content-Type header - browser will set it with the boundary parameter
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            // Hide modal
+            closeModal();
+            
+            // Show success message
+            showSuccessMessage(type, result.message || 'Your payment proof has been uploaded');
+            
+        } catch (error) {
+            console.error('Error uploading payment proof:', error);
+            
+            // Find the confirm button and reset loading state
+            const confirmBtn = document.querySelector(`#${type}-confirm-btn`);
+            if (confirmBtn) {
+                confirmBtn.classList.remove('loading');
+                confirmBtn.disabled = false;
+            }
+            
+            // Show error in modal
+            const errorDiv = document.getElementById(`${type}-upload-error`);
+            if (errorDiv) {
+                errorDiv.textContent = 'Failed to upload payment proof. Please try again.';
+                errorDiv.classList.add('visible');
+            }
+        }
     }
     
     // Close the modal
@@ -353,11 +536,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 overlay.remove();
             }, 300); // Match this with CSS transition time
         }
+        
+        // Reset payment screenshot
+        paymentScreenshot = null;
     }
     
     // Show success message
-    function showSuccessMessage(type) {
+    function showSuccessMessage(type, customMessage = null) {
         const currency = type === 'usdt' ? 'Tether (USDT)' : 'Bitcoin';
+        const message = customMessage || `Your ${currency} deposit will reflect in your account within 30 minutes after confirmation on the blockchain.`;
         
         // Create toast notification
         const toast = document.createElement('div');
@@ -368,8 +555,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="toast-message">
-                    <h4>Payment Initiated</h4>
-                    <p>Your ${currency} deposit will reflect in your account within 30 minutes after confirmation on the blockchain.</p>
+                    <h4>Payment Proof Received</h4>
+                    <p>${message}</p>
                 </div>
                 <button class="toast-close">&times;</button>
             </div>

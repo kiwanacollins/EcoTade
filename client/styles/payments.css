@@ -458,3 +458,154 @@
 .flash-update {
     animation: flash 1s;
 }
+
+/* Add screenshot upload styles */
+.upload-section {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+}
+
+.upload-section.dragover {
+    background-color: rgba(0, 102, 255, 0.05);
+    border-color: var(--primary-color);
+}
+
+.upload-section.has-file {
+    background-color: rgba(52, 199, 89, 0.05);
+    border-color: var(--success-color);
+}
+
+.upload-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.upload-header h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.upload-header .required-badge {
+    background-color: rgba(255, 59, 48, 0.1);
+    color: var(--danger-color);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.upload-placeholder i {
+    font-size: 28px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.upload-placeholder p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.upload-placeholder small {
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.upload-preview {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.upload-preview.active {
+    display: flex;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.preview-actions button {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.preview-actions button:hover {
+    background-color: var(--background-color);
+}
+
+.preview-actions button.remove-btn {
+    color: var(--danger-color);
+}
+
+.preview-actions button.remove-btn:hover {
+    background-color: rgba(255, 59, 48, 0.1);
+    border-color: var(--danger-color);
+}
+
+.file-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.upload-error {
+    color: var(--danger-color);
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+}
+
+.upload-error.visible {
+    display: block;
+}
+
+/* Adjust confirm button for disabled state */
+.confirm-btn:disabled {
+    background-color: var(--border-color);
+    cursor: not-allowed;
+}
+
+.confirm-btn:disabled:hover {
+    background-color: var(--border-color);
+}

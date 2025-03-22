@@ -8,6 +8,7 @@ const mongoose = require('mongoose'); // Add this import at the top
 const { checkConfigOnStartup } = require('./utils/config-validator');
 // Add JWT configuration check with fix attempt
 const { isJwtConfigured, attemptJwtFix } = require('./scripts/check-jwt');
+const morgan = require('morgan');
 
 // Try to load environment from dotenv files
 try {
@@ -236,6 +237,16 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const financialRoutes = require('./routes/financial.routes'); // Add this line
 
+// Create the uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../uploads/payment-proofs');
+fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Serve static files from client directory
+app.use(express.static(path.join(__dirname, '../client')));
+
+// Serve uploaded files - this allows accessing the payment screenshots from the client
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Routes with try-catch blocks
 try {
   // Add health check routes
@@ -323,6 +334,15 @@ try {
       status: dbConnected ? 'online' : 'limited',
       databaseConnected: dbConnected
     });
+  });
+
+  // Serve index.html for all non-API routes (SPA support)
+  app.get('*', (req, res) => {
+    // Don't serve the index.html for API routes or direct file requests
+    if (req.url.startsWith('/api') || path.extname(req.url)) {
+      return res.status(404).send('Not found');
+    }
+    res.sendFile(path.join(__dirname, '../index.html'));
   });
 } catch (error) {
   logMessage(`Error setting up routes: ${error.message}\n${error.stack}`, 'error');

@@ -3,7 +3,23 @@ const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 const { User } = require('../models'); // Fixed import to use models index
 
-// ...existing code...
+// Import route modules
+const authRoutes = require('./auth.routes');
+const userRoutes = require('./user.routes');
+const financialRoutes = require('./financial.routes');
+
+// Define API routes
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+router.use('/payments', financialRoutes); // Register our payments routes
+
+// API health check endpoint
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'API is running'
+  });
+});
 
 // Get user's financial data
 router.get('/user/financial-data', authMiddleware, async (req, res) => {
@@ -71,7 +87,5 @@ router.put('/user/financial-data', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-// ...existing code...
 
 module.exports = router;
