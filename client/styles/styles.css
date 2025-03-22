@@ -2091,6 +2091,7 @@ h1, h2, h3, h4, h5, h6 {
         min-width: 20px;
         margin-right: 8px;
         position: relative;
+        top: 5px;
         z-index: 2;
     }
     
