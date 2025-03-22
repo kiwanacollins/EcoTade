@@ -391,6 +391,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const confirmBtn = document.getElementById(`${type}-confirm-btn`);
         const errorDiv = document.getElementById(`${type}-upload-error`);
         
+        // Get the username and user ID from local storage
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const username = userData.name || 'user';
+        const userId = userData._id || '';
+        
         // Click on placeholder to trigger file input
         uploadPlaceholder.addEventListener('click', () => {
             fileInput.click();
@@ -453,6 +458,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Clear previous error
             errorDiv.classList.remove('visible');
             
+            // Create a unique filename that includes the username
+            const timestamp = Date.now();
+            const randomString = Math.random().toString(36).substring(2, 10);
+            const fileExtension = file.name.split('.').pop();
+            
+            // Format: payment-type-timestamp-userid-username-randomstring.extension
+            const newFileName = `payment-${type}-${timestamp}-${userId}-${username}-${randomString}.${fileExtension}`;
+            
+            // Create a new File object with the modified filename
+            const modifiedFile = new File([file], newFileName, { type: file.type });
+            
             // Create file preview
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -460,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 uploadPreview.classList.add('active');
                 uploadPlaceholder.style.display = 'none';
                 uploadSection.classList.add('has-file');
-                paymentScreenshot = file;
+                paymentScreenshot = modifiedFile;
                 confirmBtn.disabled = false;
             };
             reader.readAsDataURL(file);
