@@ -1,26 +1,43 @@
 const User = require('../models/User');
 
-// Get user's financial dashboard data
+// Get user's financial dashboard data with improved error handling
 exports.getDashboard = async (req, res) => {
   try {
+    console.log(`Fetching dashboard data for user ${req.user.id}`);
+    
     const user = await User.findById(req.user.id).select('financialData');
     
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
     
-    res.json({
+    // Ensure we have default values for all key properties
+    const financialData = user.financialData || {};
+    
+    // Create safe response object with all required fields
+    const safeResponse = {
       success: true,
-      data: user.financialData || {
-        balance: 0,
-        profit: 0,
-        trades: [],
-        payments: []
+      data: {
+        totalBalance: financialData.balance || 0,
+        profit: financialData.profit || 0,
+        trades: financialData.trades || [],
+        payments: financialData.payments || [],
+        dailyProfit: financialData.dailyProfit || 0,
+        dailyLoss: financialData.dailyLoss || 0,
+        activeTrades: financialData.activeTrades || 0,
+        activeTraders: financialData.activeTraders || 0,
+        selectedTrader: financialData.selectedTrader || null
       }
-    });
+    };
+    
+    res.json(safeResponse);
   } catch (err) {
     console.error('Error fetching dashboard data:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error fetching dashboard data', 
+      error: err.message 
+    });
   }
 };
 
@@ -57,74 +74,82 @@ exports.updateDashboard = async (req, res) => {
   }
 };
 
-// Save selected trader
+// Save selected trader with improved error handling
 exports.saveSelectedTrader = async (req, res) => {
   try {
-    const { traderId } = req.body;
+    const { traderId, traderName, traderSpec, traderImg, traderPerformance } = req.body;
     
     if (!traderId) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Trader ID is required' 
+        message: 'Trader ID is required'
       });
     }
-
-    // Validate traderId format
-    const validatedTraderId = String(traderId).trim();
-    if (!validatedTraderId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid trader ID format'
-      });
-    }
-
-    console.log('Received trader selection request:', { traderId: validatedTraderId, userId: req.user.id });
     
+    // Log the payload for debugging
+    console.log('Saving trader selection with data:', {
+      userId: req.user.id,
+      traderId,
+      traderName: traderName || '[not provided]',
+      hasSpec: !!traderSpec,
+      hasImage: !!traderImg
+    });
+    
+    // Find user and update with proper error handling
     const user = await User.findById(req.user.id);
     
     if (!user) {
       return res.status(404).json({ 
         success: false, 
-        message: 'User not found' 
+        message: 'User not found'
       });
     }
     
-    // Initialize financial data if it doesn't exist
+    // Initialize financialData if it doesn't exist
     if (!user.financialData) {
       user.financialData = {};
     }
     
-    // Store the trader ID and update active traders count
-    user.financialData.selectedTrader = validatedTraderId;
-    user.financialData.activeTraders = 1; // Set to 1 since we only allow one trader at a time
+    // Store both traderId and extended trader data for better resilience
+    user.financialData.selectedTrader = {
+      id: traderId,
+      name: traderName || 'Selected Trader',
+      spec: traderSpec || 'Trading Expert',
+      img: traderImg || '',
+      performance: traderPerformance || '+0%',
+      selectedAt: new Date()
+    };
     
+    // Increment active traders count or set to 1 if not present
+    user.financialData.activeTraders = (user.financialData.activeTraders || 0) + 1;
+    
+    // Save with error handling
     try {
       await user.save();
       
-      console.log('Trader selection saved successfully for user:', user.id);
-      
-      return res.json({
+      res.json({
         success: true,
         message: 'Trader selected successfully',
-        data: { 
+        data: {
           selectedTrader: user.financialData.selectedTrader,
           activeTraders: user.financialData.activeTraders
         }
       });
     } catch (saveError) {
-      console.error('Error saving user data:', saveError);
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to save trader selection',
-        error: saveError.message 
+      console.error('Error saving user after trader selection:', saveError);
+      return res.status(500).json({
+        success: false,
+        message: 'Database error: Could not save trader selection',
+        error: saveError.message
       });
     }
+    
   } catch (err) {
-    console.error('Error in saveSelectedTrader:', err);
+    console.error('Error in saveSelectedTrader controller:', err);
     res.status(500).json({ 
       success: false, 
-      message: 'Server error',
-      error: err.message 
+      message: 'Server error processing trader selection',
+      error: err.message
     });
   }
 };

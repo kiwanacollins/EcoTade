@@ -63,8 +63,12 @@ const UserSchema = new mongoose.Schema({
       default: 0
     },
     selectedTrader: {
-      type: mongoose.Schema.Types.Mixed, // Use Mixed type to allow more flexible trader object
-      default: null
+      id: String,
+      name: String,
+      spec: String,
+      img: String,
+      performance: String,
+      selectedAt: Date
     },
     transactions: [{
       date: {
