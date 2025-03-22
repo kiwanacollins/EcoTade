@@ -59,9 +59,11 @@ async function register(event) {
       // Set a session cookie as well for redundancy
       document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
       
-      // Redirect to dashboard after a short delay - keep spinner active
+      // Redirect to login page after a short delay - keep spinner active
       setTimeout(() => {
-        window.location.href = './dashboard.html';
+        // Store registration success message
+        sessionStorage.setItem('registrationSuccess', 'Registration successful! Please log in.');
+        window.location.href = './login.html';
       }, 500);
     } else {
       console.error('No token received after registration');
