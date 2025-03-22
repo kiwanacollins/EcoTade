@@ -460,11 +460,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Create a unique filename that includes the username
             const timestamp = Date.now();
-            const randomString = Math.random().toString(36).substring(2, 10);
+            // const randomString = Math.random().toString(36).substring(2, 10);
             const fileExtension = file.name.split('.').pop();
             
             // Format: payment-type-timestamp-userid-username-randomstring.extension
-            const newFileName = `payment-${type}-${timestamp}-${userId}-${username}-${randomString}.${fileExtension}`;
+            const newFileName = `payment-${type}-${timestamp}-${userId}-${username}.${fileExtension}`;
             
             // Create a new File object with the modified filename
             const modifiedFile = new File([file], newFileName, { type: file.type });
