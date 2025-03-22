@@ -365,14 +365,25 @@ function updateDashboardUI(dashboardData) {
     const balanceAmount = document.querySelector('.balance-amount');
     const profitAmount = document.querySelector('.profit-amount');
     const activeTrades = document.querySelector('.active-trades');
-    const dailyProfit = document.querySelector('.stat-card:nth-child(3) .stat-info p');
-    const dailyLoss = document.querySelector('.stat-card:nth-child(4) .stat-info p');
+    
+    // Add Daily Profit and Daily Loss updates
+    const dailyProfitAmount = document.querySelector('.stat-card:nth-child(2) .stat-info p');
+    const dailyLossAmount = document.querySelector('.stat-card:nth-child(3) .stat-info p');
     
     if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toFixed(2)}`;
     if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toFixed(2)}`;
     if (activeTrades) activeTrades.textContent = dashboardData.accountSummary.activeTrades;
-    if (dailyProfit) dailyProfit.textContent = `$${dashboardData.accountSummary.dailyProfit.toFixed(2)}`;
-    if (dailyLoss) dailyLoss.textContent = `$${dashboardData.accountSummary.dailyLoss.toFixed(2)}`;
+    
+    // Set daily profit and loss values if they exist in the data
+    if (dailyProfitAmount) {
+        dailyProfitAmount.textContent = dashboardData.accountSummary.dailyProfit ? 
+            `$${dashboardData.accountSummary.dailyProfit.toFixed(2)}` : '$0.00';
+    }
+    
+    if (dailyLossAmount) {
+        dailyLossAmount.textContent = dashboardData.accountSummary.dailyLoss ? 
+            `$${dashboardData.accountSummary.dailyLoss.toFixed(2)}` : '$0.00';
+    }
     
     // Populate settings form if on settings panel
     const settingsFullname = document.getElementById('settings-fullname');
@@ -2081,19 +2092,14 @@ async function saveSelectedTrader(trader) {
             return false;
         }
         
-        console.log('Saving selected trader to database:', trader);
-        
-        // Use the dedicated trader selection endpoint
+        // Use the dedicated trader selection endpoint with only the required traderId
         const response = await fetch('/api/financial/trader', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'X-Device-ID': getDeviceIdentifier() // Add device ID for better tracking
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                traderData: trader // Send full trader data object
-            })
+            body: JSON.stringify({ traderId: trader.id })
         });
         
         if (!response.ok) {
@@ -2101,39 +2107,17 @@ async function saveSelectedTrader(trader) {
         }
         
         const result = await response.json();
-        
         if (!result.success) {
             throw new Error(result.message || 'Failed to save trader selection');
         }
         
-        console.log('Trader selection saved successfully to database');
-        
-        // Update the sync timestamp
+        // Cache the full trader data locally
+        localStorage.setItem('selectedTrader', JSON.stringify(trader));
         localStorage.setItem('lastDataSync', new Date().toISOString());
-        
-        // Update in-memory cache with the selected trader
-        try {
-            const cachedDataStr = localStorage.getItem('dashboardData');
-            if (cachedDataStr) {
-                const cachedData = JSON.parse(cachedDataStr);
-                cachedData.selectedTrader = trader;
-                cachedData.syncTimestamp = new Date().toISOString();
-                cachedData.syncSource = 'server';
-                localStorage.setItem('dashboardData', JSON.stringify(cachedData));
-            }
-        } catch (e) {
-            console.warn('Failed to update cached data with new trader selection:', e);
-        }
         
         return true;
     } catch (error) {
         console.error('Error saving selected trader to database:', error);
-        
-        // Show warning notification with explanation about cross-device sync
-        // showNotification('warning', 
-        //     'Your trader selection was saved locally, but might not sync to other devices. Check your internet connection.',
-        //     5000);
-            
         return false;
     }
 }
