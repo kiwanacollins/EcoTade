@@ -51,23 +51,14 @@ async function register(event) {
     
     console.log('Registration successful:', response);
     
-    // Store token if returned
-    if (response.token) {
-      console.log('Storing auth token');
-      localStorage.setItem('token', response.token);
-      
-      // Set a session cookie as well for redundancy
-      document.cookie = `app_session=active; path=/; max-age=${60*60*24*30}; SameSite=Lax;`;
-      
-      // Redirect to login page after a short delay - keep spinner active
-      setTimeout(() => {
-        // Store registration success message
-        sessionStorage.setItem('registrationSuccess', 'Registration successful! Please log in.');
-        window.location.href = './login.html';
-      }, 500);
+    // Don't store token after registration
+    if (response.success) {
+      // Store success message and redirect to login
+      sessionStorage.setItem('registrationSuccess', 'Registration successful! Please log in.');
+      window.location.replace('./login.html');
     } else {
-      console.error('No token received after registration');
-      document.getElementById('signup-error').textContent = 'Authentication error';
+      console.error('Registration failed:', response);
+      document.getElementById('signup-error').textContent = 'Registration failed';
       
       // Reset button
       submitButton.classList.remove('btn-loading');
