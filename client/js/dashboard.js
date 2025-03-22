@@ -36,6 +36,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('Setting up UI components');
         setupEventListeners();
         initTraderDetailButtons();
+
+        // NEW: Add event listener for user profile icon click
+        const userProfileIcon = document.querySelector('.user-profile .avatar');
+        if (userProfileIcon) {
+            userProfileIcon.addEventListener('click', function() {
+                // Switch to settings panel
+                switchPanel('settings');
+                
+                // Update navigation item active state
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-panel') === 'settings') {
+                        item.classList.add('active');
+                    }
+                });
+            });
+        }
         
         // Set up the data sync mechanism first
         setupDataSyncMechanism();
