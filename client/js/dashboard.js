@@ -2099,11 +2099,13 @@ async function saveSelectedTrader(trader) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ traderId: trader.id })
+            // Send traderId directly instead of as part of an object with id property
+            body: JSON.stringify({ traderId: String(trader.id) })
         });
         
         if (!response.ok) {
-            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Server returned ${response.status}: ${response.statusText}`);
         }
         
         const result = await response.json();
@@ -2118,6 +2120,7 @@ async function saveSelectedTrader(trader) {
         return true;
     } catch (error) {
         console.error('Error saving selected trader to database:', error);
+        showNotification('error', 'Failed to save trader selection: ' + error.message);
         return false;
     }
 }
