@@ -29,7 +29,7 @@ exports.getDashboard = async (req, res) => {
     const safeResponse = {
       success: true,
       data: {
-        totalBalance: financialData.balance || 0,
+        totalBalance: financialData.totalBalance || 0, // FIX: Changed from balance to totalBalance
         profit: financialData.profit || 0,
         trades: financialData.trades || [],
         payments: financialData.payments || [],
@@ -69,7 +69,7 @@ exports.updateDashboard = async (req, res) => {
     }
     
     // Update only the fields that are provided
-    if (balance !== undefined) user.financialData.balance = balance;
+    if (balance !== undefined) user.financialData.totalBalance = balance; // FIX: Changed from balance to totalBalance
     if (profit !== undefined) user.financialData.profit = profit;
     if (trades !== undefined) user.financialData.trades = trades;
     
@@ -243,17 +243,17 @@ exports.scheduledDailyUpdate = async () => {
         
         // Base rate (0.5% to 2% of total balance)
         const baseRate = (Math.random() * 1.5 + 0.5) / 100;
-        // Use balance instead of totalBalance which doesn't exist in the schema
-        const balance = financialData.balance || 0;
+        // Use totalBalance instead of balance to match the schema
+        const totalBalance = financialData.totalBalance || 0;
         
         // Calculate daily profit - can be positive or negative
         const dailyProfitRate = Math.random() > 0.4 ? baseRate : -baseRate;
-        const dailyProfit = balance * dailyProfitRate;
+        const dailyProfit = totalBalance * dailyProfitRate;
         
         // Daily loss is calculated as a percentage of the balance (0.05% to 0.35%)
         // This represents maximum drawdown risk
         const maxDailyLossRate = (Math.random() * 0.3 + 0.05) / 100;
-        const dailyLoss = balance * maxDailyLossRate;
+        const dailyLoss = totalBalance * maxDailyLossRate;
         
         // Update financial data - making sure we don't lose existing data
         if (!user.financialData) {
