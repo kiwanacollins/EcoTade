@@ -4,7 +4,8 @@ const { protect } = require('../middlewares/auth.middleware');
 const {
   getDashboard,
   updateDashboard,
-  saveSelectedTrader
+  saveSelectedTrader,
+  processPaymentProof
 } = require('../controllers/financial.controller');
 
 // Apply authentication middleware to all routes
@@ -63,48 +64,6 @@ const upload = multer({
 });
 
 // POST endpoint for uploading payment proof
-router.post('/proof-upload', upload.single('screenshot'), async (req, res) => {
-    try {
-        // Check if file was uploaded
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: 'No file uploaded' });
-        }
-
-        // Get the controller to process the payment
-        const { processPaymentProof } = require('../controllers/financial.controller');
-        
-        // Add file info to request and pass to controller
-        req.fileInfo = {
-            filename: req.file.filename,
-            path: req.file.path,
-            size: req.file.size
-        };
-        
-        // Forward to controller function
-        return processPaymentProof(req, res);
-        
-    } catch (error) {
-        console.error('Error uploading payment proof:', error);
-        return res.status(500).json({ 
-            success: false, 
-            message: 'Server error while processing your payment proof'
-        });
-    }
-});
-
-// Admin routes for updating financial data
-router.post('/update-daily-values', protect, async (req, res) => {
-  // Check if user is admin
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Unauthorized: Admin access required' });
-  }
-  
-  // Call the controller method
-  const { updateDailyProfitLoss } = require('../controllers/financial.controller');
-  return updateDailyProfitLoss(req, res);
-});
-
-// GET endpoint for admin to view unprocessed payments (protected route)
-// This would be used in an admin dashboard
+router.post('/proof-upload', upload.single('screenshot'), processPaymentProof);
 
 module.exports = router;

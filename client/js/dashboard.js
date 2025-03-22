@@ -2087,34 +2087,36 @@ async function saveSelectedTrader(trader) {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            console.error('No token found, cannot save trader selection');
             showNotification('error', 'Authentication error. Please log in again.');
             return false;
         }
         
-        // Use the dedicated trader selection endpoint with only the required traderId
+        // Use relative URL and include credentials
         const response = await fetch('/api/financial/trader', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            // Send traderId directly instead of as part of an object with id property
             body: JSON.stringify({ traderId: String(trader.id) })
         });
         
+        const result = await response.json();
+        
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Server returned ${response.status}: ${response.statusText}`);
+            throw new Error(result.message || `Server error: ${response.statusText}`);
         }
         
-        const result = await response.json();
         if (!result.success) {
             throw new Error(result.message || 'Failed to save trader selection');
         }
         
         // Cache the full trader data locally
-        localStorage.setItem('selectedTrader', JSON.stringify(trader));
+        localStorage.setItem('selectedTrader', JSON.stringify({
+            ...trader,
+            activeTraders: result.data?.activeTraders || 1,
+            selectedTrader: result.data?.selectedTrader
+        }));
         localStorage.setItem('lastDataSync', new Date().toISOString());
         
         return true;

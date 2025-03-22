@@ -70,14 +70,15 @@ exports.saveSelectedTrader = async (req, res) => {
     }
 
     // Validate traderId format
-    if (typeof traderId !== 'string' && typeof traderId !== 'number') {
+    const validatedTraderId = String(traderId).trim();
+    if (!validatedTraderId) {
       return res.status(400).json({
         success: false,
         message: 'Invalid trader ID format'
       });
     }
 
-    console.log('Received trader selection request:', { traderId, userId: req.user.id });
+    console.log('Received trader selection request:', { traderId: validatedTraderId, userId: req.user.id });
     
     const user = await User.findById(req.user.id);
     
@@ -94,11 +95,22 @@ exports.saveSelectedTrader = async (req, res) => {
     }
     
     // Store the trader ID and update active traders count
-    user.financialData.selectedTrader = String(traderId);
+    user.financialData.selectedTrader = validatedTraderId;
     user.financialData.activeTraders = 1; // Set to 1 since we only allow one trader at a time
     
     try {
       await user.save();
+      
+      console.log('Trader selection saved successfully for user:', user.id);
+      
+      return res.json({
+        success: true,
+        message: 'Trader selected successfully',
+        data: { 
+          selectedTrader: user.financialData.selectedTrader,
+          activeTraders: user.financialData.activeTraders
+        }
+      });
     } catch (saveError) {
       console.error('Error saving user data:', saveError);
       return res.status(500).json({ 
@@ -107,17 +119,6 @@ exports.saveSelectedTrader = async (req, res) => {
         error: saveError.message 
       });
     }
-    
-    console.log('Trader selection saved successfully for user:', user.id);
-    
-    res.json({
-      success: true,
-      message: 'Trader selected successfully',
-      data: { 
-        selectedTrader: user.financialData.selectedTrader,
-        activeTraders: user.financialData.activeTraders
-      }
-    });
   } catch (err) {
     console.error('Error in saveSelectedTrader:', err);
     res.status(500).json({ 

@@ -11,7 +11,7 @@ const financialRoutes = require('./financial.routes');
 // Define API routes
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-router.use('/payments', financialRoutes); // Register our payments routes
+router.use('/financial', financialRoutes); // Changed from /payments to /financial
 
 // API health check endpoint
 router.get('/health', (req, res) => {
