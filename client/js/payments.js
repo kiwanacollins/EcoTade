@@ -486,25 +486,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Upload payment proof to server
     async function uploadPaymentProof(formData, type) {
         try {
-            // Define URL based on your API
-            const apiUrl = '/api/financial/proof-upload';
+            // Get the correct API URL from the config
+            const apiUrl = window.AppConfig ? 
+                window.AppConfig.api.getUrl('/api/financial/proof-upload') : 
+                'https://api.forexprox.com/api/financial/proof-upload';
             
-            // Get auth token from TokenManager (if available)
+            console.log('Uploading payment proof to:', apiUrl);
+            
+            // Get auth token from TokenManager
             let headers = {};
-            if (window.TokenManager && window.TokenManager.getToken) {
+            if (window.TokenManager && typeof window.TokenManager.getToken === 'function') {
                 const token = window.TokenManager.getToken();
                 if (token) {
                     headers = {
                         'Authorization': `Bearer ${token}`
                     };
+                    console.log('Token found and included in request');
+                } else {
+                    console.warn('No authentication token found. User may not be logged in.');
                 }
+            } else {
+                console.error('TokenManager not available or getToken method not found');
             }
             
             // Make API call to your server
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 body: formData,
-                headers: headers
+                headers: headers,
+                credentials: 'include' // Include cookies in the request
                 // Don't set Content-Type header - browser will set it with the boundary parameter
             });
             
@@ -533,7 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show error in modal
             const errorDiv = document.getElementById(`${type}-upload-error`);
             if (errorDiv) {
-                errorDiv.textContent = 'Failed to upload payment proof. Please try again.';
+                errorDiv.textContent = `Error uploading payment proof: ${error.message}`;
                 errorDiv.classList.add('visible');
             }
         }
