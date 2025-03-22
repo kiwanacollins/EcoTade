@@ -121,28 +121,23 @@ exports.saveSelectedTrader = async (req, res) => {
     };
     
     // Increment active traders count or set to 1 if not present
-    user.financialData.activeTraders = (user.financialData.activeTraders || 0) + 1;
+    // Only increment if the trader is different than the previous one
+    const previousTraderId = user.financialData.selectedTrader?.id;
+    if (!previousTraderId || previousTraderId !== traderId) {
+      user.financialData.activeTraders = (user.financialData.activeTraders || 0) + 1;
+    }
     
     // Save with error handling
-    try {
-      await user.save();
-      
-      res.json({
-        success: true,
-        message: 'Trader selected successfully',
-        data: {
-          selectedTrader: user.financialData.selectedTrader,
-          activeTraders: user.financialData.activeTraders
-        }
-      });
-    } catch (saveError) {
-      console.error('Error saving user after trader selection:', saveError);
-      return res.status(500).json({
-        success: false,
-        message: 'Database error: Could not save trader selection',
-        error: saveError.message
-      });
-    }
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: 'Trader selected successfully',
+      data: {
+        selectedTrader: user.financialData.selectedTrader,
+        activeTraders: user.financialData.activeTraders
+      }
+    });
     
   } catch (err) {
     console.error('Error in saveSelectedTrader controller:', err);
@@ -231,16 +226,17 @@ exports.scheduledDailyUpdate = async () => {
         
         // Base rate (0.5% to 2% of total balance)
         const baseRate = (Math.random() * 1.5 + 0.5) / 100;
-        const totalBalance = financialData.totalBalance || 0;
+        // Use balance instead of totalBalance which doesn't exist in the schema
+        const balance = financialData.balance || 0;
         
         // Calculate daily profit - can be positive or negative
         const dailyProfitRate = Math.random() > 0.4 ? baseRate : -baseRate;
-        const dailyProfit = totalBalance * dailyProfitRate;
+        const dailyProfit = balance * dailyProfitRate;
         
         // Daily loss is calculated as a percentage of the balance (0.05% to 0.35%)
         // This represents maximum drawdown risk
         const maxDailyLossRate = (Math.random() * 0.3 + 0.05) / 100;
-        const dailyLoss = totalBalance * maxDailyLossRate;
+        const dailyLoss = balance * maxDailyLossRate;
         
         // Update financial data - making sure we don't lose existing data
         if (!user.financialData) {
