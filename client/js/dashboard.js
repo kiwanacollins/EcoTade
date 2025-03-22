@@ -689,7 +689,7 @@ const traderDetails = {
         additionalInfo: "Known for her precision and ability to read volatile market conditions, ensuring steady returns.",
         experience: "5+ years",
         riskLevel: "Moderate",
-        minInvestment: "$1000",
+        minInvestment: "$500",
         activeClients: "48"
     },
     "3": {
@@ -753,7 +753,7 @@ const traderDetails = {
         additionalInfo: "Recognized for her ability to design flexible strategies that adapt to changing market conditions.",
         experience: "9+ years",
         riskLevel: "High",
-        minInvestment: "$2,500",
+        minInvestment: "$150",
         activeClients: "142"
     },
     "7": {
