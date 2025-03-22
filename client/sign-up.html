@@ -56,6 +56,7 @@
         .highlight-container {
             border-radius: 5px;
             transition: all 0.3s ease;
+            display: contents;
         }
     </style>
     
@@ -68,7 +69,7 @@
     <section class="registration-section">
         <div class="registration-container">
             <div class="registration-header">
-               <a href="../index.html">
+               <a href="../index.html" style="text-decoration: none;">
                 <div class="navbar-logo" id="navbarLogo">
                     <img src="./images/logo.png" alt="Forexprox Logo">
                     <span>Forexprox</span>
@@ -117,6 +118,30 @@
                     </div>
                     <div class="error-message" id="confirm-password-error"></div>
                 </div>
+
+                <div class="form-group upload-group">
+                    <label for="id-upload">Upload National ID, Driving Licence or Passport</label>
+                    <div class="upload-container">
+                        <div class="upload-area" id="upload-area">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="upload-text">
+                                <span class="primary-text">Drag and drop your document here or</span>
+                                <label for="id-upload" class="upload-button">Browse Files</label>
+                            </div>
+                            <span class="file-info">Supported formats: JPG, JPEG, PNG, PDF (Max 5MB)</span>
+                        </div>
+                        <input type="file" id="id-upload" name="idUpload" accept=".jpg, .jpeg, .png, .pdf" required>
+                        <div class="selected-file" id="selected-file">
+                            <i class="fas fa-file-alt file-icon"></i>
+                            <span class="file-name"></span>
+                            <button type="button" class="remove-file" id="remove-file">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="error-message" id="id-upload-error"></div>
+                </div>
+                
                 <div class="form-group">
                     <div class="checkbox-container highlight-container" id="terms-container">
                         <input type="checkbox" id="terms" name="terms" required>
@@ -144,43 +169,107 @@
             const termsCheckbox = document.getElementById('terms');
             const termsContainer = document.getElementById('terms-container');
             const termsError = document.getElementById('terms-error');
-            
-            // Listen for form submission
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('id-upload');
+            const selectedFile = document.getElementById('selected-file');
+            const fileName = selectedFile.querySelector('.file-name');
+            const removeFileBtn = document.getElementById('remove-file');
+            const uploadError = document.getElementById('id-upload-error');
+            let isFileValid = false;
+
+            // File upload handling
+            function handleFile(file) {
+                if (!file) return;
+
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                if (!validTypes.includes(file.type)) {
+                    uploadError.textContent = 'Please upload a valid document (JPG, PNG, or PDF)';
+                    isFileValid = false;
+                    return;
+                }
+
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    uploadError.textContent = 'File size must be less than 5MB';
+                    isFileValid = false;
+                    return;
+                }
+
+                // Show file name and preview
+                fileName.textContent = file.name;
+                selectedFile.classList.add('active');
+                uploadArea.style.display = 'none';
+                uploadError.textContent = '';
+                isFileValid = true;
+            }
+
+            // Upload area event listeners
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFile(e.dataTransfer.files[0]);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFile(e.target.files[0]);
+            });
+
+            removeFileBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                selectedFile.classList.remove('active');
+                uploadArea.style.display = 'flex';
+                fileName.textContent = '';
+                uploadError.textContent = '';
+                isFileValid = false;
+            });
+
+            // Combined form submission handler
             form.addEventListener('submit', function(event) {
-                // If terms are not checked
+                event.preventDefault();
+
+                // Check terms
                 if (!termsCheckbox.checked) {
-                    event.preventDefault();
-                    
-                    // Show visual feedback
                     termsContainer.classList.add('checkbox-pulse');
                     termsError.textContent = 'Please accept the Terms and Privacy Policy to continue';
                     termsError.style.display = 'block';
-                    
-                    // Focus on the checkbox
                     termsCheckbox.focus();
                     
-                    // Auto-check the checkbox after a short delay
-                    setTimeout(function() {
+                    setTimeout(() => {
                         termsCheckbox.checked = true;
-                        // Trigger the change event to update validation state
                         termsCheckbox.dispatchEvent(new Event('change'));
-                        
-                        // After checkbox is checked, you can either:
-                        // Option 1: Show a message that it's been checked
                         termsError.textContent = 'Terms accepted! You can now submit.';
-                        
-                        // Option 2: Submit the form automatically (disabled by default)
-                        // form.submit();
                     }, 500);
                     
-                    // Remove the animation class after it completes
-                    setTimeout(function() {
+                    setTimeout(() => {
                         termsContainer.classList.remove('checkbox-pulse');
                     }, 1500);
+                    return;
                 }
+
+                // Check if file was uploaded and validated
+                if (!isFileValid) {
+                    uploadError.textContent = 'Please upload a valid identification document';
+                    return;
+                }
+
+                // Clear file input before submission
+                fileInput.value = '';
+                
+                // Continue with form submission
+                form.submit();
             });
-            
-            // Clear error when checkbox is checked manually
+
+            // Terms checkbox change handler
             termsCheckbox.addEventListener('change', function() {
                 if (this.checked) {
                     termsError.textContent = '';
