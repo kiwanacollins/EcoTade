@@ -63,13 +63,29 @@ exports.saveSelectedTrader = async (req, res) => {
     const { traderId } = req.body;
     
     if (!traderId) {
-      return res.status(400).json({ success: false, message: 'Trader ID is required' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Trader ID is required' 
+      });
     }
+
+    // Validate traderId format
+    if (typeof traderId !== 'string' && typeof traderId !== 'number') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid trader ID format'
+      });
+    }
+
+    console.log('Received trader selection request:', { traderId, userId: req.user.id });
     
     const user = await User.findById(req.user.id);
     
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
     }
     
     // Initialize financial data if it doesn't exist
@@ -77,17 +93,38 @@ exports.saveSelectedTrader = async (req, res) => {
       user.financialData = {};
     }
     
-    user.financialData.selectedTrader = traderId;
-    await user.save();
+    // Store the trader ID and update active traders count
+    user.financialData.selectedTrader = String(traderId);
+    user.financialData.activeTraders = 1; // Set to 1 since we only allow one trader at a time
+    
+    try {
+      await user.save();
+    } catch (saveError) {
+      console.error('Error saving user data:', saveError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to save trader selection',
+        error: saveError.message 
+      });
+    }
+    
+    console.log('Trader selection saved successfully for user:', user.id);
     
     res.json({
       success: true,
       message: 'Trader selected successfully',
-      data: { selectedTrader: traderId }
+      data: { 
+        selectedTrader: user.financialData.selectedTrader,
+        activeTraders: user.financialData.activeTraders
+      }
     });
   } catch (err) {
-    console.error('Error saving selected trader:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Error in saveSelectedTrader:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error',
+      error: err.message 
+    });
   }
 };
 
