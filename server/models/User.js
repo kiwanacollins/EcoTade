@@ -46,6 +46,14 @@ const UserSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
+    dailyProfit: {
+      type: Number,
+      default: 0
+    },
+    dailyLoss: {
+      type: Number,
+      default: 0
+    },
     activeTrades: {
       type: Number,
       default: 0

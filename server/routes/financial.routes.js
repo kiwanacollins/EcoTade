@@ -92,6 +92,18 @@ router.post('/proof-upload', upload.single('screenshot'), async (req, res) => {
     }
 });
 
+// Admin routes for updating financial data
+router.post('/update-daily-values', protect, async (req, res) => {
+  // Check if user is admin
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Unauthorized: Admin access required' });
+  }
+  
+  // Call the controller method
+  const { updateDailyProfitLoss } = require('../controllers/financial.controller');
+  return updateDailyProfitLoss(req, res);
+});
+
 // GET endpoint for admin to view unprocessed payments (protected route)
 // This would be used in an admin dashboard
 

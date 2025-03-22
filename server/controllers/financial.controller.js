@@ -119,3 +119,94 @@ exports.processPaymentProof = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// Update daily profit and loss values
+exports.updateDailyProfitLoss = async (req, res) => {
+  try {
+    const result = await exports.scheduledDailyUpdate();
+    
+    res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Error updating daily profit/loss:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update daily profit/loss values',
+      error: error.message
+    });
+  }
+};
+
+// Scheduled task helper function to update daily values
+exports.scheduledDailyUpdate = async () => {
+  try {
+    console.log('Starting scheduled daily profit/loss update');
+    
+    // Import the User model
+    const User = require('../models/User');
+    
+    // Find all users
+    const users = await User.find();
+    
+    console.log(`Found ${users.length} users for daily update`);
+    
+    // Initialize counters for statistics
+    let updatedCount = 0;
+    let errorCount = 0;
+    
+    // Process each user
+    for (const user of users) {
+      try {
+        // Get current financial data
+        const financialData = user.financialData || {};
+        
+        // Calculate daily profit based on balance and a daily rate
+        // In a real system, you would calculate this based on actual trading performance
+        // Here we're using a simplified approach with randomization to simulate trading volatility
+        
+        // Base rate (0.5% to 2% of total balance)
+        const baseRate = (Math.random() * 1.5 + 0.5) / 100;
+        const totalBalance = financialData.totalBalance || 0;
+        
+        // Calculate daily profit - can be positive or negative
+        const dailyProfitRate = Math.random() > 0.4 ? baseRate : -baseRate;
+        const dailyProfit = totalBalance * dailyProfitRate;
+        
+        // Daily loss is calculated as a percentage of the balance (0.05% to 0.35%)
+        // This represents maximum drawdown risk
+        const maxDailyLossRate = (Math.random() * 0.3 + 0.05) / 100;
+        const dailyLoss = totalBalance * maxDailyLossRate;
+        
+        // Update financial data - making sure we don't lose existing data
+        if (!user.financialData) {
+          user.financialData = {};
+        }
+        
+        // Update the dailyProfit and dailyLoss fields
+        user.financialData.dailyProfit = parseFloat(dailyProfit.toFixed(2));
+        user.financialData.dailyLoss = parseFloat(dailyLoss.toFixed(2));
+        
+        // Save the updated user
+        await user.save();
+        updatedCount++;
+      } catch (error) {
+        console.error(`Error updating daily values for user ${user._id}:`, error);
+        errorCount++;
+      }
+    }
+    
+    console.log(`Daily profit/loss update completed. Updated: ${updatedCount}, Errors: ${errorCount}`);
+    
+    return {
+      success: true,
+      updated: updatedCount,
+      errors: errorCount,
+      total: users.length
+    };
+  } catch (error) {
+    console.error('Error in scheduledDailyUpdate:', error);
+    throw error;
+  }
+};

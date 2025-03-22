@@ -198,6 +198,8 @@ async function fetchDashboardData(skipCache = false) {
                         accountSummary: {
                             totalBalance: financialData.data.totalBalance || 0,
                             profit: financialData.data.profit || 0,
+                            dailyProfit: financialData.data.dailyProfit || 0,
+                            dailyLoss: financialData.data.dailyLoss || 0,
                             activeTrades: financialData.data.activeTrades || 0,
                             activeTraders: financialData.data.activeTraders || 0
                         },
@@ -274,6 +276,8 @@ async function fetchDashboardData(skipCache = false) {
                 accountSummary: {
                     totalBalance: data.totalBalance || 0,
                     profit: data.profit || 0,
+                    dailyProfit: data.dailyProfit || 0, 
+                    dailyLoss: data.dailyLoss || 0,
                     activeTrades: data.activeTrades || 0,
                     activeTraders: data.activeTraders || 0
                 },
@@ -314,6 +318,8 @@ async function fetchDashboardData(skipCache = false) {
             accountSummary: {
                 totalBalance: 0,
                 profit: 0,
+                dailyProfit: 0,
+                dailyLoss: 0,
                 activeTrades: 0,
                 activeTraders: 0
             },
@@ -352,17 +358,21 @@ function updateDashboardUI(dashboardData) {
     const userRole = document.querySelector('.user-role');
     
     if (userName) userName.textContent = dashboardData.user.name;
-    if (userFullName) userFullName.textContent = dashboardData.user.name;
+    if (userFullName) userFullName.textContent = " " + dashboardData.user.name;
     if (userRole) userRole.textContent = dashboardData.user.role;
     
     // Update account summary
     const balanceAmount = document.querySelector('.balance-amount');
     const profitAmount = document.querySelector('.profit-amount');
     const activeTrades = document.querySelector('.active-trades');
+    const dailyProfit = document.querySelector('.stat-card:nth-child(3) .stat-info p');
+    const dailyLoss = document.querySelector('.stat-card:nth-child(4) .stat-info p');
     
     if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toFixed(2)}`;
     if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toFixed(2)}`;
     if (activeTrades) activeTrades.textContent = dashboardData.accountSummary.activeTrades;
+    if (dailyProfit) dailyProfit.textContent = `$${dashboardData.accountSummary.dailyProfit.toFixed(2)}`;
+    if (dailyLoss) dailyLoss.textContent = `$${dashboardData.accountSummary.dailyLoss.toFixed(2)}`;
     
     // Populate settings form if on settings panel
     const settingsFullname = document.getElementById('settings-fullname');
@@ -2158,9 +2168,24 @@ function updateDashboardUI(dashboardData) {
     const profitAmount = document.querySelector('.profit-amount');
     const activeTrades = document.querySelector('.active-trades');
     
+    // Add Daily Profit and Daily Loss updates
+    const dailyProfitAmount = document.querySelector('.stat-card:nth-child(2) .stat-info p');
+    const dailyLossAmount = document.querySelector('.stat-card:nth-child(3) .stat-info p');
+    
     if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toFixed(2)}`;
     if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toFixed(2)}`;
     if (activeTrades) activeTrades.textContent = dashboardData.accountSummary.activeTrades;
+    
+    // Set daily profit and loss values if they exist in the data
+    if (dailyProfitAmount) {
+        dailyProfitAmount.textContent = dashboardData.accountSummary.dailyProfit ? 
+            `$${dashboardData.accountSummary.dailyProfit.toFixed(2)}` : '$0.00';
+    }
+    
+    if (dailyLossAmount) {
+        dailyLossAmount.textContent = dashboardData.accountSummary.dailyLoss ? 
+            `$${dashboardData.accountSummary.dailyLoss.toFixed(2)}` : '$0.00';
+    }
     
     // Populate settings form if on settings panel
     const settingsFullname = document.getElementById('settings-fullname');

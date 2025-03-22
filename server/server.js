@@ -9,6 +9,8 @@ const { checkConfigOnStartup } = require('./utils/config-validator');
 // Add JWT configuration check with fix attempt
 const { isJwtConfigured, attemptJwtFix } = require('./scripts/check-jwt');
 const morgan = require('morgan');
+// Import the scheduler
+const { initScheduler } = require('./utils/scheduler');
 
 // Try to load environment from dotenv files
 try {
@@ -187,6 +189,9 @@ const connectWithRetry = (retryCount = 0) => {
     .then(() => {
       dbConnected = true;
       logMessage('Database connection established successfully');
+      
+      // Initialize the scheduler after database connection is established
+      initScheduler();
     })
     .catch((err) => {
       logMessage(`Database connection failed: ${err.message}`, 'error');
