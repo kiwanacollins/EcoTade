@@ -127,18 +127,27 @@ exports.saveSelectedTrader = async (req, res) => {
       user.financialData.activeTraders = (user.financialData.activeTraders || 0) + 1;
     }
     
-    // Save with error handling
-    await user.save();
-    
-    res.json({
-      success: true,
-      message: 'Trader selected successfully',
-      data: {
-        selectedTrader: user.financialData.selectedTrader,
-        activeTraders: user.financialData.activeTraders
-      }
-    });
-    
+    // Wrap the save operation in try/catch for more detailed error handling
+    try {
+      await user.save();
+      
+      // Send successful response
+      return res.json({
+        success: true,
+        message: 'Trader selected successfully',
+        data: {
+          selectedTrader: user.financialData.selectedTrader,
+          activeTraders: user.financialData.activeTraders
+        }
+      });
+    } catch (saveError) {
+      console.error('Database save error:', saveError);
+      return res.status(500).json({
+        success: false,
+        message: 'Database error when saving trader selection',
+        error: saveError.message
+      });
+    }
   } catch (err) {
     console.error('Error in saveSelectedTrader controller:', err);
     res.status(500).json({ 

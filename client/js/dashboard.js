@@ -2098,7 +2098,14 @@ async function saveSelectedTrader(trader) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ traderId: String(trader.id) })
+            // Include all trader fields in the request
+            body: JSON.stringify({
+                traderId: String(trader.id),
+                traderName: trader.name || '',
+                traderSpec: trader.spec || '',
+                traderImg: trader.img || '',
+                traderPerformance: trader.performance || '+0%'
+            })
         });
         
         const result = await response.json();
