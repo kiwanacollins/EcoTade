@@ -426,19 +426,19 @@ function updateDashboardUI(dashboardData) {
     const dailyProfitAmount = document.querySelector('.stat-card:nth-child(2) .stat-info p');
     const dailyLossAmount = document.querySelector('.stat-card:nth-child(3) .stat-info p');
     
-    if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toFixed(2)}`;
-    if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toFixed(2)}`;
+    if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+    if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
     if (activeTrades) activeTrades.textContent = dashboardData.accountSummary.activeTrades;
     
     // Set daily profit and loss values if they exist in the data
     if (dailyProfitAmount) {
         dailyProfitAmount.textContent = dashboardData.accountSummary.dailyProfit ? 
-            `$${dashboardData.accountSummary.dailyProfit.toFixed(2)}` : '$0.00';
+            `$${dashboardData.accountSummary.dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 0 })}` : '$0.00';
     }
     
     if (dailyLossAmount) {
         dailyLossAmount.textContent = dashboardData.accountSummary.dailyLoss ? 
-            `$${dashboardData.accountSummary.dailyLoss.toFixed(2)}` : '$0.00';
+            `$${dashboardData.accountSummary.dailyLoss.toLocaleString(undefined, { minimumFractionDigits: 0 })}` : '$0.00';
     }
     
     // Populate settings form if on settings panel
@@ -2229,19 +2229,19 @@ function updateDashboardUI(dashboardData) {
     const dailyProfitAmount = document.querySelector('.stat-card:nth-child(2) .stat-info p');
     const dailyLossAmount = document.querySelector('.stat-card:nth-child(3) .stat-info p');
     
-    if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toFixed(2)}`;
-    if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toFixed(2)}`;
+    if (balanceAmount) balanceAmount.textContent = `$${dashboardData.accountSummary.totalBalance.toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
+    if (profitAmount) profitAmount.textContent = `$${dashboardData.accountSummary.profit.toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
     if (activeTrades) activeTrades.textContent = dashboardData.accountSummary.activeTrades;
     
     // Set daily profit and loss values if they exist in the data
     if (dailyProfitAmount) {
         dailyProfitAmount.textContent = dashboardData.accountSummary.dailyProfit ? 
-            `$${dashboardData.accountSummary.dailyProfit.toFixed(2)}` : '$0.00';
+            `$${dashboardData.accountSummary.dailyProfit.toLocaleString(undefined, { minimumFractionDigits: 0 })}` : '$0.00';
     }
     
     if (dailyLossAmount) {
         dailyLossAmount.textContent = dashboardData.accountSummary.dailyLoss ? 
-            `$${dashboardData.accountSummary.dailyLoss.toFixed(2)}` : '$0.00';
+            `$${dashboardData.accountSummary.dailyLoss.toLocaleString(undefined, { minimumFractionDigits: 0 })}` : '$0.00';
     }
     
     // Populate settings form if on settings panel
@@ -2913,10 +2913,10 @@ function populateRecentTransactions() {
         amount: "$5,018",
       },
       {
-        date: "14-03-2025",
-        name: "Gilmar Chinedum",
+        date: "23-03-2025",
+        name: "Musiho Emmanuel Jeremiah",
         type: "Deposit",
-        amount: "$1,771",
+        amount: "$42",
       },
       {
         date: "15-03-2025",
@@ -3125,9 +3125,9 @@ function populateRecentTransactions() {
       },
       {
         date: "14-03-2025",
-        name: "Gilmar Chinedum",
+        name: "Musiho Emmanuel Jeremiah",
         type: "Deposit",
-        amount: "$1,771",
+        amount: "$42",
       },
       {
         date: "15-03-2025",
