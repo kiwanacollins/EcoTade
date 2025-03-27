@@ -813,19 +813,19 @@ const traderDetails = {
         activeClients: "142"
     },
     "7": {
-        name: "Robert Taylor",
+        name: "Seanster",
         specialty: "Forex Trader",
-        background: "Robert's expertise lies in interpreting market charts and identifying technical patterns that forecast price movements.",
+        background: "Seanster's expertise lies in interpreting market charts and identifying technical patterns that forecast price movements.",
         strategy: "Utilizes candlestick analysis, moving averages, and oscillators to pinpoint high-probability trade signals.",
         performance: {
-            monthly: "+17.9%",
+            monthly: "+69.9%",
             allTime: "+92%"
         },
         riskManagement: "Relies on systematic stop-loss and take-profit levels based on technical indicators to safeguard investments.",
         additionalInfo: "Known for his disciplined, methodical approach, ensuring consistency in his trading performance.",
         experience: "11+ years",
         riskLevel: "Moderate",
-        minInvestment: "$1,000",
+        minInvestment: "$100",
         activeClients: "263"
     },
     "8": {
