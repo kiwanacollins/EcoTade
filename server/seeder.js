@@ -6,7 +6,7 @@ const { User } = require('./models'); // Update to use centralized models
 dotenv.config();
 
 // Use Docker MongoDB connection
-const MONGODB_URI = "mongodb://admin:password@localhost:27018/forexproxdb?authSource=admin";
+const MONGODB_URI = "mongodb://admin:password@127.0.0.1:27018/forexproxdb?authSource=admin";
 
 // Connect to DB
 console.log('Connecting to MongoDB for seeding...');

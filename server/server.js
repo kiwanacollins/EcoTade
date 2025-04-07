@@ -43,7 +43,7 @@ if (!process.env.JWT_SECRET) {
 // Fix MongoDB connection string
 console.log('Setting Docker MongoDB connection...');
 const mongoPort = 27018; // Always use 27018 consistently
-process.env.MONGODB_URI = `mongodb://admin:password@localhost:${mongoPort}/forexproxdb?authSource=admin`;
+process.env.MONGODB_URI = `mongodb://admin:password@127.0.0.1:${mongoPort}/forexproxdb?authSource=admin`;
 
 // Log what we're using
 console.log('Application Settings:');
